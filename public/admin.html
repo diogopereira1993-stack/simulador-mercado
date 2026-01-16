@@ -3,42 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN - MoneyFlix</title>
+    <title>ADMIN (GOD MODE)</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-panel { max-width: 600px; margin: 20px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; }
-        .control-group { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
-        input[type="text"] { width: 70%; padding: 10px; background: #333; color: white; border: none; }
-        .manipulate-btn { background: #444; font-size: 0.8rem; padding: 5px 10px; }
+        .section { margin-bottom: 30px; border-top: 1px solid #333; padding-top: 20px; }
+        h3 { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
+        input[type="text"] { width: 60%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     </style>
 </head>
 <body>
     <div class="admin-panel">
         <h1>Painel de Controlo</h1>
         
-        <div class="control-group">
-            <h3>Estado: <span id="status-display">PAUSADO</span></h3>
-            <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR / PAUSAR</button>
-            <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ REINICIAR TUDO</button>
-        </div>
-
-       <div class="control-group">
-            <h3>Guião do Evento (Notícias)</h3>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn hold" onclick="sendCustomNews('Bem-vindos! O Mercado abriu a 10€')">1. Abertura</button>
-                <button class="btn buy" onclick="sendCustomNews('BREAKING: Empresa descobre nova tecnologia!')">2. Notícia Boa (Sobe)</button>
-                <button class="btn sell" onclick="sendCustomNews('URGENTE: Escândalo financeiro descoberto!')">3. Notícia Má (Desce)</button>
-                
-                <input type="text" id="news-input" placeholder="Outra notícia manual..." style="margin-top:10px;">
-                <button class="btn hold" style="width: 100%;" onclick="sendNews()">Enviar Manual</button>
+        <div class="section">
+            <h1 id="status-display" style="color: yellow;">PAUSADO</h1>
+            <div class="grid-2">
+                <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR</button>
+                <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ RESET TOTAL</button>
             </div>
         </div>
 
-        <div class="control-group">
-            <h3>Manipulação de Emergência</h3>
-            <p>Se o mercado estiver muito parado, empurra o preço:</p>
-            <button class="btn manipulate-btn" onclick="manipulate(5)">🚀 Pump (+5€)</button>
-            <button class="btn manipulate-btn" onclick="manipulate(-5)">💥 Crash (-5€)</button>
+        <div class="section">
+            <h3 style="color: #00ff88;">NOTÍCIAS REAIS (Mudam o Valor)</h3>
+            <p style="font-size: 0.8rem; color: #aaa;">Estas notícias alteram o "imã" do preço.</p>
+            
+            <button class="btn buy" onclick="sendNews('LUCROS RECORDE: Valor da empresa sobe!', 10)">
+                💰 Resultados Bons (+10€)
+            </button>
+            <br><br>
+            <button class="btn sell" onclick="sendNews('FRAUDE DETETADA: Valor da empresa cai!', -10)">
+                📉 Escândalo (-10€)
+            </button>
+        </div>
+
+        <div class="section">
+            <h3 style="color: #ffaa00;">RUMORES (Só Barulho)</h3>
+            <p style="font-size: 0.8rem; color: #aaa;">Gera hype, mas o preço acaba por voltar ao normal.</p>
+            
+            <button class="btn hold" onclick="sendNews('RUMOR: CEO visto a almoçar com a Google...', 0)">
+                👀 Rumor de Venda (Sem valor)
+            </button>
+            <br><br>
+            <button class="btn hold" onclick="sendNews('FAKE NEWS: Ataque de hackers (Desmentido)', 0)">
+                🤖 Fake News (Sem valor)
+            </button>
+        </div>
+
+        <div class="section">
+            <h3>Manual</h3>
+            <input type="text" id="news-input" placeholder="Escreve aqui...">
+            <button class="btn hold" style="width: 30%;" onclick="sendManual()">Enviar</button>
         </div>
     </div>
 
@@ -50,22 +66,24 @@
             socket.emit('admin-action', { command: cmd });
         }
 
-        function sendNews() {
-            const text = document.getElementById('news-input').value;
-            socket.emit('admin-action', { command: 'NEWS', payload: text });
+        // Envia notícia E impacto no valor real
+        function sendNews(text, impactValue) {
+            socket.emit('admin-action', { 
+                command: 'NEWS_UPDATE', 
+                text: text, 
+                impact: impactValue // Se for 0, é só rumor. Se for 10, o valor real sobe.
+            });
+            alert("Enviado: " + text);
         }
 
-        function sendCustomNews(text) {
-            document.getElementById('news-input').value = text;
-            sendNews();
-        }
-        
-        function manipulate(val) {
-            socket.emit('admin-action', { command: 'MANIPULATE', payload: val });
+        function sendManual() {
+            const text = document.getElementById('news-input').value;
+            sendNews(text, 0); // Manual assume impacto 0 por defeito
         }
 
         socket.on('market-update', (data) => {
-            document.getElementById('status-display').innerText = data.isPaused ? "PAUSADO" : "A DECORRER";
+            document.getElementById('status-display').innerText = data.isPaused ? "PAUSADO" : "AO VIVO 🔴";
+            document.getElementById('status-display').style.color = data.isPaused ? "yellow" : "#00ff88";
         });
     </script>
 </body>
