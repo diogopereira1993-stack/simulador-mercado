@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - MoneyFlix</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body">
+    <div class="top-bar">
+        <div class="logo">MONEYFLIX <span style="color:red">LIVE</span></div>
+        <div id="news-container" class="breaking-news">MERCADO FECHADO</div>
+    </div>
+
+    <div class="main-content">
+        <div class="price-container">
+            <h2>LUSITANA TECH (LUSI)</h2>
+            <div id="big-price" class="mega-price">100.00€</div>
+            <div id="trend-indicator" class="trend">0.00%</div>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="marketChart"></canvas>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const ctx = document.getElementById('marketChart').getContext('2d');
+        const bigPrice = document.getElementById('big-price');
+        const newsContainer = document.getElementById('news-container');
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Preço da Ação',
+                    data: [],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: { display: true, grid: { color: '#333'} },
+                    y: { display: true, grid: { color: '#333'} }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        socket.on('market-update', (data) => {
+            bigPrice.innerText = data.price + "€";
+            newsContainer.innerText = data.news;
+
+            const lastPrice = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1] || 100;
+            if (data.price > lastPrice) bigPrice.style.color = "#00ff88";
+            else if (data.price < lastPrice) bigPrice.style.color = "#ff0055";
+
+            const labels = data.history.map(h => h.time);
+            const prices = data.history.map(h => h.price);
+            
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = prices;
+            chart.update();
+        });
+    </script>
+</body>
+</html>
