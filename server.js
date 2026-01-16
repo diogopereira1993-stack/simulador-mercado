@@ -16,15 +16,22 @@ let gameState = {
     gravity: 0.005,
     isPaused: true,
     currentNews: "MERCADO FECHADO - Aguarde o IPO",
+    
+    // Contadores Instantâneos (Para o cálculo do preço)
     buyCount: 0,
     sellCount: 0,
-    totalVotesEver: 0
+    
+    // ESTATÍSTICAS GLOBAIS (Para o Admin)
+    totalVotesEver: 0,
+    totalBuys: 0,
+    totalSells: 0,
+    totalHolds: 0
 };
 
-// HISTÓRICOS
-let liveHistory = []; // Janela curta (Direto)
-let fullHistory = []; // Viagem completa (Final)
-let eventLog = [];    // As "Bolinhas" (Eventos marcados)
+// Históricos
+let liveHistory = []; 
+let fullHistory = []; 
+let eventLog = [];    
 
 setInterval(() => {
     if (!gameState.isPaused) {
@@ -35,20 +42,20 @@ setInterval(() => {
         let correction = gap * gameState.gravity;
 
         gameState.price = gameState.price + voteEffect + correction;
-        gameState.price += (Math.random() - 0.5) * 0.05; // Ruído
+        gameState.price += (Math.random() - 0.5) * 0.05; 
 
         if (gameState.price < 0.01) gameState.price = 0.01;
 
-        // Gestão de Tempo e Histórico
+        // Gestão de Histórico
         const now = new Date();
         const timeLabel = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
-        
         const dataPoint = { time: timeLabel, price: gameState.price };
 
         fullHistory.push(dataPoint);
         liveHistory.push(dataPoint);
-        if (liveHistory.length > 150) liveHistory.shift(); // Janela deslizante
+        if (liveHistory.length > 150) liveHistory.shift();
 
+        // Resetar apenas os contadores do tick (instantâneos)
         gameState.buyCount = 0;
         gameState.sellCount = 0;
     }
@@ -59,13 +66,20 @@ setInterval(() => {
         news: gameState.currentNews,
         isPaused: gameState.isPaused,
         online: io.engine.clientsCount,
+        // Enviar estatísticas detalhadas
         totalVotes: gameState.totalVotesEver,
+        stats: {
+            buys: gameState.totalBuys,
+            sells: gameState.totalSells,
+            holds: gameState.totalHolds
+        },
         mode: 'LIVE'
     });
 
 }, 2000);
 
 io.on('connection', (socket) => {
+    // Enviar estado inicial
     socket.emit('market-update', {
         price: gameState.price.toFixed(2),
         history: liveHistory,
@@ -73,14 +87,31 @@ io.on('connection', (socket) => {
         isPaused: gameState.isPaused,
         online: io.engine.clientsCount,
         totalVotes: gameState.totalVotesEver,
+        stats: {
+            buys: gameState.totalBuys,
+            sells: gameState.totalSells,
+            holds: gameState.totalHolds
+        },
         mode: 'LIVE'
     });
 
     socket.on('vote', (action) => {
         if (gameState.isPaused) return;
+        
         gameState.totalVotesEver++;
-        if (action === 'BUY') gameState.buyCount++;
-        if (action === 'SELL') gameState.sellCount++;
+        
+        // Atualizar estatísticas globais
+        if (action === 'BUY') {
+            gameState.buyCount++;   // Para o preço
+            gameState.totalBuys++;  // Para a estatística
+        }
+        if (action === 'SELL') {
+            gameState.sellCount++;
+            gameState.totalSells++;
+        }
+        if (action === 'HOLD') {
+            gameState.totalHolds++;
+        }
     });
 
     socket.on('admin-action', (data) => {
@@ -93,15 +124,14 @@ io.on('connection', (socket) => {
             gameState.currentNews = data.text;
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             
-            // --- AQUI ESTÁ A MUDANÇA: REGISTAR O EVENTO COM PREÇO ---
             const now = new Date();
             const timeLabel = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
             
             eventLog.push({ 
                 time: timeLabel, 
-                price: gameState.price, // Guardamos o preço exato do momento
-                text: data.text,        // O texto da notícia
-                impact: data.impact     // Para sabermos a cor (positivo/negativo)
+                price: gameState.price,
+                text: data.text,
+                impact: data.impact
             });
         }
 
@@ -110,27 +140,27 @@ io.on('connection', (socket) => {
             gameState.intrinsicValue = 50.00;
             gameState.buyCount = 0;
             gameState.sellCount = 0;
+            // Resetar estatísticas globais
             gameState.totalVotesEver = 0;
+            gameState.totalBuys = 0;
+            gameState.totalSells = 0;
+            gameState.totalHolds = 0;
+            
             liveHistory = [];
             fullHistory = [];
-            eventLog = []; // Limpa as bolinhas
+            eventLog = [];
             gameState.currentNews = "IPO LANÇADO - VALOR REAL: 50€";
             gameState.isPaused = true;
         }
 
-        // COMANDO FINAL
         if (data.command === 'SHOW_FINAL_CHART') {
             gameState.isPaused = true;
             gameState.currentNews = "SESSÃO ENCERRADA";
-            
-            // Envia TUDO (Histórico + Eventos)
-            io.emit('market-finish', {
-                fullHistory: fullHistory,
-                events: eventLog
-            });
+            io.emit('market-finish', { fullHistory: fullHistory, events: eventLog });
             return;
         }
         
+        // Forçar update
         io.emit('market-update', {
             price: gameState.price.toFixed(2),
             history: liveHistory,
@@ -138,6 +168,11 @@ io.on('connection', (socket) => {
             isPaused: gameState.isPaused,
             online: io.engine.clientsCount,
             totalVotes: gameState.totalVotesEver,
+            stats: {
+                buys: gameState.totalBuys,
+                sells: gameState.totalSells,
+                holds: gameState.totalHolds
+            },
             mode: 'LIVE'
         });
     });
