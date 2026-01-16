@@ -2,75 +2,202 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - MoneyFlix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MERCADO AO VIVO - Ecrã Gigante</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="dashboard-body">
-    <div class="top-bar">
-        <div class="logo">MONEYFLIX <span style="color:red">LIVE</span></div>
-        <div id="news-container" class="breaking-news">MERCADO FECHADO</div>
-    </div>
+    <style>
+        body { 
+            overflow: hidden; /* Remove barras de scroll no projetor */
+            background-color: #0a0e17;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-    <div class="main-content">
-        <div class="price-container">
-            <h2>LUSITANA TECH (LUSI)</h2>
-            <div id="big-price" class="mega-price">100.00€</div>
-            <div id="trend-indicator" class="trend">0.00%</div>
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .company-name { font-size: 3rem; font-weight: 900; letter-spacing: 5px; }
+        
+        /* O Preço Gigante */
+        .big-ticker {
+            font-size: 6rem; 
+            font-weight: bold; 
+            font-family: 'Courier New', monospace;
+            color: white;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        /* Área do Gráfico */
+        .chart-container {
+            flex-grow: 1;
+            position: relative;
+            background: rgba(255,255,255,0.02);
+            border-radius: 15px;
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        /* Barra de Notícias no Fundo */
+        .news-footer {
+            margin-top: 20px;
+            background: #161b22;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #00ff88;
+            font-size: 1.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .news-label {
+            background: #00ff88;
+            color: black;
+            padding: 5px 10px;
+            font-weight: bold;
+            margin-right: 15px;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Animações de cor para o preço */
+        .flash-green { animation: flashG 0.5s; color: #00ff88; }
+        .flash-red { animation: flashR 0.5s; color: #ff4444; }
+        @keyframes flashG { 0% { text-shadow: 0 0 50px #00ff88; transform: scale(1.1); } }
+        @keyframes flashR { 0% { text-shadow: 0 0 50px #ff4444; transform: scale(1.1); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="top-bar">
+            <div class="company-name">LUSI</div>
+            <div id="status-indicator" style="color: yellow; font-weight: bold;">AGUARDANDO...</div>
+            <div id="dashboard-price" class="big-ticker">--- €</div>
         </div>
 
-        <div class="chart-wrapper">
+        <div class="chart-container">
             <canvas id="marketChart"></canvas>
+        </div>
+
+        <div class="news-footer">
+            <span class="news-label">ÚLTIMA HORA</span>
+            <marquee id="dashboard-news" scrollamount="10">Bem-vindo ao evento. O mercado abre em breve.</marquee>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        const priceEl = document.getElementById('dashboard-price');
+        const newsEl = document.getElementById('dashboard-news');
+        const statusEl = document.getElementById('status-indicator');
+        
+        // --- Configuração do Gráfico (Chart.js) ---
         const ctx = document.getElementById('marketChart').getContext('2d');
-        const bigPrice = document.getElementById('big-price');
-        const newsContainer = document.getElementById('news-container');
+        
+        // Gradiente bonito para o gráfico
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 255, 136, 0.5)'); // Verde topo
+        gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');   // Transparente fundo
 
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: 'Preço da Ação',
+                    label: 'Valor da Ação (€)',
                     data: [],
                     borderColor: '#00ff88',
-                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                    borderWidth: 4,
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    pointRadius: 0,       // Sem pontos para ser mais fluido
+                    pointHoverRadius: 0,
                     fill: true,
-                    tension: 0.4,
-                    pointRadius: 0
+                    tension: 0.4          // Curvas suaves
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
+                animation: false, // Desligar animação interna para performance
                 scales: {
-                    x: { display: true, grid: { color: '#333'} },
-                    y: { display: true, grid: { color: '#333'} }
+                    x: { display: false }, // Esconde datas em baixo (limpo)
+                    y: { 
+                        position: 'right', // Preços à direita
+                        grid: { color: '#333' },
+                        ticks: { color: '#888' }
+                    }
                 },
-                plugins: { legend: { display: false } }
+                plugins: { legend: { display: false } } // Esconde legenda
             }
         });
 
+        // --- Lógica de Atualização ---
+        let lastPrice = 0;
+
         socket.on('market-update', (data) => {
-            bigPrice.innerText = data.price + "€";
-            newsContainer.innerText = data.news;
+            const currentPrice = parseFloat(data.price);
+            
+            // 1. Atualizar Texto Preço
+            priceEl.innerText = data.price + "€";
 
-            const lastPrice = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1] || 100;
-            if (data.price > lastPrice) bigPrice.style.color = "#00ff88";
-            else if (data.price < lastPrice) bigPrice.style.color = "#ff0055";
+            // 2. Piscar cor (Verde ou Vermelho)
+            if (currentPrice > lastPrice) {
+                priceEl.classList.remove('flash-red');
+                priceEl.classList.add('flash-green');
+                chart.data.datasets[0].borderColor = '#00ff88'; // Linha Verde
+            } else if (currentPrice < lastPrice) {
+                priceEl.classList.remove('flash-green');
+                priceEl.classList.add('flash-red');
+                chart.data.datasets[0].borderColor = '#ff4444'; // Linha Vermelha
+            }
+            // Remove o flash passados 800ms
+            setTimeout(() => priceEl.classList.remove('flash-green', 'flash-red'), 800);
 
+            lastPrice = currentPrice;
+
+            // 3. Atualizar Notícias e Estado
+            if (newsEl.innerText !== data.news) {
+                newsEl.innerText = data.news;
+            }
+            
+            if (data.isPaused) {
+                statusEl.innerText = "MERCADO FECHADO";
+                statusEl.style.color = "yellow";
+            } else {
+                statusEl.innerText = "● AO VIVO";
+                statusEl.style.color = "#ff4444"; // Bola vermelha de Live
+            }
+
+            // 4. Atualizar Gráfico
+            // Recebemos o histórico completo do servidor
             const labels = data.history.map(h => h.time);
             const prices = data.history.map(h => h.price);
-            
+
             chart.data.labels = labels;
             chart.data.datasets[0].data = prices;
+            
+            // Ajustar escala Y automaticamente para focar na ação
+            // Se o preço for 50, mostra entre 40 e 60, por exemplo
+            // chart.options.scales.y.min = Math.min(...prices) - 5;
+            // chart.options.scales.y.max = Math.max(...prices) + 5;
+            
             chart.update();
         });
     </script>
