@@ -10,14 +10,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- ESTADO DO JOGO ---
 let gameState = {
-    price: 50.00,          // O Preço que as pessoas veem
-    intrinsicValue: 50.00, // O VALOR REAL (Invisível/Fundamentos)
-    volatility: 0.05,      // Sensibilidade aos votos
-    gravity: 0.03,         // Força que puxa o preço para o valor real (3% por tick)
+    price: 50.00,           // Começa nos 50€
+    intrinsicValue: 50.00,  // Valor Real
+    volatility: 0.05,       // Força do clique (5 cêntimos por voto)
+    gravity: 0.005,         // <--- ALTERADO: Força da Gravidade MUITO MAIS SUAVE (0.5%)
     isPaused: true,
     currentNews: "MERCADO FECHADO - Aguarde o IPO",
     buyCount: 0,
-    sellCount: 0
+    sellCount: 0,
+    totalVotesEver: 0       // Mantém o contador de estatísticas
 };
 
 let priceHistory = [];
@@ -25,55 +26,63 @@ let priceHistory = [];
 setInterval(() => {
     if (!gameState.isPaused) {
         // 1. Força dos Votos (Especulação)
-        // Se houver muitos votos, empurra o preço
         let netPressure = gameState.buyCount - gameState.sellCount;
         let voteEffect = netPressure * gameState.volatility;
         
-        // 2. Força da Realidade (Gravidade)
-        // Se o preço estiver longe do Valor Real, é puxado de volta
+        // 2. Força da Realidade (Gravidade Suave)
+        // Puxa o preço para o valor real muito devagarinho
         let gap = gameState.intrinsicValue - gameState.price;
         let correction = gap * gameState.gravity;
 
         // 3. Atualizar Preço Final
-        // O preço move-se pelos votos, mas é corrigido pela realidade
         gameState.price = gameState.price + voteEffect + correction;
         
-        // Pequeno ruído aleatório para dar vida
+        // Pequeno ruído para o gráfico parecer vivo
         gameState.price += (Math.random() - 0.5) * 0.05;
 
-        // Limites de segurança
+        // Limites de segurança (nunca chega a zero)
         if (gameState.price < 0.01) gameState.price = 0.01;
 
-        // Histórico
+        // Histórico para o gráfico
         const now = new Date();
         const timeLabel = now.getHours() + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
         
         priceHistory.push({ time: timeLabel, price: gameState.price });
         if (priceHistory.length > 50) priceHistory.shift();
 
-        // Resetar contadores de cliques
+        // Resetar contadores do tick (mas MANTÉM o totalVotesEver)
         gameState.buyCount = 0;
         gameState.sellCount = 0;
-
-        io.emit('market-update', {
-            price: gameState.price.toFixed(2),
-            history: priceHistory,
-            news: gameState.currentNews,
-            isPaused: gameState.isPaused
-        });
     }
+
+    // Enviar dados a TODOS (Incluindo contadores para o Admin)
+    io.emit('market-update', {
+        price: gameState.price.toFixed(2),
+        history: priceHistory,
+        news: gameState.currentNews,
+        isPaused: gameState.isPaused,
+        online: io.engine.clientsCount,    // Mantém contagem de pessoas online
+        totalVotes: gameState.totalVotesEver // Mantém total de votos
+    });
+
 }, 500);
 
 io.on('connection', (socket) => {
+    // Enviar estado inicial quando alguém entra
     socket.emit('market-update', {
         price: gameState.price.toFixed(2),
         history: priceHistory,
         news: gameState.currentNews,
-        isPaused: gameState.isPaused
+        isPaused: gameState.isPaused,
+        online: io.engine.clientsCount,
+        totalVotes: gameState.totalVotesEver
     });
 
     socket.on('vote', (action) => {
         if (gameState.isPaused) return;
+        
+        gameState.totalVotesEver++; // Incrementa estatística global
+        
         if (action === 'BUY') gameState.buyCount++;
         if (action === 'SELL') gameState.sellCount++;
     });
@@ -83,10 +92,10 @@ io.on('connection', (socket) => {
             gameState.isPaused = !gameState.isPaused;
             gameState.currentNews = gameState.isPaused ? "MERCADO PAUSADO" : "MERCADO ABERTO";
         }
-        // Notícias com impacto no Valor Real
+        // Notícias que alteram o Valor Real (Fundamentos)
         if (data.command === 'NEWS_UPDATE') {
             gameState.currentNews = data.text;
-            // Se a notícia tiver impacto real, mudamos o intrinsicValue
+            // Se tiver impacto, muda o íman (intrinsicValue)
             if (data.impact !== 0) {
                 gameState.intrinsicValue += data.impact;
             }
@@ -96,16 +105,20 @@ io.on('connection', (socket) => {
             gameState.intrinsicValue = 50.00;
             gameState.buyCount = 0;
             gameState.sellCount = 0;
+            gameState.totalVotesEver = 0; // Zera as estatísticas no Reset
             priceHistory = [];
             gameState.currentNews = "IPO LANÇADO - VALOR REAL: 50€";
             gameState.isPaused = true;
         }
         
+        // Atualiza toda a gente imediatamente
         io.emit('market-update', {
             price: gameState.price.toFixed(2),
             history: priceHistory,
             news: gameState.currentNews,
-            isPaused: gameState.isPaused
+            isPaused: gameState.isPaused,
+            online: io.engine.clientsCount,
+            totalVotes: gameState.totalVotesEver
         });
     });
 });
