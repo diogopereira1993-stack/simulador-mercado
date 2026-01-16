@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- ESTILO GERAL (Sóbrio e Profissional) --- */
+        /* --- ESTILO GERAL (MANTIDO IGUAL) --- */
         body { 
             background-color: #0a0e17; 
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; /* Sem barras de scroll */
+            overflow: hidden;
             margin: 0;
             padding: 20px;
             height: 100vh;
@@ -21,66 +21,23 @@
             box-sizing: border-box;
         }
 
-        /* Cabeçalho */
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            height: 15%; /* Altura fixa para o topo */
-        }
-
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; height: 15%; }
         .brand-name { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; color: #888; }
-        
-        /* Preço Gigante */
-        .big-price-display {
-            font-size: 6rem; /* Tamanho XL para projetor */
-            font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            color: white;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-
-        /* Cores de Variação */
-        .price-up { color: #00ff88; }
+        .big-price-display { font-size: 6rem; font-weight: 700; font-variant-numeric: tabular-nums; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .price-up { color: #00ff88; } 
         .price-down { color: #ff4444; }
 
-        /* Área do Gráfico */
         .chart-wrapper {
-            flex-grow: 1; /* Ocupa todo o espaço disponível */
-            position: relative;
-            width: 100%;
-            background: rgba(255,255,255,0.02);
-            border-radius: 8px;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #222;
+            flex-grow: 1; position: relative; width: 100%;
+            background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px;
+            box-sizing: border-box; border: 1px solid #222;
         }
 
-        /* Estado (Live / Fechado) */
-        .status-badge {
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 5px 15px;
-            border-radius: 4px;
-            background: #222;
-            color: #666;
-            margin-top: 5px;
-            display: inline-block;
-        }
-
-        /* Rodapé de Notícias */
+        .status-badge { font-size: 1.2rem; font-weight: bold; padding: 5px 15px; border-radius: 4px; background: #222; color: #666; margin-top: 5px; display: inline-block; }
+        
         .news-footer {
-            height: 10%;
-            margin-top: 20px;
-            background: #111;
-            padding: 0 15px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            border-left: 4px solid #444;
+            height: 10%; margin-top: 20px; background: #111; padding: 0 15px;
+            border-radius: 5px; display: flex; align-items: center; border-left: 4px solid #444;
         }
     </style>
 </head>
@@ -109,152 +66,172 @@
         const priceEl = document.getElementById('main-price');
         const statusEl = document.getElementById('status-display');
         const newsEl = document.getElementById('news-marquee');
-
-        // --- CONFIGURAÇÃO ROBUSTA DO GRÁFICO ---
         const ctx = document.getElementById('marketChart').getContext('2d');
         
-        const marketChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    // DATASET 0: A LINHA DO PREÇO (Principal)
-                    {
+        let marketChart; // Variável para controlar o gráfico
+
+        // FUNÇÃO: INICIAR GRÁFICO (MODO LIVE)
+        // Esta função cria o gráfico normal que vês durante o jogo
+        function initLiveChart() {
+            if (marketChart) marketChart.destroy();
+
+            marketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
                         label: 'Preço (€)',
                         data: [],
-                        borderColor: '#ffffff',     // Branco clássico
+                        borderColor: '#ffffff',
                         borderWidth: 3,
                         backgroundColor: 'rgba(255, 255, 255, 0.05)',
                         fill: true,
-                        pointRadius: 0,             // Sem pontos no modo normal
-                        tension: 0.3,               // Curva suave
-                        order: 2                    // Fica atrás das bolinhas
-                    },
-                    // DATASET 1: EVENTOS (As Bolinhas Coloridas do Final)
-                    {
-                        label: 'Notícias',
-                        data: [],                   // Começa vazio
-                        type: 'scatter',            // Tipo Dispersão
-                        pointRadius: 12,            // BOLAS GRANDES
-                        pointHoverRadius: 15,
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        backgroundColor: [],        // Cores dinâmicas
-                        order: 1                    // Fica à frente da linha
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false, // Performance máxima
-                scales: {
-                    x: {
-                        display: true,
-                        grid: { color: '#333' },
-                        ticks: { color: '#666', maxTicksLimit: 12, maxRotation: 0 }
-                    },
-                    y: {
-                        position: 'right', // Eixo à direita
-                        grid: { color: '#333' },
-                        ticks: { color: '#888', font: { size: 14 } }
-                    }
+                        pointRadius: 0,
+                        tension: 0.3
+                    }]
                 },
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.9)',
-                        titleFont: { size: 16 },
-                        bodyFont: { size: 14 },
-                        callbacks: {
-                            label: function(context) {
-                                // Se for uma bolinha, mostra a notícia
-                                if (context.dataset.type === 'scatter') {
-                                    return context.raw.newsText;
-                                }
-                                return context.formattedValue + ' €';
-                            }
-                        }
-                    }
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    scales: {
+                        x: { display: true, grid: { color: '#333' }, ticks: { color: '#666', maxTicksLimit: 12 } },
+                        y: { position: 'right', grid: { color: '#333' }, ticks: { color: '#888' } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
-            }
-        });
+            });
+        }
 
+        // Arranca o gráfico vazio logo ao início
+        initLiveChart();
         let lastPrice = 0;
 
-        // --- MODO 1: ATUALIZAÇÃO AO VIVO (Sliding Window) ---
+        // --- MODO 1: LIVE (Igual ao antigo) ---
         socket.on('market-update', (data) => {
             if (data.mode === 'LIVE') {
                 const currentPrice = parseFloat(data.price);
                 priceEl.innerText = data.price + "€";
-
-                // Lógica de Cores (Verde se sobe, Vermelho se desce)
-                if (currentPrice > lastPrice) {
-                    priceEl.className = "big-price-display price-up";
-                    marketChart.data.datasets[0].borderColor = '#00ff88';
-                } else if (currentPrice < lastPrice) {
-                    priceEl.className = "big-price-display price-down";
-                    marketChart.data.datasets[0].borderColor = '#ff4444';
-                } else {
-                    priceEl.className = "big-price-display";
+                
+                // Cores do preço
+                if (currentPrice > lastPrice) { 
+                    priceEl.className = "big-price-display price-up"; 
+                    if(marketChart) marketChart.data.datasets[0].borderColor = '#00ff88'; 
+                } else if (currentPrice < lastPrice) { 
+                    priceEl.className = "big-price-display price-down"; 
+                    if(marketChart) marketChart.data.datasets[0].borderColor = '#ff4444'; 
+                } else { 
+                    priceEl.className = "big-price-display"; 
                 }
                 lastPrice = currentPrice;
 
-                // Atualiza Estado e Notícias
                 statusEl.innerText = data.isPaused ? "MERCADO FECHADO" : "● EM TEMPO REAL";
                 statusEl.style.color = data.isPaused ? "#666" : "#ff4444";
-                statusEl.style.border = data.isPaused ? "1px solid #333" : "1px solid #ff4444";
-                
                 if (newsEl.innerText !== data.news) newsEl.innerText = data.news;
 
-                // Atualizar Gráfico (Janela Deslizante)
-                marketChart.data.labels = data.history.map(h => h.time);
-                marketChart.data.datasets[0].data = data.history.map(h => h.price);
-                
-                // Garante que as bolinhas estão escondidas no direto
-                marketChart.data.datasets[1].data = [];
-                
-                marketChart.update();
+                // Atualiza os dados do gráfico existente
+                if (marketChart) {
+                    marketChart.data.labels = data.history.map(h => h.time);
+                    marketChart.data.datasets[0].data = data.history.map(h => h.price);
+                    marketChart.update();
+                }
             }
         });
 
-        // --- MODO 2: CONCLUSÃO (GRÁFICO TOTAL + BOLINHAS) ---
+        // --- MODO 2: FINAL (AQUI ESTÁ A CORREÇÃO "NUCLEAR") ---
         socket.on('market-finish', (data) => {
-            console.log("Modo Final Ativado. Pontos:", data.fullHistory.length);
+            console.log("Recebendo dados finais...", data);
             
+            // 1. Atualizar textos
             statusEl.innerText = "ANÁLISE FINAL";
             statusEl.style.color = "#9d00ff";
             statusEl.style.border = "1px solid #9d00ff";
             newsEl.innerText = "SESSÃO TERMINADA - HISTÓRICO COMPLETO";
 
-            // 1. Desenhar a Linha Completa (0 a 40 mins)
-            marketChart.data.labels = data.fullHistory.map(h => h.time);
-            marketChart.data.datasets[0].data = data.fullHistory.map(h => h.price);
-            marketChart.data.datasets[0].borderColor = '#ffffff'; // Linha Branca Neutra
+            // 2. DESTRUIR O GRÁFICO ANTIGO (O segredo para funcionar!)
+            if (marketChart) marketChart.destroy();
 
-            // 2. Criar os Pontos das Notícias (Scatter)
+            // 3. Preparar as bolas
+            const fullLabels = data.fullHistory.map(h => h.time);
+            
+            // Mapeia eventos para coordenadas X/Y
             const eventPoints = data.events.map(evt => {
                 return {
-                    x: evt.time,
+                    x: evt.time, 
                     y: evt.price,
                     newsText: evt.text
                 };
             });
 
-            // 3. Definir cores das bolinhas
+            // Define cores das bolas
             const pointColors = data.events.map(evt => {
-                if (evt.impact > 0) return '#00ff88'; // Verde (Bom)
-                if (evt.impact < 0) return '#ff4444'; // Vermelho (Mau)
-                return '#ffd700';                     // Amarelo (Neutro)
+                if (evt.impact > 0) return '#00ff88'; // Verde
+                if (evt.impact < 0) return '#ff4444'; // Vermelho
+                return '#ffd700'; // Amarelo
             });
 
-            marketChart.data.datasets[1].data = eventPoints;
-            marketChart.data.datasets[1].backgroundColor = pointColors;
-
-            // Resetar Zoom para ver tudo
-            marketChart.options.scales.x.ticks.maxTicksLimit = 20; 
-            
-            marketChart.update();
+            // 4. CRIAR NOVO GRÁFICO ESTÁTICO (Com o mesmo estilo do antigo)
+            marketChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: fullLabels, // Usa TODOS os dados
+                    datasets: [
+                        {
+                            label: 'Preço (€)',
+                            data: data.fullHistory.map(h => h.price),
+                            borderColor: '#ffffff', // Branco neutro
+                            borderWidth: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            fill: true,
+                            pointRadius: 0,
+                            tension: 0.3,
+                            order: 2
+                        },
+                        {
+                            label: 'Eventos',
+                            type: 'scatter', // Bolas
+                            data: eventPoints,
+                            pointRadius: 15,       // Bolas Grandes
+                            pointHoverRadius: 20,
+                            backgroundColor: pointColors,
+                            borderColor: 'white',
+                            borderWidth: 2,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 2000, easing: 'easeOutQuart' }, // Animação suave
+                    scales: {
+                        x: { 
+                            display: true, 
+                            grid: { color: '#333' }, 
+                            ticks: { 
+                                color: '#888', 
+                                maxTicksLimit: 20, // Mostra mais horas
+                                autoSkip: true 
+                            } 
+                        },
+                        y: { position: 'right', grid: { color: '#333' }, ticks: { color: '#888' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            titleFont: { size: 16 },
+                            bodyFont: { size: 14 },
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.dataset.type === 'scatter') {
+                                        return context.raw.newsText;
+                                    }
+                                    return context.formattedValue + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>
