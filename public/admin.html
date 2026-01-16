@@ -191,7 +191,13 @@
             statusEl.style.color = data.isPaused ? "yellow" : "#00ff88";
             
             document.getElementById('online-count').innerText = data.online;
-            document.getElementById('total-votes').innerText = data.totalVotes;
+            
+            // Novos contadores detalhados
+            if(data.stats) {
+                document.getElementById('count-buy').innerText = data.stats.buys;
+                document.getElementById('count-sell').innerText = data.stats.sells;
+                document.getElementById('count-hold').innerText = data.stats.holds;
+            }
         });
     </script>
 </body>
