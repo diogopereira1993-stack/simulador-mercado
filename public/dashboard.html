@@ -3,202 +3,258 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MERCADO AO VIVO - Ecrã Gigante</title>
+    <title>Dashboard - MoneyFlix</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* --- ESTILO GERAL (Sóbrio e Profissional) --- */
         body { 
-            overflow: hidden; /* Remove barras de scroll no projetor */
-            background-color: #0a0e17;
-        }
-        
-        .dashboard-container {
+            background-color: #0a0e17; 
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden; /* Sem barras de scroll */
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            padding: 20px;
             box-sizing: border-box;
         }
 
-        .top-bar {
+        /* Cabeçalho */
+        .header-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            height: 15%; /* Altura fixa para o topo */
         }
 
-        .company-name { font-size: 3rem; font-weight: 900; letter-spacing: 5px; }
+        .brand-name { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; color: #888; }
         
-        /* O Preço Gigante */
-        .big-ticker {
-            font-size: 6rem; 
-            font-weight: bold; 
-            font-family: 'Courier New', monospace;
+        /* Preço Gigante */
+        .big-price-display {
+            font-size: 6rem; /* Tamanho XL para projetor */
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
             color: white;
-            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
+
+        /* Cores de Variação */
+        .price-up { color: #00ff88; }
+        .price-down { color: #ff4444; }
 
         /* Área do Gráfico */
-        .chart-container {
-            flex-grow: 1;
+        .chart-wrapper {
+            flex-grow: 1; /* Ocupa todo o espaço disponível */
             position: relative;
+            width: 100%;
             background: rgba(255,255,255,0.02);
-            border-radius: 15px;
-            border: 1px solid #333;
+            border-radius: 8px;
             padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #222;
         }
 
-        /* Barra de Notícias no Fundo */
+        /* Estado (Live / Fechado) */
+        .status-badge {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 4px;
+            background: #222;
+            color: #666;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        /* Rodapé de Notícias */
         .news-footer {
+            height: 10%;
             margin-top: 20px;
-            background: #161b22;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 5px solid #00ff88;
-            font-size: 1.5rem;
-            white-space: nowrap;
-            overflow: hidden;
+            background: #111;
+            padding: 0 15px;
+            border-radius: 5px;
             display: flex;
             align-items: center;
+            border-left: 4px solid #444;
         }
-
-        .news-label {
-            background: #00ff88;
-            color: black;
-            padding: 5px 10px;
-            font-weight: bold;
-            margin-right: 15px;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        /* Animações de cor para o preço */
-        .flash-green { animation: flashG 0.5s; color: #00ff88; }
-        .flash-red { animation: flashR 0.5s; color: #ff4444; }
-        @keyframes flashG { 0% { text-shadow: 0 0 50px #00ff88; transform: scale(1.1); } }
-        @keyframes flashR { 0% { text-shadow: 0 0 50px #ff4444; transform: scale(1.1); } }
-
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <div class="top-bar">
-            <div class="company-name">LUSI</div>
-            <div id="status-indicator" style="color: yellow; font-weight: bold;">AGUARDANDO...</div>
-            <div id="dashboard-price" class="big-ticker">--- €</div>
+    <div class="header-row">
+        <div style="display: flex; flex-direction: column;">
+            <div class="brand-name">LUSI</div>
+            <div id="status-display" class="status-badge">AGUARDANDO...</div>
         </div>
+        <div id="main-price" class="big-price-display">--- €</div>
+    </div>
 
-        <div class="chart-container">
-            <canvas id="marketChart"></canvas>
-        </div>
+    <div class="chart-wrapper">
+        <canvas id="marketChart"></canvas>
+    </div>
 
-        <div class="news-footer">
-            <span class="news-label">ÚLTIMA HORA</span>
-            <marquee id="dashboard-news" scrollamount="10">Bem-vindo ao evento. O mercado abre em breve.</marquee>
-        </div>
+    <div class="news-footer">
+        <span style="background: #333; color: white; padding: 5px 10px; font-weight: bold; font-size: 0.8rem; margin-right: 15px;">NOTÍCIAS</span>
+        <marquee id="news-marquee" style="font-size: 1.8rem; color: #ddd; font-weight: 300;">Bem-vindo ao Mercado.</marquee>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        const priceEl = document.getElementById('dashboard-price');
-        const newsEl = document.getElementById('dashboard-news');
-        const statusEl = document.getElementById('status-indicator');
-        
-        // --- Configuração do Gráfico (Chart.js) ---
+        const priceEl = document.getElementById('main-price');
+        const statusEl = document.getElementById('status-display');
+        const newsEl = document.getElementById('news-marquee');
+
+        // --- CONFIGURAÇÃO ROBUSTA DO GRÁFICO ---
         const ctx = document.getElementById('marketChart').getContext('2d');
         
-        // Gradiente bonito para o gráfico
-        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(0, 255, 136, 0.5)'); // Verde topo
-        gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');   // Transparente fundo
-
-        const chart = new Chart(ctx, {
+        const marketChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
-                datasets: [{
-                    label: 'Valor da Ação (€)',
-                    data: [],
-                    borderColor: '#00ff88',
-                    backgroundColor: gradient,
-                    borderWidth: 3,
-                    pointRadius: 0,       // Sem pontos para ser mais fluido
-                    pointHoverRadius: 0,
-                    fill: true,
-                    tension: 0.4          // Curvas suaves
-                }]
+                datasets: [
+                    // DATASET 0: A LINHA DO PREÇO (Principal)
+                    {
+                        label: 'Preço (€)',
+                        data: [],
+                        borderColor: '#ffffff',     // Branco clássico
+                        borderWidth: 3,
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        fill: true,
+                        pointRadius: 0,             // Sem pontos no modo normal
+                        tension: 0.3,               // Curva suave
+                        order: 2                    // Fica atrás das bolinhas
+                    },
+                    // DATASET 1: EVENTOS (As Bolinhas Coloridas do Final)
+                    {
+                        label: 'Notícias',
+                        data: [],                   // Começa vazio
+                        type: 'scatter',            // Tipo Dispersão
+                        pointRadius: 12,            // BOLAS GRANDES
+                        pointHoverRadius: 15,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        backgroundColor: [],        // Cores dinâmicas
+                        order: 1                    // Fica à frente da linha
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false, // Desligar animação interna para performance
+                animation: false, // Performance máxima
                 scales: {
-                    x: { display: false }, // Esconde datas em baixo (limpo)
-                    y: { 
-                        position: 'right', // Preços à direita
+                    x: {
+                        display: true,
                         grid: { color: '#333' },
-                        ticks: { color: '#888' }
+                        ticks: { color: '#666', maxTicksLimit: 12, maxRotation: 0 }
+                    },
+                    y: {
+                        position: 'right', // Eixo à direita
+                        grid: { color: '#333' },
+                        ticks: { color: '#888', font: { size: 14 } }
                     }
                 },
-                plugins: { legend: { display: false } } // Esconde legenda
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.9)',
+                        titleFont: { size: 16 },
+                        bodyFont: { size: 14 },
+                        callbacks: {
+                            label: function(context) {
+                                // Se for uma bolinha, mostra a notícia
+                                if (context.dataset.type === 'scatter') {
+                                    return context.raw.newsText;
+                                }
+                                return context.formattedValue + ' €';
+                            }
+                        }
+                    }
+                }
             }
         });
 
-        // --- Lógica de Atualização ---
         let lastPrice = 0;
 
+        // --- MODO 1: ATUALIZAÇÃO AO VIVO (Sliding Window) ---
         socket.on('market-update', (data) => {
-            const currentPrice = parseFloat(data.price);
-            
-            // 1. Atualizar Texto Preço
-            priceEl.innerText = data.price + "€";
+            if (data.mode === 'LIVE') {
+                const currentPrice = parseFloat(data.price);
+                priceEl.innerText = data.price + "€";
 
-            // 2. Piscar cor (Verde ou Vermelho)
-            if (currentPrice > lastPrice) {
-                priceEl.classList.remove('flash-red');
-                priceEl.classList.add('flash-green');
-                chart.data.datasets[0].borderColor = '#00ff88'; // Linha Verde
-            } else if (currentPrice < lastPrice) {
-                priceEl.classList.remove('flash-green');
-                priceEl.classList.add('flash-red');
-                chart.data.datasets[0].borderColor = '#ff4444'; // Linha Vermelha
+                // Lógica de Cores (Verde se sobe, Vermelho se desce)
+                if (currentPrice > lastPrice) {
+                    priceEl.className = "big-price-display price-up";
+                    marketChart.data.datasets[0].borderColor = '#00ff88';
+                } else if (currentPrice < lastPrice) {
+                    priceEl.className = "big-price-display price-down";
+                    marketChart.data.datasets[0].borderColor = '#ff4444';
+                } else {
+                    priceEl.className = "big-price-display";
+                }
+                lastPrice = currentPrice;
+
+                // Atualiza Estado e Notícias
+                statusEl.innerText = data.isPaused ? "MERCADO FECHADO" : "● EM TEMPO REAL";
+                statusEl.style.color = data.isPaused ? "#666" : "#ff4444";
+                statusEl.style.border = data.isPaused ? "1px solid #333" : "1px solid #ff4444";
+                
+                if (newsEl.innerText !== data.news) newsEl.innerText = data.news;
+
+                // Atualizar Gráfico (Janela Deslizante)
+                marketChart.data.labels = data.history.map(h => h.time);
+                marketChart.data.datasets[0].data = data.history.map(h => h.price);
+                
+                // Garante que as bolinhas estão escondidas no direto
+                marketChart.data.datasets[1].data = [];
+                
+                marketChart.update();
             }
-            // Remove o flash passados 800ms
-            setTimeout(() => priceEl.classList.remove('flash-green', 'flash-red'), 800);
+        });
 
-            lastPrice = currentPrice;
-
-            // 3. Atualizar Notícias e Estado
-            if (newsEl.innerText !== data.news) {
-                newsEl.innerText = data.news;
-            }
+        // --- MODO 2: CONCLUSÃO (GRÁFICO TOTAL + BOLINHAS) ---
+        socket.on('market-finish', (data) => {
+            console.log("Modo Final Ativado. Pontos:", data.fullHistory.length);
             
-            if (data.isPaused) {
-                statusEl.innerText = "MERCADO FECHADO";
-                statusEl.style.color = "yellow";
-            } else {
-                statusEl.innerText = "● AO VIVO";
-                statusEl.style.color = "#ff4444"; // Bola vermelha de Live
-            }
+            statusEl.innerText = "ANÁLISE FINAL";
+            statusEl.style.color = "#9d00ff";
+            statusEl.style.border = "1px solid #9d00ff";
+            newsEl.innerText = "SESSÃO TERMINADA - HISTÓRICO COMPLETO";
 
-            // 4. Atualizar Gráfico
-            // Recebemos o histórico completo do servidor
-            const labels = data.history.map(h => h.time);
-            const prices = data.history.map(h => h.price);
+            // 1. Desenhar a Linha Completa (0 a 40 mins)
+            marketChart.data.labels = data.fullHistory.map(h => h.time);
+            marketChart.data.datasets[0].data = data.fullHistory.map(h => h.price);
+            marketChart.data.datasets[0].borderColor = '#ffffff'; // Linha Branca Neutra
 
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = prices;
+            // 2. Criar os Pontos das Notícias (Scatter)
+            const eventPoints = data.events.map(evt => {
+                return {
+                    x: evt.time,
+                    y: evt.price,
+                    newsText: evt.text
+                };
+            });
+
+            // 3. Definir cores das bolinhas
+            const pointColors = data.events.map(evt => {
+                if (evt.impact > 0) return '#00ff88'; // Verde (Bom)
+                if (evt.impact < 0) return '#ff4444'; // Vermelho (Mau)
+                return '#ffd700';                     // Amarelo (Neutro)
+            });
+
+            marketChart.data.datasets[1].data = eventPoints;
+            marketChart.data.datasets[1].backgroundColor = pointColors;
+
+            // Resetar Zoom para ver tudo
+            marketChart.options.scales.x.ticks.maxTicksLimit = 20; 
             
-            // Ajustar escala Y automaticamente para focar na ação
-            // Se o preço for 50, mostra entre 40 e 60, por exemplo
-            // chart.options.scales.y.min = Math.min(...prices) - 5;
-            // chart.options.scales.y.max = Math.max(...prices) + 5;
-            
-            chart.update();
+            marketChart.update();
         });
     </script>
 </body>
