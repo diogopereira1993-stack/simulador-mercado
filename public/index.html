@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Votação - MoneyFlix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="mobile-body">
+    <div id="status-bar" class="status-paused">AGUARDANDO...</div>
+    
+    <div class="header">
+        <h1>LUSI</h1>
+        <div id="price-display" class="big-price">100.00</div>
+    </div>
+
+    <div class="news-ticker">
+        <marquee id="news-text">Bem-vindo ao Simulador de Mercado</marquee>
+    </div>
+
+    <div class="controls">
+        <button id="btn-buy" class="btn buy" onclick="vote('BUY')">COMPRAR 🔼</button>
+        <button id="btn-hold" class="btn hold" onclick="vote('HOLD')">MANTER ⏸</button>
+        <button id="btn-sell" class="btn sell" onclick="vote('SELL')">VENDER 🔽</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const priceDisplay = document.getElementById('price-display');
+        const statusBar = document.getElementById('status-bar');
+        const newsText = document.getElementById('news-text');
+
+        socket.on('market-update', (data) => {
+            priceDisplay.innerText = data.price + "€";
+            newsText.innerText = data.news;
+            
+            if (data.isPaused) {
+                statusBar.innerText = "MERCADO PAUSADO";
+                statusBar.className = "status-paused";
+                document.body.style.opacity = "0.7";
+            } else {
+                statusBar.innerText = "MERCADO AO VIVO 🔴";
+                statusBar.className = "status-live";
+                document.body.style.opacity = "1";
+            }
+        });
+
+        function vote(action) {
+            socket.emit('vote', action);
+            if (navigator.vibrate) navigator.vibrate(50);
+            const btn = document.getElementById('btn-' + action.toLowerCase());
+            btn.style.transform = "scale(0.95)";
+            setTimeout(() => btn.style.transform = "scale(1)", 100);
+        }
+    </script>
+</body>
+</html>
