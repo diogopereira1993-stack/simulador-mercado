@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN (GOD MODE)</title>
+    <title>ADMIN (GOD MODE + BOTS)</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-panel { max-width: 600px; margin: 20px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; }
@@ -11,14 +11,40 @@
         h3 { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
         input[type="text"] { width: 60%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .stats-box {
+            display: flex; justify-content: space-between; background: #222;
+            padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #444;
+        }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: white; }
+        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
+
+        /* Estilo para a zona de Bots */
+        .bot-section { border: 2px dashed #9d00ff; padding: 15px; background: #1a0526; border-radius: 10px; }
+        .blinking { animation: blinker 1s linear infinite; color: #ff00ff; font-weight: bold; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
     <div class="admin-panel">
-        <h1>Painel de Controlo</h1>
         
+        <div class="stats-box">
+            <div class="stat-item">
+                <div class="stat-value" id="online-count">0</div>
+                <div class="stat-label">👥 Online</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-votes">0</div>
+                <div class="stat-label">🗳️ Votos Totais</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="status-display" style="color: yellow;">PAUSADO</div>
+                <div class="stat-label">Estado</div>
+            </div>
+        </div>
+
         <div class="section">
-            <h1 id="status-display" style="color: yellow;">PAUSADO</h1>
             <div class="grid-2">
                 <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR</button>
                 <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ RESET TOTAL</button>
@@ -26,29 +52,28 @@
         </div>
 
         <div class="section">
-            <h3 style="color: #00ff88;">NOTÍCIAS REAIS (Mudam o Valor)</h3>
-            <p style="font-size: 0.8rem; color: #aaa;">Estas notícias alteram o "imã" do preço.</p>
-            
-            <button class="btn buy" onclick="sendNews('LUCROS RECORDE: Valor da empresa sobe!', 10)">
-                💰 Resultados Bons (+10€)
-            </button>
+            <h3 style="color: #00ff88;">NOTÍCIAS REAIS (Fundamentos)</h3>
+            <button class="btn buy" onclick="sendNews('LUCROS RECORDE: Valor da empresa sobe!', 10)">💰 Resultados Bons (+10€)</button>
             <br><br>
-            <button class="btn sell" onclick="sendNews('FRAUDE DETETADA: Valor da empresa cai!', -10)">
-                📉 Escândalo (-10€)
-            </button>
+            <button class="btn sell" onclick="sendNews('FRAUDE DETETADA: Valor da empresa cai!', -10)">📉 Escândalo (-10€)</button>
         </div>
 
         <div class="section">
-            <h3 style="color: #ffaa00;">RUMORES (Só Barulho)</h3>
-            <p style="font-size: 0.8rem; color: #aaa;">Gera hype, mas o preço acaba por voltar ao normal.</p>
+            <h3 style="color: #ffaa00;">RUMORES (Hype)</h3>
+            <button class="btn hold" onclick="sendNews('RUMOR: CEO visto a almoçar com a Google...', 0)">👀 Rumor de Venda</button>
+        </div>
+
+        <div class="section bot-section">
+            <h3 style="color: #bc6ff1;">🤖 Laboratório de Carga (Stress Test)</h3>
+            <p style="font-size: 0.8rem; color: #aaa;">Simula 450 pessoas a clicar freneticamente.</p>
             
-            <button class="btn hold" onclick="sendNews('RUMOR: CEO visto a almoçar com a Google...', 0)">
-                👀 Rumor de Venda (Sem valor)
-            </button>
-            <br><br>
-            <button class="btn hold" onclick="sendNews('FAKE NEWS: Ataque de hackers (Desmentido)', 0)">
-                🤖 Fake News (Sem valor)
-            </button>
+            <div id="bot-status" style="margin-bottom: 10px; font-size: 0.9rem;">STATUS: PARADO</div>
+
+            <div class="grid-2">
+                <button class="btn buy" onclick="startBots('BULL')">🚀 BOT FARM: COMPRAR</button>
+                <button class="btn sell" onclick="startBots('BEAR')">🔻 BOT FARM: VENDER</button>
+            </div>
+            <button class="btn hold" style="width: 100%; margin-top: 10px; background: #444;" onclick="stopBots()">🛑 PARAR ROBÔS</button>
         </div>
 
         <div class="section">
@@ -61,29 +86,60 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let botInterval = null;
 
         function sendCommand(cmd) {
             socket.emit('admin-action', { command: cmd });
         }
 
-        // Envia notícia E impacto no valor real
         function sendNews(text, impactValue) {
-            socket.emit('admin-action', { 
-                command: 'NEWS_UPDATE', 
-                text: text, 
-                impact: impactValue // Se for 0, é só rumor. Se for 10, o valor real sobe.
-            });
-            alert("Enviado: " + text);
+            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue });
+            // alert("Enviado: " + text); // Removi o alert para ser mais rápido
         }
 
         function sendManual() {
             const text = document.getElementById('news-input').value;
-            sendNews(text, 0); // Manual assume impacto 0 por defeito
+            sendNews(text, 0);
+        }
+
+        // --- LÓGICA DOS BOTS ---
+        function startBots(sentiment) {
+            if (botInterval) clearInterval(botInterval);
+            
+            const statusEl = document.getElementById('bot-status');
+            statusEl.innerHTML = `STATUS: <span class="blinking">A EXECUTAR ATAQUE (${sentiment})...</span>`;
+
+            // Envia um pacote de votos a cada 100ms
+            botInterval = setInterval(() => {
+                // Simula 20 votos por "tick" do navegador (aprox 200 votos/segundo)
+                for (let i = 0; i < 20; i++) {
+                    let action;
+                    
+                    // IA do Bot: Decide se compra ou vende
+                    if (sentiment === 'BULL') {
+                        // 80% chance de comprar, 20% vender (para haver luta)
+                        action = Math.random() > 0.2 ? 'BUY' : 'SELL';
+                    } else {
+                        // 80% chance de vender
+                        action = Math.random() > 0.2 ? 'SELL' : 'BUY';
+                    }
+                    socket.emit('vote', action);
+                }
+            }, 100);
+        }
+
+        function stopBots() {
+            if (botInterval) clearInterval(botInterval);
+            botInterval = null;
+            document.getElementById('bot-status').innerText = "STATUS: PARADO";
         }
 
         socket.on('market-update', (data) => {
-            document.getElementById('status-display').innerText = data.isPaused ? "PAUSADO" : "AO VIVO 🔴";
-            document.getElementById('status-display').style.color = data.isPaused ? "yellow" : "#00ff88";
+            const statusEl = document.getElementById('status-display');
+            statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO";
+            statusEl.style.color = data.isPaused ? "yellow" : "#00ff88";
+            document.getElementById('online-count').innerText = data.online;
+            document.getElementById('total-votes').innerText = data.totalVotes;
         });
     </script>
 </body>
