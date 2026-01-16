@@ -22,10 +22,16 @@
             <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ REINICIAR TUDO</button>
         </div>
 
-        <div class="control-group">
-            <h3>Enviar Notícia</h3>
-            <input type="text" id="news-input" placeholder="Escreve a notícia aqui...">
-            <button class="btn buy" style="width: 25%; font-size: 1rem;" onclick="sendNews()">ENVIAR</button>
+       <div class="control-group">
+            <h3>Guião do Evento (Notícias)</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn hold" onclick="sendCustomNews('Bem-vindos! O Mercado abriu a 10€')">1. Abertura</button>
+                <button class="btn buy" onclick="sendCustomNews('BREAKING: Empresa descobre nova tecnologia!')">2. Notícia Boa (Sobe)</button>
+                <button class="btn sell" onclick="sendCustomNews('URGENTE: Escândalo financeiro descoberto!')">3. Notícia Má (Desce)</button>
+                
+                <input type="text" id="news-input" placeholder="Outra notícia manual..." style="margin-top:10px;">
+                <button class="btn hold" style="width: 100%;" onclick="sendNews()">Enviar Manual</button>
+            </div>
         </div>
 
         <div class="control-group">
@@ -49,6 +55,11 @@
             socket.emit('admin-action', { command: 'NEWS', payload: text });
         }
 
+        function sendCustomNews(text) {
+            document.getElementById('news-input').value = text;
+            sendNews();
+        }
+        
         function manipulate(val) {
             socket.emit('admin-action', { command: 'MANIPULATE', payload: val });
         }
