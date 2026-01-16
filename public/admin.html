@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN - MoneyFlix</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-panel { max-width: 600px; margin: 20px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; }
+        .control-group { margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+        input[type="text"] { width: 70%; padding: 10px; background: #333; color: white; border: none; }
+        .manipulate-btn { background: #444; font-size: 0.8rem; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+    <div class="admin-panel">
+        <h1>Painel de Controlo</h1>
+        
+        <div class="control-group">
+            <h3>Estado: <span id="status-display">PAUSADO</span></h3>
+            <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR / PAUSAR</button>
+            <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ REINICIAR TUDO</button>
+        </div>
+
+        <div class="control-group">
+            <h3>Enviar Notícia</h3>
+            <input type="text" id="news-input" placeholder="Escreve a notícia aqui...">
+            <button class="btn buy" style="width: 25%; font-size: 1rem;" onclick="sendNews()">ENVIAR</button>
+        </div>
+
+        <div class="control-group">
+            <h3>Manipulação de Emergência</h3>
+            <p>Se o mercado estiver muito parado, empurra o preço:</p>
+            <button class="btn manipulate-btn" onclick="manipulate(5)">🚀 Pump (+5€)</button>
+            <button class="btn manipulate-btn" onclick="manipulate(-5)">💥 Crash (-5€)</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function sendCommand(cmd) {
+            socket.emit('admin-action', { command: cmd });
+        }
+
+        function sendNews() {
+            const text = document.getElementById('news-input').value;
+            socket.emit('admin-action', { command: 'NEWS', payload: text });
+        }
+
+        function manipulate(val) {
+            socket.emit('admin-action', { command: 'MANIPULATE', payload: val });
+        }
+
+        socket.on('market-update', (data) => {
+            document.getElementById('status-display').innerText = data.isPaused ? "PAUSADO" : "A DECORRER";
+        });
+    </script>
+</body>
+</html>
