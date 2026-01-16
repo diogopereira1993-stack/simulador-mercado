@@ -30,6 +30,9 @@
         const priceDisplay = document.getElementById('price-display');
         const statusBar = document.getElementById('status-bar');
         const newsText = document.getElementById('news-text');
+        
+        // Variável de controlo de spam
+        let isCoolingDown = false; 
 
         socket.on('market-update', (data) => {
             priceDisplay.innerText = data.price + "€";
@@ -47,11 +50,47 @@
         });
 
         function vote(action) {
+            // 1. SE ESTIVER EM ESPERA, IGNORA O CLIQUE (Anti-Spam)
+            if (isCoolingDown) return;
+
+            // 2. Enviar Voto Real
             socket.emit('vote', action);
+            
+            // 3. Feedback Físico
             if (navigator.vibrate) navigator.vibrate(50);
-            const btn = document.getElementById('btn-' + action.toLowerCase());
-            btn.style.transform = "scale(0.95)";
-            setTimeout(() => btn.style.transform = "scale(1)", 100);
+            
+            // 4. Mostrar "VOTO REGISTADO"
+            showPopup("VOTO REGISTADO! ✅");
+
+            // 5. Bloquear botões por 3 segundos
+            activateCooldown(3000); 
+        }
+
+        function showPopup(text) {
+            const popup = document.createElement('div');
+            popup.className = 'vote-popup';
+            popup.innerText = text;
+            document.body.appendChild(popup);
+
+            // Remover o popup automaticamente
+            setTimeout(() => {
+                popup.style.opacity = '0';
+                setTimeout(() => popup.remove(), 300);
+            }, 1500);
+        }
+
+        function activateCooldown(time) {
+            isCoolingDown = true;
+            
+            // Desativar visualmente todos os botões
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(btn => btn.disabled = true);
+
+            // Reativar após o tempo definido
+            setTimeout(() => {
+                isCoolingDown = false;
+                btns.forEach(btn => btn.disabled = false);
+            }, time);
         }
     </script>
 </body>
