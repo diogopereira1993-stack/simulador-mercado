@@ -65,7 +65,7 @@ setInterval(() => {
         totalVotes: gameState.totalVotesEver // Mantém total de votos
     });
 
-}, 500);
+}, 2500);
 
 io.on('connection', (socket) => {
     // Enviar estado inicial quando alguém entra
