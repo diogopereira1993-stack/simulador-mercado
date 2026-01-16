@@ -3,141 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN (GOD MODE + BOTS)</title>
+    <title>ADMIN - CONTROLADOR DE MERCADO</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .admin-panel { max-width: 600px; margin: 20px auto; padding: 20px; background: #1a1a1a; border-radius: 10px; }
-        .section { margin-bottom: 30px; border-top: 1px solid #333; padding-top: 20px; }
-        h3 { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
-        input[type="text"] { width: 60%; padding: 12px; background: #222; border: 1px solid #444; color: white; border-radius: 5px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .admin-panel { max-width: 900px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
         
-        .stats-box {
-            display: flex; justify-content: space-between; background: #222;
-            padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #444;
-        }
-        .stat-item { text-align: center; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: white; }
-        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; }
+        /* Stats no Topo */
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; }
+        .stat-box { text-align: center; }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: white; }
+        .stat-lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Estilo para a zona de Bots */
-        .bot-section { border: 2px dashed #9d00ff; padding: 15px; background: #1a0526; border-radius: 10px; }
-        .blinking { animation: blinker 1s linear infinite; color: #ff00ff; font-weight: bold; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        /* Secções Narrativas */
+        .story-arc { margin-bottom: 25px; padding: 15px; border-radius: 8px; border-left: 5px solid #555; background: #1a1a1a; }
+        .arc-title { margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; color: #ddd; display: flex; justify-content: space-between; }
+        .arc-desc { font-size: 0.8rem; color: #888; margin-bottom: 15px; font-style: italic; }
+
+        .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+
+        /* Estilos de Botão Específicos */
+        .btn-game { height: 50px; font-size: 0.9rem; font-weight: 600; text-align: left; padding-left: 15px; position: relative; }
+        .val-tag { position: absolute; right: 10px; top: 15px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+
+        /* Cores Temáticas */
+        .theme-green { border-color: #00ff88; }
+        .btn-green { background: #132f20; color: #00ff88; border: 1px solid #004422; }
+        .btn-green:hover { background: #1a422d; }
+
+        .theme-red { border-color: #ff4444; }
+        .btn-red { background: #3a1010; color: #ff4444; border: 1px solid #551111; }
+        .btn-red:hover { background: #501515; }
+
+        .theme-gold { border-color: #ffd700; }
+        .btn-gold { background: #332b00; color: #ffd700; border: 1px solid #665500; }
+        
+        .theme-purple { border-color: #9d00ff; }
+
+        input[type="text"] { width: 70%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="admin-panel">
         
-        <div class="stats-box">
-            <div class="stat-item">
-                <div class="stat-value" id="online-count">0</div>
-                <div class="stat-label">👥 Online</div>
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-val" id="online-count">0</div>
+                <div class="stat-lbl">Participantes</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="total-votes">0</div>
-                <div class="stat-label">🗳️ Votos Totais</div>
+            <div class="stat-box">
+                <div class="stat-val" id="total-votes">0</div>
+                <div class="stat-lbl">Votos Totais</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-value" id="status-display" style="color: yellow;">PAUSADO</div>
-                <div class="stat-label">Estado</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="grid-2">
-                <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR</button>
-                <button class="btn sell" style="background: darkred;" onclick="sendCommand('RESET')">⚠️ RESET TOTAL</button>
+            <div class="stat-box">
+                <div class="stat-val" id="status-display" style="color: yellow;">PAUSADO</div>
+                <div class="stat-lbl">Estado do Mercado</div>
             </div>
         </div>
 
-        <div class="section">
-            <h3 style="color: #00ff88;">NOTÍCIAS REAIS (Fundamentos)</h3>
-            <button class="btn buy" onclick="sendNews('LUCROS RECORDE: Valor da empresa sobe!', 10)">💰 Resultados Bons (+10€)</button>
-            <br><br>
-            <button class="btn sell" onclick="sendNews('FRAUDE DETETADA: Valor da empresa cai!', -10)">📉 Escândalo (-10€)</button>
-        </div>
-
-        <div class="section">
-            <h3 style="color: #ffaa00;">RUMORES (Hype)</h3>
-            <button class="btn hold" onclick="sendNews('RUMOR: CEO visto a almoçar com a Google...', 0)">👀 Rumor de Venda</button>
-        </div>
-
-        <div class="section bot-section">
-            <h3 style="color: #bc6ff1;">🤖 Laboratório de Carga (Stress Test)</h3>
-            <p style="font-size: 0.8rem; color: #aaa;">Simula 450 pessoas a clicar freneticamente.</p>
-            
-            <div id="bot-status" style="margin-bottom: 10px; font-size: 0.9rem;">STATUS: PARADO</div>
-
-            <div class="grid-2">
-                <button class="btn buy" onclick="startBots('BULL')">🚀 BOT FARM: COMPRAR</button>
-                <button class="btn sell" onclick="startBots('BEAR')">🔻 BOT FARM: VENDER</button>
+        <div class="story-arc theme-purple">
+            <div class="grid-buttons">
+                <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR / PAUSAR</button>
+                <button class="btn hold" style="background: #551166;" onclick="sendCommand('SHOW_FINAL_CHART')">🏁 ENCERRAR E MOSTRAR CONCLUSÃO</button>
+                <button class="btn sell" style="background: darkred;" onclick="confirmReset()">⚠️ RESET TOTAL</button>
             </div>
-            <button class="btn hold" style="width: 100%; margin-top: 10px; background: #444;" onclick="stopBots()">🛑 PARAR ROBÔS</button>
         </div>
 
-        <div class="section">
-            <h3>Manual</h3>
-            <input type="text" id="news-input" placeholder="Escreve aqui...">
-            <button class="btn hold" style="width: 30%;" onclick="sendManual()">Enviar</button>
+        <div class="story-arc theme-gold">
+            <h3 class="arc-title" style="color: #ffd700;">🎭 Arco: Insider Trading <span style="font-size:0.7rem;">(Sinal vs Ruído)</span></h3>
+            <p class="arc-desc">Usa isto para ensinar se devemos ou não seguir "os grandes".</p>
+            <div class="grid-buttons">
+                <button class="btn btn-gold" onclick="sendNews('INSIDER: CEO comprou 50.000 ações!', 0)">
+                    🐂 CEO Comprou (Bluff)
+                    <span class="val-tag">0€</span>
+                </button>
+                
+                <button class="btn btn-gold" style="border: 1px solid #ffd700;" onclick="sendNews('INSIDER: CEO reforça posição (Confiança Total).', 5)">
+                    🐂 CEO Comprou (Sinal Real)
+                    <span class="val-tag">+5€</span>
+                </button>
+
+                <button class="btn btn-gold" onclick="sendNews('ALERTA: CEO vendeu ações pessoais.', 0)">
+                    🐻 CEO Vendeu (Pânico)
+                    <span class="val-tag">0€</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="story-arc theme-green">
+            <h3 class="arc-title" style="color: #00ff88;">🚀 Arco: Crescimento Real</h3>
+            <p class="arc-desc">Notícias que criam valor sustentável. O preço sobe e fica lá.</p>
+            <div class="grid-buttons">
+                <button class="btn btn-green" onclick="sendNews('LUCRO: Trimestre acima das expectativas.', 8)">
+                    💰 Resultados Bons
+                    <span class="val-tag">+8€</span>
+                </button>
+                <button class="btn btn-green" onclick="sendNews('INOVAÇÃO: Lançamento de produto revolucionário!', 12)">
+                    📦 Produto Novo
+                    <span class="val-tag">+12€</span>
+                </button>
+                <button class="btn btn-green" style="border: 1px solid white;" onclick="sendNews('MONOPÓLIO: Compra de concorrente aprovada!', 20)">
+                    🏆 Aquisição Gigante
+                    <span class="val-tag">+20€</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="story-arc theme-red">
+            <h3 class="arc-title" style="color: #ff4444;">🩸 Arco: Crise e Pânico</h3>
+            <p class="arc-desc">Testa a resistência da plateia com más notícias.</p>
+            <div class="grid-buttons">
+                <button class="btn btn-red" onclick="sendNews('CORREÇÃO: Analistas baixam recomendação.', -5)">
+                    📉 Nota de Analista
+                    <span class="val-tag">-5€</span>
+                </button>
+                <button class="btn btn-red" onclick="sendNews('CIBERATAQUE: Dados de clientes expostos!', -15)">
+                    🔓 Hack Massivo
+                    <span class="val-tag">-15€</span>
+                </button>
+                <button class="btn btn-red" style="border: 1px solid white;" onclick="sendNews('FRAUDE: Contas falsificadas descobertas!', -25)">
+                    ⚖️ O Escândalo (Cisne Negro)
+                    <span class="val-tag">-25€</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="story-arc" style="border-color: #888;">
+            <h3 class="arc-title" style="color: #aaa;">📢 Rumores & Hype</h3>
+            <p class="arc-desc">Gera movimento sem alterar o valor real. A gravidade atuará depois.</p>
+            <div class="grid-buttons">
+                <button class="btn hold" onclick="sendNews('RUMOR: Elon Musk tweetou um meme sobre nós.', 0)">
+                    🐦 Tweet Viral (Hype)
+                </button>
+                <button class="btn hold" onclick="sendNews('FAKE NEWS: Notícia de falência desmentida.', 0)">
+                    🤖 Fake News
+                </button>
+                <button class="btn hold" style="background: #333;" onclick="sendNews('ANÁLISE: Mercado parece sobreavaliado.', -2)">
+                    ⚖️ Arrefecer Mercado (-2€)
+                </button>
+            </div>
+        </div>
+
+        <div class="story-arc">
+            <h3 class="arc-title" style="color: white;">✍️ Mensagem Manual</h3>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="news-input" placeholder="Escreve a notícia...">
+                <button class="btn hold" onclick="sendManual()">ENVIAR</button>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let botInterval = null;
 
         function sendCommand(cmd) {
             socket.emit('admin-action', { command: cmd });
         }
 
+        function confirmReset() {
+            if(confirm("Tens a certeza? Isto apaga TODO o histórico e reinicia o jogo.")) {
+                sendCommand('RESET');
+            }
+        }
+
         function sendNews(text, impactValue) {
-            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue });
-            // alert("Enviado: " + text); // Removi o alert para ser mais rápido
+            socket.emit('admin-action', { 
+                command: 'NEWS_UPDATE', 
+                text: text, 
+                impact: impactValue 
+            });
         }
 
         function sendManual() {
             const text = document.getElementById('news-input').value;
-            sendNews(text, 0);
-        }
-
-        // --- LÓGICA DOS BOTS ---
-        function startBots(sentiment) {
-            if (botInterval) clearInterval(botInterval);
-            
-            const statusEl = document.getElementById('bot-status');
-            statusEl.innerHTML = `STATUS: <span class="blinking">A EXECUTAR ATAQUE (${sentiment})...</span>`;
-
-            // Envia um pacote de votos a cada 100ms
-            botInterval = setInterval(() => {
-                // Simula 20 votos por "tick" do navegador (aprox 200 votos/segundo)
-                for (let i = 0; i < 20; i++) {
-                    let action;
-                    
-                    // IA do Bot: Decide se compra ou vende
-                    if (sentiment === 'BULL') {
-                        // 80% chance de comprar, 20% vender (para haver luta)
-                        action = Math.random() > 0.2 ? 'BUY' : 'SELL';
-                    } else {
-                        // 80% chance de vender
-                        action = Math.random() > 0.2 ? 'SELL' : 'BUY';
-                    }
-                    socket.emit('vote', action);
-                }
-            }, 100);
-        }
-
-        function stopBots() {
-            if (botInterval) clearInterval(botInterval);
-            botInterval = null;
-            document.getElementById('bot-status').innerText = "STATUS: PARADO";
+            sendNews(text, 0); // Manual assume 0 impacto por defeito
         }
 
         socket.on('market-update', (data) => {
             const statusEl = document.getElementById('status-display');
-            statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO";
+            statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO 🟢";
             statusEl.style.color = data.isPaused ? "yellow" : "#00ff88";
+            
             document.getElementById('online-count').innerText = data.online;
             document.getElementById('total-votes').innerText = data.totalVotes;
         });
