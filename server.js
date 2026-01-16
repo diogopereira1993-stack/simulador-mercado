@@ -12,8 +12,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 let gameState = {
     price: 50.00,
     intrinsicValue: 50.00,
-    volatility: 0.05,       // 5 cêntimos por voto
-    gravity: 0.02,          // <--- ALTERADO: Baixámos para 2% (Descida mais lenta no geral)
+    volatility: 0.05,
+    gravity: 0.02,      
     isPaused: true,
     currentNews: "MERCADO FECHADO - Aguarde o IPO",
     
