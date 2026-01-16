@@ -13,15 +13,15 @@ let gameState = {
     price: 50.00,
     intrinsicValue: 50.00,
     volatility: 0.05,       // 5 cêntimos por voto
-    gravity: 0.05,          // <--- ALTERADO: 5% (Corrige em ~2 mins)
+    gravity: 0.02,          // <--- ALTERADO: Baixámos para 2% (Descida mais lenta no geral)
     isPaused: true,
     currentNews: "MERCADO FECHADO - Aguarde o IPO",
     
-    // Contadores Instantâneos (Para o cálculo do preço a cada 2s)
+    // Contadores
     buyCount: 0,
     sellCount: 0,
     
-    // ESTATÍSTICAS GLOBAIS (Para o Relatório/Admin)
+    // Stats Globais
     totalVotesEver: 0,
     totalBuys: 0,
     totalSells: 0,
@@ -29,24 +29,32 @@ let gameState = {
 };
 
 // Históricos
-let liveHistory = []; // Janela deslizante (Direto)
-let fullHistory = []; // Histórico completo (Relatório)
-let eventLog = [];    // Notícias marcadas
+let liveHistory = []; 
+let fullHistory = []; 
+let eventLog = [];    
 
 setInterval(() => {
     if (!gameState.isPaused) {
-        // 1. Força dos Votos (Especulação)
+        // 1. Força dos Votos (Especulação dos utilizadores)
         let netPressure = gameState.buyCount - gameState.sellCount;
         let voteEffect = netPressure * gameState.volatility;
         
-        // 2. Força da Realidade (Gravidade Ajustada)
+        // 2. Força da Realidade (Cálculo Novo)
         let gap = gameState.intrinsicValue - gameState.price;
-        let correction = gap * gameState.gravity;
+        
+        // A. Correção Lenta (A Gravidade Base)
+        let correction = gap * gameState.gravity; 
 
-        // 3. Atualizar Preço
-        gameState.price = gameState.price + voteEffect + correction;
-        gameState.price += (Math.random() - 0.5) * 0.05; // Pequeno ruído
+        // B. O Fator "Caos" (AQUI ESTÁ O SEGREDO)
+        // Se o gap for grande (ex: preço a 80, valor a 50 -> gap 30), o caos aumenta.
+        // Isto gera números aleatórios grandes que podem empurrar o preço PARA CIMA temporariamente mesmo durante a queda.
+        let chaosLevel = 0.1 + (Math.abs(gap) * 0.15); // 15% do tamanho do erro vira ruído
+        let randomFluctuation = (Math.random() - 0.5) * chaosLevel;
 
+        // 3. Atualizar Preço (Votos + Gravidade + Caos)
+        gameState.price = gameState.price + voteEffect + correction + randomFluctuation;
+
+        // Proteção para não ir abaixo de zero
         if (gameState.price < 0.01) gameState.price = 0.01;
 
         // 4. Gestão de Histórico (Sincronizado)
@@ -56,22 +64,21 @@ setInterval(() => {
 
         fullHistory.push(dataPoint);
         liveHistory.push(dataPoint);
-        // Janela deslizante de ~5 minutos (150 pontos x 2s = 300s)
+        // Janela deslizante
         if (liveHistory.length > 150) liveHistory.shift();
 
-        // Resetar apenas os contadores do intervalo (instantâneos)
+        // Resetar contadores do tick
         gameState.buyCount = 0;
         gameState.sellCount = 0;
     }
 
-    // Enviar updates para toda a gente
+    // Enviar updates
     io.emit('market-update', {
         price: gameState.price.toFixed(2),
         history: liveHistory,
         news: gameState.currentNews,
         isPaused: gameState.isPaused,
         online: io.engine.clientsCount,
-        // Enviar Stats para o Admin ver os Bots a funcionar
         totalVotes: gameState.totalVotesEver,
         stats: {
             buys: gameState.totalBuys,
@@ -81,10 +88,9 @@ setInterval(() => {
         mode: 'LIVE'
     });
 
-}, 2000); // Ticks de 2 segundos
+}, 2000); // Tick de 2 segundos
 
 io.on('connection', (socket) => {
-    // Enviar estado inicial a quem entra
     socket.emit('market-update', {
         price: gameState.price.toFixed(2),
         history: liveHistory,
@@ -98,21 +104,10 @@ io.on('connection', (socket) => {
 
     socket.on('vote', (action) => {
         if (gameState.isPaused) return;
-        
         gameState.totalVotesEver++;
-        
-        // Atualizar contadores globais e instantâneos
-        if (action === 'BUY') {
-            gameState.buyCount++;   // Afeta preço
-            gameState.totalBuys++;  // Afeta estatística
-        }
-        if (action === 'SELL') {
-            gameState.sellCount++;
-            gameState.totalSells++;
-        }
-        if (action === 'HOLD') {
-            gameState.totalHolds++;
-        }
+        if (action === 'BUY') { gameState.buyCount++; gameState.totalBuys++; }
+        if (action === 'SELL') { gameState.sellCount++; gameState.totalSells++; }
+        if (action === 'HOLD') { gameState.totalHolds++; }
     });
 
     socket.on('admin-action', (data) => {
@@ -125,8 +120,7 @@ io.on('connection', (socket) => {
             gameState.currentNews = data.text;
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             
-            // LÓGICA DE SINCRONIZAÇÃO DAS BOLINHAS (Mantida)
-            // Usa a hora do gráfico para garantir que a bola aparece na linha
+            // Sincronização Perfeita da Bola
             let eventTime;
             if (fullHistory.length > 0) {
                 eventTime = fullHistory[fullHistory.length - 1].time;
@@ -147,9 +141,7 @@ io.on('connection', (socket) => {
             gameState.price = 50.00;
             gameState.intrinsicValue = 50.00;
             gameState.buyCount = 0; gameState.sellCount = 0;
-            // Reset Stats
-            gameState.totalVotesEver = 0;
-            gameState.totalBuys = 0; gameState.totalSells = 0; gameState.totalHolds = 0;
+            gameState.totalVotesEver = 0; gameState.totalBuys = 0; gameState.totalSells = 0; gameState.totalHolds = 0;
             liveHistory = [];
             fullHistory = [];
             eventLog = [];
@@ -160,8 +152,6 @@ io.on('connection', (socket) => {
         if (data.command === 'SHOW_FINAL_CHART') {
             gameState.isPaused = true;
             gameState.currentNews = "SESSÃO ENCERRADA";
-            
-            // Envia TUDO (Histórico, Bolinhas e Stats Finais para Relatório)
             io.emit('market-finish', {
                 fullHistory: fullHistory,
                 events: eventLog,
@@ -175,7 +165,6 @@ io.on('connection', (socket) => {
             return;
         }
         
-        // Update forçado para o Admin ver a mudança imediata
         io.emit('market-update', {
             price: gameState.price.toFixed(2),
             history: liveHistory,
