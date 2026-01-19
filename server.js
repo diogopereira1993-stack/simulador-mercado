@@ -8,15 +8,12 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- CONFIGURAÇÃO DO CENÁRIO ---
-// ⚠️ ATENÇÃO: Muda para 100 para testares com a equipa. 
-// No dia do evento, TEM DE ESTAR A 1.
-const VOTE_MULTIPLIER = 1; 
-
+// --- CONFIGURAÇÃO FINANCEIRA ---
 const TOTAL_SHARES = 1000000; // 1 Milhão de ações
-const ANNUAL_EARNINGS = 2500000; // Lucro Base
+const ANNUAL_EARNINGS = 2500000; // Lucro Base: 2.5M
 const EPS = ANNUAL_EARNINGS / TOTAL_SHARES; // 2.5€ por ação
 
+// --- ESTADO DO JOGO ---
 let gameState = {
     price: 50.00,
     intrinsicValue: 50.00,
@@ -24,8 +21,15 @@ let gameState = {
     gravity: 0.02,      
     isPaused: true,
     currentNews: "MERCADO FECHADO - Aguarde o IPO",
+    
+    // NOVO: Multiplicador Dinâmico (Começa sempre em 1 para segurança)
+    voteMultiplier: 1, 
+
+    // Contadores
     buyCount: 0,
     sellCount: 0,
+    
+    // Stats Globais
     totalVotesEver: 0,
     totalBuys: 0,
     totalSells: 0,
@@ -38,7 +42,7 @@ let eventLog = [];
 // Cooldown no servidor para evitar spam (Map de SocketID -> Timestamp)
 let lastVoteTime = new Map(); 
 
-// --- LOOP DO MERCADO ---
+// --- LOOP DO MERCADO (TICK) ---
 setInterval(() => {
     if (!gameState.isPaused) {
         // 1. Lógica de Mercado
@@ -47,10 +51,15 @@ setInterval(() => {
         
         let gap = gameState.intrinsicValue - gameState.price;
         let correction = gap * gameState.gravity; 
+        
+        // Fator Caos (aumenta se o preço estiver muito longe do valor real)
         let chaosLevel = 0.1 + (Math.abs(gap) * 0.15);
         let randomFluctuation = (Math.random() - 0.5) * chaosLevel;
 
+        // Atualização do Preço
         gameState.price = gameState.price + voteEffect + correction + randomFluctuation;
+        
+        // Proteção Preço Mínimo
         if (gameState.price < 0.01) gameState.price = 0.01;
 
         // 2. Histórico
@@ -60,9 +69,10 @@ setInterval(() => {
 
         fullHistory.push(dataPoint);
         liveHistory.push(dataPoint);
+        // Mantém apenas os últimos 150 pontos para o gráfico live
         if (liveHistory.length > 150) liveHistory.shift();
 
-        // Reset contadores
+        // Resetar contadores do tick
         gameState.buyCount = 0;
         gameState.sellCount = 0;
     }
@@ -72,8 +82,8 @@ setInterval(() => {
     let marketCap = (currentPrice * TOTAL_SHARES);
     let peRatio = (currentPrice / EPS).toFixed(1); // Preço / 2.5
 
-    // --- PACOTE LEVE (Para os 500 telemóveis + Admin) ---
-    // Inclui estatísticas para o Admin funcionar
+    // --- CANAL 1: PACOTE LEVE (Para telemóveis e Admin) ---
+    // Envia estatísticas e o multiplicador atual para o Admin ver
     io.emit('market-update-light', {
         price: currentPrice.toFixed(2),
         news: gameState.currentNews,
@@ -83,32 +93,33 @@ setInterval(() => {
         marketCap: marketCap > 1000000 ? (marketCap/1000000).toFixed(1) + "M" : marketCap.toFixed(0),
         peRatio: peRatio,
         fairValue: gameState.intrinsicValue.toFixed(2),
-        // Estatísticas (Para o Admin)
+        // Estatísticas para o Admin
         stats: {
             buys: gameState.totalBuys,
             sells: gameState.totalSells,
-            holds: gameState.totalHolds
+            holds: gameState.totalHolds,
+            multiplier: gameState.voteMultiplier // Envia o estado atual
         }
     });
 
-    // --- PACOTE PESADO (Só para o Dashboard) ---
+    // --- CANAL 2: PACOTE PESADO (Só para o Dashboard) ---
     io.to('dashboard-room').emit('market-update-full', {
         price: currentPrice.toFixed(2),
-        history: liveHistory, // Só o dashboard recebe o gráfico
+        history: liveHistory, // Gráfico pesado vai aqui
         news: gameState.currentNews,
         isPaused: gameState.isPaused,
         mode: 'LIVE'
     });
 
-}, 2000);
+}, 2000); // Tick de 2 segundos
 
-// --- SOCKETS ---
+// --- GESTÃO DE SOCKETS ---
 io.on('connection', (socket) => {
     
-    // Identificar quem é o Dashboard
+    // O Dashboard regista-se numa sala separada
     socket.on('register-dashboard', () => {
         socket.join('dashboard-room');
-        // Envia estado inicial imediato
+        // Envia estado imediato
         socket.emit('market-update-full', {
             price: gameState.price.toFixed(2),
             history: liveHistory,
@@ -127,8 +138,8 @@ io.on('connection', (socket) => {
         if (now - lastTime < 500) return; 
         lastVoteTime.set(socket.id, now);
 
-        // Aplica o Multiplicador
-        let voteWeight = VOTE_MULTIPLIER;
+        // APLICA O MULTIPLICADOR DINÂMICO
+        let voteWeight = gameState.voteMultiplier;
 
         gameState.totalVotesEver += voteWeight;
         if (action === 'BUY') { 
@@ -144,57 +155,83 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Admin e Comandos
+    // --- COMANDOS DE ADMIN ---
     socket.on('admin-action', (data) => {
+        
+        // Pausar / Iniciar
         if (data.command === 'START_STOP') {
             gameState.isPaused = !gameState.isPaused;
             gameState.currentNews = gameState.isPaused ? "MERCADO PAUSADO" : "MERCADO ABERTO";
         }
         
+        // Mudar Multiplicador (NOVO)
+        if (data.command === 'SET_MULTIPLIER') {
+            gameState.voteMultiplier = parseInt(data.value);
+            console.log(`[ADMIN] Multiplicador alterado para x${gameState.voteMultiplier}`);
+        }
+
+        // Enviar Notícia
         if (data.command === 'NEWS_UPDATE') {
             gameState.currentNews = data.text;
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             
+            // Regista evento para as "bolas" no gráfico final
             let eventTime = fullHistory.length > 0 ? fullHistory[fullHistory.length - 1].time : new Date().toISOString().split('T')[1].split('.')[0];
-            eventLog.push({ time: eventTime, price: gameState.price, text: data.text, impact: data.impact });
+            eventLog.push({ 
+                time: eventTime, 
+                price: gameState.price, 
+                text: data.text, 
+                impact: data.impact 
+            });
         }
 
+        // Reset Total
         if (data.command === 'RESET') {
             gameState.price = 50.00;
             gameState.intrinsicValue = 50.00;
             gameState.buyCount = 0; gameState.sellCount = 0;
             gameState.totalVotesEver = 0; gameState.totalBuys = 0; gameState.totalSells = 0; gameState.totalHolds = 0;
             liveHistory = []; fullHistory = []; eventLog = [];
+            
+            gameState.voteMultiplier = 1; // IMPORTANTE: Reset volta a x1
+            
             gameState.currentNews = "IPO LANÇADO - VALOR REAL: 50€";
             gameState.isPaused = true;
         }
 
+        // Mostrar Gráfico Final
         if (data.command === 'SHOW_FINAL_CHART') {
             gameState.isPaused = true;
             gameState.currentNews = "SESSÃO ENCERRADA";
             io.emit('market-finish', {
                 fullHistory: fullHistory,
                 events: eventLog,
-                stats: { buys: gameState.totalBuys, sells: gameState.totalSells, total: gameState.totalVotesEver }
+                stats: { 
+                    buys: gameState.totalBuys, 
+                    sells: gameState.totalSells, 
+                    total: gameState.totalVotesEver 
+                }
             });
             return;
         }
         
-        // Update imediato
+        // Feedback imediato para o admin não esperar pelo tick
         io.emit('market-update-light', { 
             price: gameState.price.toFixed(2), 
             news: gameState.currentNews, 
             isPaused: gameState.isPaused, 
             online: io.engine.clientsCount, 
-            marketCap: "---", 
-            peRatio: "---", 
-            fairValue: gameState.intrinsicValue,
-            stats: { buys: gameState.totalBuys, sells: gameState.totalSells, holds: gameState.totalHolds }
+            marketCap: "---", peRatio: "---", fairValue: gameState.intrinsicValue,
+            stats: { 
+                buys: gameState.totalBuys, 
+                sells: gameState.totalSells, 
+                holds: gameState.totalHolds, 
+                multiplier: gameState.voteMultiplier 
+            }
         });
     });
 });
 
 http.listen(PORT, () => {
     console.log(`Servidor MoneyFlix a correr na porta ${PORT}`);
-    console.log(`Multiplicador de Votos: x${VOTE_MULTIPLIER}`);
 });
