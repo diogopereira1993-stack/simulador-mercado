@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- ESTILO GERAL (MANTIDO IGUAL) --- */
         body { 
             background-color: #0a0e17; 
             color: white;
@@ -68,13 +67,14 @@
         const newsEl = document.getElementById('news-marquee');
         const ctx = document.getElementById('marketChart').getContext('2d');
         
-        let marketChart; // Variável para controlar o gráfico
+        let marketChart; 
 
-        // FUNÇÃO: INICIAR GRÁFICO (MODO LIVE)
-        // Esta função cria o gráfico normal que vês durante o jogo
+        // 1. Registo como Dashboard
+        socket.emit('register-dashboard');
+
+        // 2. Iniciar Gráfico Live
         function initLiveChart() {
             if (marketChart) marketChart.destroy();
-
             marketChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -100,18 +100,15 @@
                 }
             });
         }
-
-        // Arranca o gráfico vazio logo ao início
         initLiveChart();
         let lastPrice = 0;
 
-        // --- MODO 1: LIVE (Igual ao antigo) ---
-        socket.on('market-update', (data) => {
+        // 3. Ouvir Dados Completos (Só Dashboard)
+        socket.on('market-update-full', (data) => {
             if (data.mode === 'LIVE') {
                 const currentPrice = parseFloat(data.price);
                 priceEl.innerText = data.price + "€";
                 
-                // Cores do preço
                 if (currentPrice > lastPrice) { 
                     priceEl.className = "big-price-display price-up"; 
                     if(marketChart) marketChart.data.datasets[0].borderColor = '#00ff88'; 
@@ -127,7 +124,6 @@
                 statusEl.style.color = data.isPaused ? "#666" : "#ff4444";
                 if (newsEl.innerText !== data.news) newsEl.innerText = data.news;
 
-                // Atualiza os dados do gráfico existente
                 if (marketChart) {
                     marketChart.data.labels = data.history.map(h => h.time);
                     marketChart.data.datasets[0].data = data.history.map(h => h.price);
@@ -136,48 +132,34 @@
             }
         });
 
-        // --- MODO 2: FINAL (AQUI ESTÁ A CORREÇÃO "NUCLEAR") ---
+        // 4. Análise Final (Fim de Jogo)
         socket.on('market-finish', (data) => {
-            console.log("Recebendo dados finais...", data);
-            
-            // 1. Atualizar textos
             statusEl.innerText = "ANÁLISE FINAL";
             statusEl.style.color = "#9d00ff";
             statusEl.style.border = "1px solid #9d00ff";
             newsEl.innerText = "SESSÃO TERMINADA - HISTÓRICO COMPLETO";
 
-            // 2. DESTRUIR O GRÁFICO ANTIGO (O segredo para funcionar!)
             if (marketChart) marketChart.destroy();
 
-            // 3. Preparar as bolas
             const fullLabels = data.fullHistory.map(h => h.time);
-            
-            // Mapeia eventos para coordenadas X/Y
             const eventPoints = data.events.map(evt => {
-                return {
-                    x: evt.time, 
-                    y: evt.price,
-                    newsText: evt.text
-                };
+                return { x: evt.time, y: evt.price, newsText: evt.text };
             });
-
-            // Define cores das bolas
             const pointColors = data.events.map(evt => {
-                if (evt.impact > 0) return '#00ff88'; // Verde
-                if (evt.impact < 0) return '#ff4444'; // Vermelho
-                return '#ffd700'; // Amarelo
+                if (evt.impact > 0) return '#00ff88'; 
+                if (evt.impact < 0) return '#ff4444'; 
+                return '#ffd700'; 
             });
 
-            // 4. CRIAR NOVO GRÁFICO ESTÁTICO (Com o mesmo estilo do antigo)
             marketChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: fullLabels, // Usa TODOS os dados
+                    labels: fullLabels,
                     datasets: [
                         {
                             label: 'Preço (€)',
                             data: data.fullHistory.map(h => h.price),
-                            borderColor: '#ffffff', // Branco neutro
+                            borderColor: '#ffffff',
                             borderWidth: 2,
                             backgroundColor: 'rgba(255, 255, 255, 0.05)',
                             fill: true,
@@ -187,9 +169,9 @@
                         },
                         {
                             label: 'Eventos',
-                            type: 'scatter', // Bolas
+                            type: 'scatter',
                             data: eventPoints,
-                            pointRadius: 15,       // Bolas Grandes
+                            pointRadius: 15,
                             pointHoverRadius: 20,
                             backgroundColor: pointColors,
                             borderColor: 'white',
@@ -201,17 +183,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    animation: { duration: 2000, easing: 'easeOutQuart' }, // Animação suave
+                    animation: { duration: 2000, easing: 'easeOutQuart' },
                     scales: {
-                        x: { 
-                            display: true, 
-                            grid: { color: '#333' }, 
-                            ticks: { 
-                                color: '#888', 
-                                maxTicksLimit: 20, // Mostra mais horas
-                                autoSkip: true 
-                            } 
-                        },
+                        x: { display: true, grid: { color: '#333' }, ticks: { color: '#888', maxTicksLimit: 20, autoSkip: true } },
                         y: { position: 'right', grid: { color: '#333' }, ticks: { color: '#888' } }
                     },
                     plugins: {
@@ -222,9 +196,7 @@
                             bodyFont: { size: 14 },
                             callbacks: {
                                 label: function(context) {
-                                    if (context.dataset.type === 'scatter') {
-                                        return context.raw.newsText;
-                                    }
+                                    if (context.dataset.type === 'scatter') return context.raw.newsText;
                                     return context.formattedValue + ' €';
                                 }
                             }
