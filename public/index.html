@@ -54,10 +54,7 @@
                 <div class="portfolio-value" id="pe-ratio">---</div>
             </div>
         </div>
-        <div style="font-size: 0.8rem; text-align: center; color: #555; margin-top: 5px;">
-            Valor Justo Estimado: <span id="fair-val" style="color: #007bff; font-weight: bold;">---</span> €
         </div>
-    </div>
 
     <div class="portfolio-card" id="portfolio-box" style="opacity: 0.5;">
         <div class="portfolio-row">
@@ -111,17 +108,17 @@
             else if (currentMarketPrice < oldPrice) priceDisplay.classList.add('flash-down');
             setTimeout(() => priceDisplay.classList.remove('flash-up', 'flash-down'), 500);
 
-            // Novos Dados Fundamentais
+            // Novos Dados Fundamentais (SEM O VALOR JUSTO)
             document.getElementById('mkt-cap').innerText = data.marketCap + " €";
-            document.getElementById('fair-val').innerText = data.fairValue;
+            // A linha que atualizava o fair-val foi removida para não dar erro
             
             const peEl = document.getElementById('pe-ratio');
             peEl.innerText = data.peRatio;
             
-            // Cores do P/E
-            if (parseFloat(data.peRatio) > 40) peEl.style.color = "#ff4444"; 
-            else if (parseFloat(data.peRatio) < 15) peEl.style.color = "#00ff88"; 
-            else peEl.style.color = "white";
+            // Lógica de Cores do P/E (A única pista que eles têm agora!)
+            if (parseFloat(data.peRatio) > 40) peEl.style.color = "#ff4444"; // Caro/Perigoso
+            else if (parseFloat(data.peRatio) < 15) peEl.style.color = "#00ff88"; // Barato/Oportunidade
+            else peEl.style.color = "white"; // Normal
 
             newsText.innerText = data.news;
             
