@@ -7,25 +7,40 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-panel { max-width: 900px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
+        
+        /* Stats Topo */
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; }
         .stat-box { text-align: center; }
         .stat-val { font-size: 1.5rem; font-weight: bold; color: white; }
         .stat-lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; }
+
+        /* Arcos Narrativos */
         .story-arc { margin-bottom: 25px; padding: 15px; border-radius: 8px; border-left: 5px solid #555; background: #1a1a1a; }
         .arc-title { margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; color: #ddd; display: flex; justify-content: space-between; }
         .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+
+        /* Estilo Botões */
         .btn-game { height: 50px; font-size: 0.9rem; font-weight: 600; text-align: left; padding-left: 15px; position: relative; }
         .val-tag { position: absolute; right: 10px; top: 15px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
-        
+
+        /* Temas de Cores */
         .theme-green { border-color: #00ff88; }
         .btn-green { background: #132f20; color: #00ff88; border: 1px solid #004422; }
+        
         .theme-red { border-color: #ff4444; }
         .btn-red { background: #3a1010; color: #ff4444; border: 1px solid #551111; }
+        
         .theme-gold { border-color: #ffd700; }
         .btn-gold { background: #332b00; color: #ffd700; border: 1px solid #665500; }
+        
         .theme-purple { border-color: #9d00ff; }
+        
+        /* NOVO TEMA TÉCNICO */
+        .theme-cyan { border-color: #00d9ff; }
 
+        /* Área de Download e Bots */
         #download-area { display: none; margin-top: 20px; padding: 20px; background: #1a0526; border: 2px dashed #9d00ff; text-align: center; border-radius: 10px; }
+        
         .bot-zone { border: 1px dashed #bc6ff1; opacity: 0.9; }
         .blinking { animation: blinker 1s linear infinite; color: #ff00ff; font-weight: bold; }
         @keyframes blinker { 50% { opacity: 0; } }
@@ -61,6 +76,15 @@
             <button class="btn hold" style="background: #9d00ff; width: 80%;" onclick="downloadReport()">
                 📥 BAIXAR EXCEL/CSV
             </button>
+        </div>
+
+        <div class="story-arc theme-cyan">
+            <h3 class="arc-title" style="color: #00d9ff;">⚙️ Configuração Técnica (Atual: x<span id="mult-display">1</span>)</h3>
+            <div class="grid-buttons">
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(1)">👤 Normal (x1)</button>
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(10)">🚀 Boost (x10)</button>
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(100)">🧪 Teste (x100)</button>
+            </div>
         </div>
 
         <div class="story-arc theme-purple">
@@ -135,6 +159,11 @@
         function sendCommand(cmd) {
             socket.emit('admin-action', { command: cmd });
         }
+        
+        // NOVA FUNÇÃO: Mudar Multiplicador
+        function setMultiplier(val) {
+            socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val });
+        }
 
         function confirmReset() {
             if(confirm("Tens a certeza? Apaga tudo.")) {
@@ -152,15 +181,22 @@
             sendNews(text, 0);
         }
 
+        // --- LÓGICA DOS BOTS ---
         function startBots(sentiment) {
             if (botInterval) clearInterval(botInterval);
+            
             const statusEl = document.getElementById('bot-status');
             statusEl.innerHTML = `<span class="blinking">A ATACAR (${sentiment})...</span>`;
+
+            // Envia pacotes de votos a cada 50ms
             botInterval = setInterval(() => {
                 for (let i = 0; i < 5; i++) { 
                     let action;
-                    if (sentiment === 'BULL') action = Math.random() > 0.2 ? 'BUY' : 'SELL';
-                    else action = Math.random() > 0.2 ? 'SELL' : 'BUY';
+                    if (sentiment === 'BULL') {
+                        action = Math.random() > 0.2 ? 'BUY' : 'SELL';
+                    } else {
+                        action = Math.random() > 0.2 ? 'SELL' : 'BUY';
+                    }
                     socket.emit('vote', action);
                 }
             }, 50);
@@ -172,19 +208,23 @@
             document.getElementById('bot-status').innerText = "INATIVO";
         }
 
+        // --- EXPORTAR RELATÓRIO ---
         function downloadReport() {
             if (!sessionData) return alert("Sem dados.");
+
             let csv = "data:text/csv;charset=utf-8,";
             csv += "RELATORIO SESSAO MONEYFLIX\n";
             csv += `Participantes Max,${document.getElementById('online-count').innerText}\n`;
             csv += `Total Votos,${sessionData.stats.total}\n\n`;
             csv += "Hora,Preco,Noticia\n";
+
             sessionData.fullHistory.forEach(point => {
                 let eventText = "";
                 const event = sessionData.events.find(e => e.time === point.time);
                 if (event) eventText = event.text.replace(/,/g, ";");
                 csv += `${point.time},${point.price.toFixed(2)},${eventText}\n`;
             });
+
             const encodedUri = encodeURI(csv);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -194,7 +234,7 @@
             document.body.removeChild(link);
         }
 
-        // MUDANÇA: Agora ouve 'market-update-light' para estatísticas
+        // --- OUVIR UPDATES (Incluindo Multiplicador) ---
         socket.on('market-update-light', (data) => {
             const statusEl = document.getElementById('status-display');
             statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO 🟢";
@@ -206,6 +246,11 @@
                 document.getElementById('count-buy').innerText = data.stats.buys;
                 document.getElementById('count-sell').innerText = data.stats.sells;
                 document.getElementById('count-hold').innerText = data.stats.holds;
+                
+                // Atualiza o indicador do multiplicador atual
+                if (data.stats.multiplier) {
+                    document.getElementById('mult-display').innerText = data.stats.multiplier;
+                }
             }
         });
 
