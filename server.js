@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- CONFIGURAÇÃO DO CENÁRIO ---
-// Ajusta aqui para o teste de equipa (ex: 100) ou evento real (1)
+// ⚠️ ATENÇÃO: Muda para 100 para testares com a equipa. 
+// No dia do evento, TEM DE ESTAR A 1.
 const VOTE_MULTIPLIER = 1; 
 
 const TOTAL_SHARES = 1000000; // 1 Milhão de ações
@@ -71,17 +72,23 @@ setInterval(() => {
     let marketCap = (currentPrice * TOTAL_SHARES);
     let peRatio = (currentPrice / EPS).toFixed(1); // Preço / 2.5
 
-    // --- PACOTE LEVE (Para os 500 telemóveis) ---
-    // NÃO enviamos o histórico aqui para poupar internet
+    // --- PACOTE LEVE (Para os 500 telemóveis + Admin) ---
+    // Inclui estatísticas para o Admin funcionar
     io.emit('market-update-light', {
         price: currentPrice.toFixed(2),
         news: gameState.currentNews,
         isPaused: gameState.isPaused,
         online: io.engine.clientsCount,
-        // Novos dados fundamentais
+        // Dados Fundamentais
         marketCap: marketCap > 1000000 ? (marketCap/1000000).toFixed(1) + "M" : marketCap.toFixed(0),
         peRatio: peRatio,
-        fairValue: gameState.intrinsicValue.toFixed(2)
+        fairValue: gameState.intrinsicValue.toFixed(2),
+        // Estatísticas (Para o Admin)
+        stats: {
+            buys: gameState.totalBuys,
+            sells: gameState.totalSells,
+            holds: gameState.totalHolds
+        }
     });
 
     // --- PACOTE PESADO (Só para o Dashboard) ---
@@ -120,7 +127,7 @@ io.on('connection', (socket) => {
         if (now - lastTime < 500) return; 
         lastVoteTime.set(socket.id, now);
 
-        // Aplica o Multiplicador (1 para evento, 100 para teste)
+        // Aplica o Multiplicador
         let voteWeight = VOTE_MULTIPLIER;
 
         gameState.totalVotesEver += voteWeight;
@@ -137,7 +144,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Admin e Comandos (Mantido igual, mas envia updates para canais certos)
+    // Admin e Comandos
     socket.on('admin-action', (data) => {
         if (data.command === 'START_STOP') {
             gameState.isPaused = !gameState.isPaused;
@@ -165,7 +172,6 @@ io.on('connection', (socket) => {
         if (data.command === 'SHOW_FINAL_CHART') {
             gameState.isPaused = true;
             gameState.currentNews = "SESSÃO ENCERRADA";
-            // Emite para TODOS para saberem que acabou
             io.emit('market-finish', {
                 fullHistory: fullHistory,
                 events: eventLog,
@@ -174,10 +180,16 @@ io.on('connection', (socket) => {
             return;
         }
         
-        // Update imediato para Admin não esperar 2s
+        // Update imediato
         io.emit('market-update-light', { 
-            price: gameState.price.toFixed(2), news: gameState.currentNews, isPaused: gameState.isPaused, 
-            online: io.engine.clientsCount, marketCap: "---", peRatio: "---", fairValue: gameState.intrinsicValue 
+            price: gameState.price.toFixed(2), 
+            news: gameState.currentNews, 
+            isPaused: gameState.isPaused, 
+            online: io.engine.clientsCount, 
+            marketCap: "---", 
+            peRatio: "---", 
+            fairValue: gameState.intrinsicValue,
+            stats: { buys: gameState.totalBuys, sells: gameState.totalSells, holds: gameState.totalHolds }
         });
     });
 });
