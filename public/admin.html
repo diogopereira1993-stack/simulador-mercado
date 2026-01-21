@@ -8,146 +8,116 @@
     <style>
         .admin-panel { max-width: 900px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
         
-        /* Stats Topo */
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; }
         .stat-box { text-align: center; }
         .stat-val { font-size: 1.5rem; font-weight: bold; color: white; }
         .stat-lbl { font-size: 0.7rem; color: #888; text-transform: uppercase; }
 
-        /* Arcos Narrativos */
         .story-arc { margin-bottom: 25px; padding: 15px; border-radius: 8px; border-left: 5px solid #555; background: #1a1a1a; }
         .arc-title { margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; color: #ddd; display: flex; justify-content: space-between; }
         .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
 
-        /* Estilo Botões */
-        .btn-game { height: 50px; font-size: 0.9rem; font-weight: 600; text-align: left; padding-left: 15px; position: relative; }
-        .val-tag { position: absolute; right: 10px; top: 15px; font-size: 0.7rem; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+        .btn-game { height: 50px; font-size: 0.9rem; font-weight: 600; padding: 10px; color:white; border:none; border-radius: 5px; cursor: pointer; }
+        .val-tag { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 2px; }
 
-        /* Temas de Cores */
-        .theme-green { border-color: #00ff88; }
-        .btn-green { background: #132f20; color: #00ff88; border: 1px solid #004422; }
-        
-        .theme-red { border-color: #ff4444; }
-        .btn-red { background: #3a1010; color: #ff4444; border: 1px solid #551111; }
-        
-        .theme-gold { border-color: #ffd700; }
-        .btn-gold { background: #332b00; color: #ffd700; border: 1px solid #665500; }
-        
+        /* Cores Temáticas */
+        .theme-green { border-color: #00ff88; } .btn-green { background: #132f20; border: 1px solid #004422; }
+        .theme-red { border-color: #ff4444; } .btn-red { background: #3a1010; border: 1px solid #551111; }
+        .theme-gold { border-color: #ffd700; } .btn-gold { background: #332b00; border: 1px solid #665500; }
         .theme-purple { border-color: #9d00ff; }
-        
-        /* NOVO TEMA TÉCNICO */
         .theme-cyan { border-color: #00d9ff; }
+        .theme-blue { border-color: #007bff; } .btn-blue { background: #002a55; border: 1px solid #004080; }
 
-        /* Área de Download e Bots */
         #download-area { display: none; margin-top: 20px; padding: 20px; background: #1a0526; border: 2px dashed #9d00ff; text-align: center; border-radius: 10px; }
         
         .bot-zone { border: 1px dashed #bc6ff1; opacity: 0.9; }
         .blinking { animation: blinker 1s linear infinite; color: #ff00ff; font-weight: bold; }
         @keyframes blinker { 50% { opacity: 0; } }
-
         input[type="text"] { width: 70%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 4px; }
     </style>
 </head>
 <body>
     <div class="admin-panel">
-        
         <div class="stats-bar">
-            <div class="stat-box">
-                <div class="stat-val" id="online-count">0</div>
-                <div class="stat-lbl">Online</div>
-            </div>
-            <div class="stat-box" style="border-left: 1px solid #333; border-right: 1px solid #333;">
-                <div style="font-size: 0.8rem; margin-bottom: 5px;">DISTRIBUIÇÃO</div>
-                <div style="display: flex; justify-content: center; gap: 15px; font-size: 0.9rem;">
-                    <span style="color: #00ff88;">C: <b id="count-buy">0</b></span>
-                    <span style="color: #ff4444;">V: <b id="count-sell">0</b></span>
-                    <span style="color: #aaa;">M: <b id="count-hold">0</b></span>
-                </div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-val" id="status-display" style="color: yellow;">PAUSADO</div>
-                <div class="stat-lbl">Estado</div>
-            </div>
+            <div class="stat-box"><div class="stat-val" id="online-count">0</div><div class="stat-lbl">Online</div></div>
+            <div class="stat-box"><div style="font-size: 0.8rem;">C: <b id="count-buy" style="color:#0f8">0</b> V: <b id="count-sell" style="color:#f44">0</b></div></div>
+            <div class="stat-box"><div class="stat-val" id="status-display" style="color: yellow;">PAUSADO</div></div>
         </div>
 
         <div id="download-area">
             <h3 style="color: #9d00ff;">📊 SESSÃO TERMINADA</h3>
-            <p style="color: #ccc; margin-bottom: 15px;">Relatório comportamental pronto.</p>
-            <button class="btn hold" style="background: #9d00ff; width: 80%;" onclick="downloadReport()">
-                📥 BAIXAR EXCEL/CSV
-            </button>
+            <button class="btn hold" style="background: #9d00ff; width: 80%;" onclick="downloadReport()">📥 BAIXAR EXCEL</button>
         </div>
 
-        <div class="story-arc theme-cyan">
-            <h3 class="arc-title" style="color: #00d9ff;">⚙️ Configuração Técnica (Atual: x<span id="mult-display">1</span>)</h3>
+        <div class="story-arc theme-blue">
+            <h3 class="arc-title" style="color: #007bff;">📅 RELATÓRIOS TRIMESTRAIS (Earnings)</h3>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">Isto altera o EPS e Receita, afetando o P/E Ratio real.</p>
             <div class="grid-buttons">
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(1)">👤 Normal (x1)</button>
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(10)">🚀 Boost (x10)</button>
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(100)">🧪 Teste (x100)</button>
+                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Resultados superam estimativas!', 3.50, '200M', 10)">
+                    🚀 Superou Estimativas
+                    <span class="val-tag">EPS sobe p/ 3.50€</span>
+                </button>
+                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Resultados em linha com o esperado.', 2.50, '155M', 2)">
+                    😐 Em Linha
+                    <span class="val-tag">EPS mantém 2.50€</span>
+                </button>
+                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Falhou nas receitas e lucros.', 1.20, '100M', -15)">
+                    📉 Falhou Estimativas
+                    <span class="val-tag">EPS cai p/ 1.20€</span>
+                </button>
             </div>
         </div>
 
         <div class="story-arc theme-purple">
             <div class="grid-buttons">
                 <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR / PAUSAR</button>
-                <button class="btn hold" style="background: #551166;" onclick="sendCommand('SHOW_FINAL_CHART')">🏁 ENCERRAR SESSÃO</button>
-                <button class="btn sell" style="background: darkred;" onclick="confirmReset()">⚠️ RESET TOTAL</button>
+                <button class="btn hold" style="background: #551166;" onclick="sendCommand('SHOW_FINAL_CHART')">🏁 ENCERRAR</button>
+                <button class="btn sell" style="background: darkred;" onclick="confirmReset()">⚠️ RESET</button>
             </div>
         </div>
 
         <div class="story-arc theme-gold">
             <h3 class="arc-title" style="color: #ffd700;">🎭 Arco: Insider</h3>
             <div class="grid-buttons">
-                <button class="btn btn-gold" onclick="sendNews('INSIDER: CEO comprou 50.000 ações!', 0)">🐂 CEO Comprou (Bluff) <span class="val-tag">0€</span></button>
-                <button class="btn btn-gold" style="border: 1px solid #ffd700;" onclick="sendNews('INSIDER: CEO reforça posição (Real).', 5)">🐂 CEO Comprou (Real) <span class="val-tag">+5€</span></button>
-                <button class="btn btn-gold" onclick="sendNews('ALERTA: CEO vendeu ações pessoais.', 0)">🐻 CEO Vendeu (Pânico) <span class="val-tag">0€</span></button>
+                <button class="btn-game btn-gold" onclick="sendNews('INSIDER: CEO comprou 50.000 ações!', 0)">🐂 CEO Comprou (Bluff)</button>
+                <button class="btn-game btn-gold" onclick="sendNews('INSIDER: CEO reforça posição.', 5)">🐂 CEO Comprou (Real)</button>
+                <button class="btn-game btn-gold" onclick="sendNews('ALERTA: CEO vendeu ações.', 0)">🐻 CEO Vendeu (Pânico)</button>
             </div>
         </div>
 
         <div class="story-arc theme-green">
             <h3 class="arc-title" style="color: #00ff88;">🚀 Arco: Crescimento</h3>
             <div class="grid-buttons">
-                <button class="btn btn-green" onclick="sendNews('LUCRO: Trimestre acima do esperado.', 8)">💰 Resultados Bons <span class="val-tag">+8€</span></button>
-                <button class="btn btn-green" onclick="sendNews('INOVAÇÃO: Produto revolucionário!', 12)">📦 Produto Novo <span class="val-tag">+12€</span></button>
-                <button class="btn btn-green" style="border: 1px solid white;" onclick="sendNews('MONOPÓLIO: Aquisição aprovada!', 20)">🏆 Aquisição Gigante <span class="val-tag">+20€</span></button>
+                <button class="btn-game btn-green" onclick="sendNews('LUCRO: Margens aumentam.', 8)">💰 Margens Melhores</button>
+                <button class="btn-game btn-green" onclick="sendNews('INOVAÇÃO: Produto revolucionário!', 12)">📦 Produto Novo</button>
+                <button class="btn-game btn-green" onclick="sendNews('MONOPÓLIO: Aquisição aprovada!', 20)">🏆 Aquisição</button>
             </div>
         </div>
 
         <div class="story-arc theme-red">
             <h3 class="arc-title" style="color: #ff4444;">🩸 Arco: Crise</h3>
             <div class="grid-buttons">
-                <button class="btn btn-red" onclick="sendNews('CORREÇÃO: Analistas baixam nota.', -5)">📉 Nota Analista <span class="val-tag">-5€</span></button>
-                <button class="btn btn-red" onclick="sendNews('CIBERATAQUE: Dados expostos!', -15)">🔓 Hack Massivo <span class="val-tag">-15€</span></button>
-                <button class="btn btn-red" style="border: 1px solid white;" onclick="sendNews('FRAUDE: Contas falsificadas!', -25)">⚖️ Escândalo Fraude <span class="val-tag">-25€</span></button>
-            </div>
-        </div>
-
-        <div class="story-arc" style="border-color: #888;">
-            <h3 class="arc-title" style="color: #aaa;">📢 Rumores & Correção</h3>
-            <div class="grid-buttons">
-                <button class="btn hold" onclick="sendNews('RUMOR: Elon Musk tweetou.', 0)">🐦 Tweet Viral</button>
-                <button class="btn hold" onclick="sendNews('FAKE NEWS: Desmentido oficial.', 0)">🤖 Fake News</button>
-                <button class="btn hold" style="background: #333;" onclick="sendNews('ANÁLISE: Arrefecer Mercado.', -2)">⚖️ Arrefecer (-2€)</button>
+                <button class="btn-game btn-red" onclick="sendNews('CORREÇÃO: Baixa de rating.', -5)">📉 Baixa Rating</button>
+                <button class="btn-game btn-red" onclick="sendNews('CIBERATAQUE: Dados expostos!', -15)">🔓 Hack</button>
+                <button class="btn-game btn-red" onclick="sendNews('FRAUDE: Contas falsificadas!', -25)">⚖️ Fraude</button>
             </div>
         </div>
 
         <div class="story-arc">
-            <h3 class="arc-title" style="color: white;">✍️ Mensagem Manual</h3>
             <div style="display: flex; gap: 10px;">
-                <input type="text" id="news-input" placeholder="Escreve aqui...">
+                <input type="text" id="news-input" placeholder="Notícia manual...">
                 <button class="btn hold" onclick="sendManual()">ENVIAR</button>
             </div>
         </div>
 
         <div class="story-arc bot-zone">
-            <h3 class="arc-title" style="color: #bc6ff1;">🤖 Stress Test (Bots) <span id="bot-status" style="font-size:0.8rem;">INATIVO</span></h3>
+            <h3 class="arc-title" style="color: #bc6ff1;">🤖 Stress Test <span id="bot-status">INATIVO</span></h3>
             <div class="grid-buttons">
-                <button class="btn hold" onclick="startBots('BULL')">🚀 SPAM "BUY"</button>
-                <button class="btn sell" onclick="startBots('BEAR')">🔻 SPAM "SELL"</button>
-                <button class="btn hold" style="background: #333;" onclick="stopBots()">🛑 PARAR BOTS</button>
+                <button class="btn hold" onclick="startBots('BULL')">🚀 SPAM BUY</button>
+                <button class="btn sell" onclick="startBots('BEAR')">🔻 SPAM SELL</button>
+                <button class="btn hold" style="background: #333;" onclick="stopBots()">🛑 PARAR</button>
             </div>
         </div>
-
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -156,17 +126,11 @@
         let sessionData = null;
         let botInterval = null;
 
-        function sendCommand(cmd) {
-            socket.emit('admin-action', { command: cmd });
-        }
-        
-        // NOVA FUNÇÃO: Mudar Multiplicador
-        function setMultiplier(val) {
-            socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val });
-        }
+        function sendCommand(cmd) { socket.emit('admin-action', { command: cmd }); }
+        function setMultiplier(val) { socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); }
 
         function confirmReset() {
-            if(confirm("Tens a certeza? Apaga tudo.")) {
+            if(confirm("Apagar tudo?")) {
                 sendCommand('RESET');
                 document.getElementById('download-area').style.display = 'none';
             }
@@ -176,27 +140,28 @@
             socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue });
         }
 
+        // NOVA FUNÇÃO: Enviar Earnings
+        function sendEarnings(text, newEPS, newRevenue, impact) {
+            socket.emit('admin-action', { 
+                command: 'EARNINGS_UPDATE', 
+                text: text, 
+                newEPS: newEPS, 
+                newRevenue: newRevenue,
+                impact: impact 
+            });
+        }
+
         function sendManual() {
             const text = document.getElementById('news-input').value;
             sendNews(text, 0);
         }
 
-        // --- LÓGICA DOS BOTS ---
         function startBots(sentiment) {
             if (botInterval) clearInterval(botInterval);
-            
-            const statusEl = document.getElementById('bot-status');
-            statusEl.innerHTML = `<span class="blinking">A ATACAR (${sentiment})...</span>`;
-
-            // Envia pacotes de votos a cada 50ms
+            document.getElementById('bot-status').innerHTML = `<span class="blinking">(${sentiment})...</span>`;
             botInterval = setInterval(() => {
                 for (let i = 0; i < 5; i++) { 
-                    let action;
-                    if (sentiment === 'BULL') {
-                        action = Math.random() > 0.2 ? 'BUY' : 'SELL';
-                    } else {
-                        action = Math.random() > 0.2 ? 'SELL' : 'BUY';
-                    }
+                    let action = (sentiment === 'BULL') ? (Math.random() > 0.2 ? 'BUY' : 'SELL') : (Math.random() > 0.2 ? 'SELL' : 'BUY');
                     socket.emit('vote', action);
                 }
             }, 50);
@@ -208,56 +173,36 @@
             document.getElementById('bot-status').innerText = "INATIVO";
         }
 
-        // --- EXPORTAR RELATÓRIO ---
         function downloadReport() {
             if (!sessionData) return alert("Sem dados.");
-
-            let csv = "data:text/csv;charset=utf-8,";
-            csv += "RELATORIO SESSAO MONEYFLIX\n";
-            csv += `Participantes Max,${document.getElementById('online-count').innerText}\n`;
-            csv += `Total Votos,${sessionData.stats.total}\n\n`;
-            csv += "Hora,Preco,Noticia\n";
-
+            let csv = "data:text/csv;charset=utf-8,RELATORIO,Participantes," + document.getElementById('online-count').innerText + "\nData,Preco,Noticia\n";
             sessionData.fullHistory.forEach(point => {
-                let eventText = "";
-                const event = sessionData.events.find(e => e.time === point.time);
-                if (event) eventText = event.text.replace(/,/g, ";");
-                csv += `${point.time},${point.price.toFixed(2)},${eventText}\n`;
+                let event = sessionData.events.find(e => e.time === point.time);
+                let txt = event ? event.text.replace(/,/g, ";") : "";
+                csv += `${point.time},${point.price.toFixed(2)},${txt}\n`;
             });
-
-            const encodedUri = encodeURI(csv);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "moneyflix_report.csv");
+            link.setAttribute("href", encodeURI(csv));
+            link.setAttribute("download", "report.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // --- OUVIR UPDATES (Incluindo Multiplicador) ---
         socket.on('market-update-light', (data) => {
             const statusEl = document.getElementById('status-display');
-            statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO 🟢";
+            statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO";
             statusEl.style.color = data.isPaused ? "yellow" : "#00ff88";
-            
             document.getElementById('online-count').innerText = data.online;
-            
             if(data.stats) {
                 document.getElementById('count-buy').innerText = data.stats.buys;
                 document.getElementById('count-sell').innerText = data.stats.sells;
-                document.getElementById('count-hold').innerText = data.stats.holds;
-                
-                // Atualiza o indicador do multiplicador atual
-                if (data.stats.multiplier) {
-                    document.getElementById('mult-display').innerText = data.stats.multiplier;
-                }
             }
         });
 
         socket.on('market-finish', (data) => {
             sessionData = data;
             document.getElementById('status-display').innerText = "ENCERRADO";
-            document.getElementById('status-display').style.color = "red";
             document.getElementById('download-area').style.display = 'block';
             stopBots(); 
             window.scrollTo(0, 0);
