@@ -49,6 +49,15 @@
             <button class="btn hold" style="background: #9d00ff; width: 80%;" onclick="downloadReport()">📥 BAIXAR EXCEL</button>
         </div>
 
+        <div class="story-arc theme-cyan">
+            <h3 class="arc-title" style="color: #00d9ff;">⚙️ Multiplicador de Voto (Atual: x<span id="mult-display">1</span>)</h3>
+            <div class="grid-buttons">
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(1)">👤 Normal (x1)</button>
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(10)">🚀 Boost (x10)</button>
+                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(100)">🧪 Teste (x100)</button>
+            </div>
+        </div>
+
         <div class="story-arc theme-blue">
             <h3 class="arc-title" style="color: #007bff;">📅 RELATÓRIOS TRIMESTRAIS (Earnings)</h3>
             <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">Isto altera o EPS e Receita, afetando o P/E Ratio real.</p>
@@ -127,7 +136,11 @@
         let botInterval = null;
 
         function sendCommand(cmd) { socket.emit('admin-action', { command: cmd }); }
-        function setMultiplier(val) { socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); }
+        
+        // Função do Multiplicador
+        function setMultiplier(val) { 
+            socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); 
+        }
 
         function confirmReset() {
             if(confirm("Apagar tudo?")) {
@@ -140,7 +153,6 @@
             socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue });
         }
 
-        // NOVA FUNÇÃO: Enviar Earnings
         function sendEarnings(text, newEPS, newRevenue, impact) {
             socket.emit('admin-action', { 
                 command: 'EARNINGS_UPDATE', 
@@ -197,6 +209,11 @@
             if(data.stats) {
                 document.getElementById('count-buy').innerText = data.stats.buys;
                 document.getElementById('count-sell').innerText = data.stats.sells;
+                
+                // Atualiza o texto do multiplicador na barra
+                if (data.stats.multiplier) {
+                    document.getElementById('mult-display').innerText = data.stats.multiplier;
+                }
             }
         });
 
