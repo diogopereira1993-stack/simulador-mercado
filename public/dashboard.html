@@ -20,9 +20,9 @@
             box-sizing: border-box;
         }
 
-        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px; height: 15%; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 15px; height: 12%; }
         .brand-name { font-size: 2.5rem; font-weight: 800; letter-spacing: 2px; color: #888; }
-        .big-price-display { font-size: 6rem; font-weight: 700; font-variant-numeric: tabular-nums; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .big-price-display { font-size: 5rem; font-weight: 700; font-variant-numeric: tabular-nums; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         .price-up { color: #00ff88; } 
         .price-down { color: #ff4444; }
 
@@ -30,12 +30,29 @@
             flex-grow: 1; position: relative; width: 100%;
             background: rgba(255,255,255,0.02); border-radius: 8px; padding: 10px;
             box-sizing: border-box; border: 1px solid #222;
+            margin-bottom: 15px;
         }
+
+        /* --- BARRA DE FUNDAMENTOS (NOVA) --- */
+        .fundamentals-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #111;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-bottom: 15px;
+            height: 12%;
+        }
+        .fund-item { text-align: center; border-right: 1px solid #333; width: 100%; }
+        .fund-item:last-child { border-right: none; }
+        .fund-label { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        .fund-value { font-size: 1.5rem; font-weight: bold; color: white; }
 
         .status-badge { font-size: 1.2rem; font-weight: bold; padding: 5px 15px; border-radius: 4px; background: #222; color: #666; margin-top: 5px; display: inline-block; }
         
         .news-footer {
-            height: 10%; margin-top: 20px; background: #111; padding: 0 15px;
+            height: 8%; background: #111; padding: 0 15px;
             border-radius: 5px; display: flex; align-items: center; border-left: 4px solid #444;
         }
     </style>
@@ -44,14 +61,43 @@
 
     <div class="header-row">
         <div style="display: flex; flex-direction: column;">
-            <div class="brand-name">LUSI</div>
+            <div class="brand-name">LUSI <span style="font-size:1rem; color:#444;">(LUSITANA TECH)</span></div>
             <div id="status-display" class="status-badge">AGUARDANDO...</div>
         </div>
+        
+        <div style="text-align: right; margin-right: 30px;">
+            <div style="color: #666; font-size: 0.8rem;">DATA DE MERCADO</div>
+            <div id="market-date" style="font-size: 1.5rem; font-weight: bold; color: #00d9ff;">--/--/----</div>
+        </div>
+
         <div id="main-price" class="big-price-display">--- €</div>
     </div>
 
     <div class="chart-wrapper">
         <canvas id="marketChart"></canvas>
+    </div>
+
+    <div class="fundamentals-bar">
+        <div class="fund-item">
+            <div class="fund-label">Market Cap</div>
+            <div class="fund-value" id="dash-mkt-cap">---</div>
+        </div>
+        <div class="fund-item">
+            <div class="fund-label">Ações (Shares)</div>
+            <div class="fund-value" id="dash-shares">---</div>
+        </div>
+        <div class="fund-item">
+            <div class="fund-label">P/E Ratio</div>
+            <div class="fund-value" id="dash-pe">---</div>
+        </div>
+        <div class="fund-item">
+            <div class="fund-label">EPS (TTM)</div>
+            <div class="fund-value" id="dash-eps">---</div>
+        </div>
+        <div class="fund-item">
+            <div class="fund-label">Receita (Q)</div>
+            <div class="fund-value" id="dash-rev">---</div>
+        </div>
     </div>
 
     <div class="news-footer">
@@ -65,14 +111,13 @@
         const priceEl = document.getElementById('main-price');
         const statusEl = document.getElementById('status-display');
         const newsEl = document.getElementById('news-marquee');
+        const dateEl = document.getElementById('market-date');
         const ctx = document.getElementById('marketChart').getContext('2d');
         
         let marketChart; 
 
-        // 1. Registo como Dashboard
         socket.emit('register-dashboard');
 
-        // 2. Iniciar Gráfico Live
         function initLiveChart() {
             if (marketChart) marketChart.destroy();
             marketChart = new Chart(ctx, {
@@ -93,7 +138,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false, animation: false,
                     scales: {
-                        x: { display: true, grid: { color: '#333' }, ticks: { color: '#666', maxTicksLimit: 12 } },
+                        x: { display: true, grid: { color: '#333' }, ticks: { color: '#666', maxTicksLimit: 10 } },
                         y: { position: 'right', grid: { color: '#333' }, ticks: { color: '#888' } }
                     },
                     plugins: { legend: { display: false } }
@@ -103,12 +148,27 @@
         initLiveChart();
         let lastPrice = 0;
 
-        // 3. Ouvir Dados Completos (Só Dashboard)
+        // OUVIR UPDATE COMPLETO
         socket.on('market-update-full', (data) => {
             if (data.mode === 'LIVE') {
                 const currentPrice = parseFloat(data.price);
                 priceEl.innerText = data.price + "€";
+                dateEl.innerText = data.date;
                 
+                // Atualizar Fundamentos
+                document.getElementById('dash-mkt-cap').innerText = data.marketCap;
+                document.getElementById('dash-shares').innerText = data.shares;
+                document.getElementById('dash-pe').innerText = data.peRatio;
+                document.getElementById('dash-eps').innerText = data.eps + "€";
+                document.getElementById('dash-rev').innerText = data.revenue;
+
+                // Cor P/E
+                const peEl = document.getElementById('dash-pe');
+                if (parseFloat(data.peRatio) > 40) peEl.style.color = "#ff4444";
+                else if (parseFloat(data.peRatio) < 15) peEl.style.color = "#00ff88";
+                else peEl.style.color = "white";
+
+                // Cores Preço
                 if (currentPrice > lastPrice) { 
                     priceEl.className = "big-price-display price-up"; 
                     if(marketChart) marketChart.data.datasets[0].borderColor = '#00ff88'; 
@@ -120,31 +180,29 @@
                 }
                 lastPrice = currentPrice;
 
-                statusEl.innerText = data.isPaused ? "MERCADO FECHADO" : "● EM TEMPO REAL";
+                statusEl.innerText = data.isPaused ? "MERCADO FECHADO" : "● AO VIVO";
                 statusEl.style.color = data.isPaused ? "#666" : "#ff4444";
                 if (newsEl.innerText !== data.news) newsEl.innerText = data.news;
 
                 if (marketChart) {
-                    marketChart.data.labels = data.history.map(h => h.time);
+                    marketChart.data.labels = data.history.map(h => h.time); // Agora são Datas!
                     marketChart.data.datasets[0].data = data.history.map(h => h.price);
                     marketChart.update();
                 }
             }
         });
 
-        // 4. Análise Final (Fim de Jogo)
+        // MODO FINAL
         socket.on('market-finish', (data) => {
             statusEl.innerText = "ANÁLISE FINAL";
             statusEl.style.color = "#9d00ff";
             statusEl.style.border = "1px solid #9d00ff";
-            newsEl.innerText = "SESSÃO TERMINADA - HISTÓRICO COMPLETO";
+            newsEl.innerText = "SESSÃO TERMINADA";
 
             if (marketChart) marketChart.destroy();
 
             const fullLabels = data.fullHistory.map(h => h.time);
-            const eventPoints = data.events.map(evt => {
-                return { x: evt.time, y: evt.price, newsText: evt.text };
-            });
+            const eventPoints = data.events.map(evt => ({ x: evt.time, y: evt.price, newsText: evt.text }));
             const pointColors = data.events.map(evt => {
                 if (evt.impact > 0) return '#00ff88'; 
                 if (evt.impact < 0) return '#ff4444'; 
@@ -159,31 +217,20 @@
                         {
                             label: 'Preço (€)',
                             data: data.fullHistory.map(h => h.price),
-                            borderColor: '#ffffff',
-                            borderWidth: 2,
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            fill: true,
-                            pointRadius: 0,
-                            tension: 0.3,
-                            order: 2
+                            borderColor: '#ffffff', borderWidth: 2, backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            fill: true, pointRadius: 0, tension: 0.3, order: 2
                         },
                         {
                             label: 'Eventos',
                             type: 'scatter',
                             data: eventPoints,
-                            pointRadius: 15,
-                            pointHoverRadius: 20,
-                            backgroundColor: pointColors,
-                            borderColor: 'white',
-                            borderWidth: 2,
-                            order: 1
+                            pointRadius: 15, pointHoverRadius: 20,
+                            backgroundColor: pointColors, borderColor: 'white', borderWidth: 2, order: 1
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 2000, easing: 'easeOutQuart' },
+                    responsive: true, maintainAspectRatio: false,
                     scales: {
                         x: { display: true, grid: { color: '#333' }, ticks: { color: '#888', maxTicksLimit: 20, autoSkip: true } },
                         y: { position: 'right', grid: { color: '#333' }, ticks: { color: '#888' } }
@@ -191,9 +238,6 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.9)',
-                            titleFont: { size: 16 },
-                            bodyFont: { size: 14 },
                             callbacks: {
                                 label: function(context) {
                                     if (context.dataset.type === 'scatter') return context.raw.newsText;
