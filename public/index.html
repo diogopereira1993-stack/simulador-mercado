@@ -6,42 +6,106 @@
     <title>Minha Carteira</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .portfolio-card { background: #161b22; border-radius: 15px; padding: 15px; margin: 10px 20px; border: 1px solid #333; }
+        /* Estilos dos Cartões */
+        .portfolio-card {
+            background: #161b22;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 20px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
         .portfolio-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .portfolio-label { font-size: 0.8rem; color: #888; text-transform: uppercase; }
         .portfolio-value { font-size: 1.1rem; font-weight: bold; color: white; }
+        
         .gain-loss { font-size: 1.5rem; font-weight: 800; }
-        .positive { color: #00ff88; } .negative { color: #ff4444; }
-        .pe-high { color: #ff4444; } .pe-low { color: #00ff88; }
-        .flash-up { animation: flashGreen 0.5s; } .flash-down { animation: flashRed 0.5s; }
+        .positive { color: #00ff88; }
+        .negative { color: #ff4444; }
+        
+        /* Cores P/E */
+        .pe-high { color: #ff4444; } 
+        .pe-low { color: #00ff88; }
+        
+        /* Animações de Preço */
+        .flash-up { animation: flashGreen 0.5s; }
+        .flash-down { animation: flashRed 0.5s; }
         @keyframes flashGreen { 0% { background-color: rgba(0,255,136,0.2); } 100% { background-color: transparent; } }
         @keyframes flashRed { 0% { background-color: rgba(255,68,68,0.2); } 100% { background-color: transparent; } }
+
+        /* O POPUP VISUAL (Restaurado) */
+        .vote-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 136, 0.95); /* Verde Matrix */
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            z-index: 9999;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            white-space: nowrap;
+            pointer-events: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            80% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body class="mobile-body">
     <div id="status-bar" class="status-paused">AGUARDANDO...</div>
-    <div class="header"><h1>LUSI <span style="font-size: 0.8rem; color:#666;">(Lusitana Tech)</span></h1><div id="price-display" class="big-price">--- €</div></div>
+    
+    <div class="header">
+        <h1>LUSI <span style="font-size: 0.8rem; color:#666;">(Lusitana Tech)</span></h1>
+        <div id="price-display" class="big-price">--- €</div>
+    </div>
 
     <div class="portfolio-card" style="border-left: 4px solid #007bff;">
-        <div class="portfolio-row"><span class="portfolio-label">Market Cap</span><span id="market-cap" class="portfolio-value">---</span></div>
-        <div class="portfolio-row"><span class="portfolio-label">P/E Ratio</span><span id="pe-ratio" class="portfolio-value">---</span></div>
-        <div class="portfolio-row"><span class="portfolio-label" style="color:#007bff">EPS (TTM)</span><span id="eps-val" class="portfolio-value" style="color:#007bff">---</span></div>
+        <div class="portfolio-row">
+            <span class="portfolio-label">Market Cap</span>
+            <span id="market-cap" class="portfolio-value">---</span>
+        </div>
+        <div class="portfolio-row">
+            <span class="portfolio-label">P/E Ratio</span>
+            <span id="pe-ratio" class="portfolio-value">---</span>
+        </div>
+        <div class="portfolio-row">
+            <span class="portfolio-label" style="color:#007bff">EPS (Lucro/Ação)</span>
+            <span id="eps-val" class="portfolio-value" style="color:#007bff">---</span>
+        </div>
     </div>
 
     <div class="portfolio-card" id="portfolio-box" style="opacity: 0.5;">
         <div class="portfolio-row">
-            <div><div class="portfolio-label">Entrada</div><div class="portfolio-value" id="my-entry">---</div></div>
-            <div style="text-align: right;"><div class="portfolio-label">Resultado</div><div class="portfolio-value gain-loss" id="my-pnl">0.00%</div></div>
+            <div>
+                <div class="portfolio-label">O Teu Preço Entrada</div>
+                <div class="portfolio-value" id="my-entry">---</div>
+            </div>
+            <div style="text-align: right;">
+                <div class="portfolio-label">Teu Resultado</div>
+                <div class="portfolio-value gain-loss" id="my-pnl">0.00%</div>
+            </div>
         </div>
-        <div style="font-size: 0.7rem; color: #555; text-align: center; margin-top: 5px;"><span id="position-status">Faz o primeiro voto para entrar</span></div>
+        <div style="font-size: 0.7rem; color: #555; text-align: center; margin-top: 5px;">
+            <span id="position-status">Faz o teu primeiro voto para entrar</span>
+        </div>
     </div>
 
-    <div class="news-ticker"><marquee id="news-text">Bem-vindo ao Mercado</marquee></div>
+    <div class="news-ticker">
+        <marquee id="news-text">Bem-vindo ao Mercado</marquee>
+    </div>
 
     <div class="controls">
-        <button class="btn buy" onclick="vote('BUY')">COMPRAR 🔼</button>
-        <button class="btn hold" onclick="vote('HOLD')">MANTER ⏸</button>
-        <button class="btn sell" onclick="vote('SELL')">VENDER 🔽</button>
+        <button id="btn-buy" class="btn buy" onclick="vote('BUY')">COMPRAR 🔼</button>
+        <button id="btn-hold" class="btn hold" onclick="vote('HOLD')">MANTER ⏸</button>
+        <button id="btn-sell" class="btn sell" onclick="vote('SELL')">VENDER 🔽</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -49,15 +113,27 @@
         const socket = io();
         const priceDisplay = document.getElementById('price-display');
         const statusBar = document.getElementById('status-bar');
+        const newsText = document.getElementById('news-text');
         
-        let isCoolingDown = false; let myEntryPrice = 0; let hasEntered = false; let currentMarketPrice = 0;
+        let isCoolingDown = false; 
+        let myEntryPrice = 0;
+        let hasEntered = false;
+        let currentMarketPrice = 0;
 
+        // Ouve apenas o canal leve (Otimização 500px)
         socket.on('market-update-light', (data) => {
             currentMarketPrice = parseFloat(data.price);
+            
+            // Preço e Flash
+            const oldPrice = parseFloat(priceDisplay.innerText.replace('€',''));
             priceDisplay.innerText = data.price + "€";
             
-            // Dados
-            document.getElementById('market-cap').innerText = data.marketCap;
+            if (currentMarketPrice > oldPrice) priceDisplay.classList.add('flash-up');
+            else if (currentMarketPrice < oldPrice) priceDisplay.classList.add('flash-down');
+            setTimeout(() => priceDisplay.classList.remove('flash-up', 'flash-down'), 500);
+
+            // Dados Fundamentais
+            document.getElementById('market-cap').innerText = data.marketCap + " €";
             document.getElementById('eps-val').innerText = data.eps + "€";
             
             const peEl = document.getElementById('pe-ratio');
@@ -65,38 +141,71 @@
             let pe = parseFloat(data.peRatio);
             peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
 
-            document.getElementById('news-text').innerText = data.news;
-            if (hasEntered) updateMyPortfolio();
+            newsText.innerText = data.news;
+            
+            // Estado
+            if (data.isPaused) {
+                statusBar.innerText = "MERCADO PAUSADO";
+                statusBar.className = "status-paused";
+                document.body.style.opacity = "0.7";
+            } else {
+                statusBar.innerText = "MERCADO ABERTO 🟢";
+                statusBar.className = "status-live";
+                document.body.style.opacity = "1";
+            }
 
-            statusBar.innerText = data.isPaused ? "MERCADO PAUSADO" : "MERCADO ABERTO 🟢";
-            statusBar.className = data.isPaused ? "status-paused" : "status-live";
-            document.body.style.opacity = data.isPaused ? "0.7" : "1";
+            if (hasEntered) updateMyPortfolio();
         });
 
         function vote(action) {
             if (isCoolingDown) return;
+
             if (!hasEntered && currentMarketPrice > 0) {
-                hasEntered = true; myEntryPrice = currentMarketPrice;
+                hasEntered = true;
+                myEntryPrice = currentMarketPrice;
                 document.getElementById('my-entry').innerText = myEntryPrice.toFixed(2) + "€";
                 document.getElementById('portfolio-box').style.opacity = "1";
                 document.getElementById('position-status').innerText = "Posição Aberta";
             }
+
             socket.emit('vote', action);
+            
             if (navigator.vibrate) navigator.vibrate(50);
+            
+            // MOSTRAR O POPUP
+            showPopup("ORDEM ENVIADA! 📝");
+            
             activateCooldown(3000); 
         }
 
         function updateMyPortfolio() {
             let variation = ((currentMarketPrice - myEntryPrice) / myEntryPrice) * 100;
-            const pnl = document.getElementById('my-pnl');
-            pnl.innerText = (variation >= 0 ? "+" : "") + variation.toFixed(2) + "%";
-            pnl.className = "portfolio-value gain-loss " + (variation >= 0 ? "positive" : "negative");
+            const pnlElement = document.getElementById('my-pnl');
+            let sign = variation >= 0 ? "+" : "";
+            pnlElement.innerText = sign + variation.toFixed(2) + "%";
+            pnlElement.className = "portfolio-value gain-loss " + (variation >= 0 ? "positive" : "negative");
+        }
+
+        function showPopup(text) {
+            const popup = document.createElement('div');
+            popup.className = 'vote-popup';
+            popup.innerText = text;
+            document.body.appendChild(popup);
+            setTimeout(() => {
+                popup.style.opacity = '0';
+                popup.style.transition = 'opacity 0.3s'; // Fade out suave
+                setTimeout(() => popup.remove(), 300);
+            }, 1200);
         }
 
         function activateCooldown(time) {
             isCoolingDown = true;
-            document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-            setTimeout(() => { isCoolingDown = false; document.querySelectorAll('.btn').forEach(b => b.disabled = false); }, time);
+            const btns = document.querySelectorAll('.btn');
+            btns.forEach(btn => btn.disabled = true);
+            setTimeout(() => {
+                isCoolingDown = false;
+                btns.forEach(btn => btn.disabled = false);
+            }, time);
         }
     </script>
 </body>
