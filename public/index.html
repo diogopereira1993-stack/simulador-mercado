@@ -115,16 +115,20 @@
         const statusBar = document.getElementById('status-bar');
         const newsText = document.getElementById('news-text');
         
+        // --- NOVAS VARIÁVEIS DE CARTEIRA ---
         let isCoolingDown = false; 
-        let myEntryPrice = 0;
-        let hasEntered = false;
         let currentMarketPrice = 0;
+        
+        // Carteira do Utilizador
+        let myShares = 0;      // Quantas ações tenho
+        let myAvgPrice = 0;    // O meu preço médio de compra
+        let hasInteracted = false;
 
         // Ouve apenas o canal leve (Otimização 500px)
         socket.on('market-update-light', (data) => {
             currentMarketPrice = parseFloat(data.price);
             
-            // Preço e Flash
+            // 1. Atualiza Preço Grande e Flash
             const oldPrice = parseFloat(priceDisplay.innerText.replace('€',''));
             priceDisplay.innerText = data.price + "€";
             
@@ -132,7 +136,7 @@
             else if (currentMarketPrice < oldPrice) priceDisplay.classList.add('flash-down');
             setTimeout(() => priceDisplay.classList.remove('flash-up', 'flash-down'), 500);
 
-            // Dados Fundamentais
+            // 2. Atualiza Dados Fundamentais (Cards de cima)
             document.getElementById('market-cap').innerText = data.marketCap + " €";
             document.getElementById('eps-val').innerText = data.eps + "€";
             
@@ -141,9 +145,9 @@
             let pe = parseFloat(data.peRatio);
             peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
 
+            // 3. Notícias e Estado
             newsText.innerText = data.news;
             
-            // Estado
             if (data.isPaused) {
                 statusBar.innerText = "MERCADO PAUSADO";
                 statusBar.className = "status-paused";
@@ -154,36 +158,81 @@
                 document.body.style.opacity = "1";
             }
 
-            if (hasEntered) updateMyPortfolio();
+            // 4. ATUALIZA A CARTEIRA PESSOAL EM TEMPO REAL
+            if (hasInteracted) updateMyPortfolio();
         });
 
         function vote(action) {
             if (isCoolingDown) return;
-
-            if (!hasEntered && currentMarketPrice > 0) {
-                hasEntered = true;
-                myEntryPrice = currentMarketPrice;
-                document.getElementById('my-entry').innerText = myEntryPrice.toFixed(2) + "€";
-                document.getElementById('portfolio-box').style.opacity = "1";
-                document.getElementById('position-status').innerText = "Posição Aberta";
+            
+            // Lógica de Carteira (Client-Side)
+            if (action === 'BUY') {
+                // Cálculo de Preço Médio Ponderado
+                // (Preço Antigo * Qtd Antiga + Preço Novo) / Nova Qtd
+                let totalValue = (myShares * myAvgPrice) + currentMarketPrice;
+                myShares++; 
+                myAvgPrice = totalValue / myShares;
+                
+                showPopup("COMPRA (+1) 📈");
+            } 
+            else if (action === 'SELL') {
+                if (myShares > 0) {
+                    myShares--; // Vende uma ação
+                    // Nota: Vender não muda o preço médio das ações que sobram
+                    showPopup("VENDA (-1) 📉");
+                } else {
+                    // Se não tem ações, vota na mesma (pressão de venda), mas não muda carteira
+                    showPopup("ORDEM VENDA 📉");
+                }
+            } 
+            else {
+                showPopup("MANTER ⏸");
             }
 
+            // Regista que já entrou no jogo
+            if (!hasInteracted) {
+                hasInteracted = true;
+                document.getElementById('portfolio-box').style.opacity = "1";
+            }
+
+            // Envia voto para o servidor (para mexer o mercado)
             socket.emit('vote', action);
             
             if (navigator.vibrate) navigator.vibrate(50);
-            
-            // MOSTRAR O POPUP
-            showPopup("ORDEM ENVIADA! 📝");
-            
+            updateMyPortfolio();
             activateCooldown(3000); 
         }
 
         function updateMyPortfolio() {
-            let variation = ((currentMarketPrice - myEntryPrice) / myEntryPrice) * 100;
-            const pnlElement = document.getElementById('my-pnl');
-            let sign = variation >= 0 ? "+" : "";
-            pnlElement.innerText = sign + variation.toFixed(2) + "%";
-            pnlElement.className = "portfolio-value gain-loss " + (variation >= 0 ? "positive" : "negative");
+            // Atualiza Interface da Carteira
+            
+            // Mostra Preço Médio e Quantidade
+            // Ex: "Avg: 50.00€ (10 un)"
+            document.getElementById('my-entry').innerText = 
+                myShares > 0 
+                ? `${myAvgPrice.toFixed(2)}€ (${myShares}x)` 
+                : "---";
+
+            document.getElementById('position-status').innerText = 
+                myShares > 0 
+                ? "Investidor Ativo" 
+                : "Sem Posições Abertas";
+
+            // Cálculo do Lucro/Prejuízo (PnL)
+            // (Preço Atual - Preço Médio) / Preço Médio
+            if (myShares > 0 && myAvgPrice > 0) {
+                let variation = ((currentMarketPrice - myAvgPrice) / myAvgPrice) * 100;
+                const pnlElement = document.getElementById('my-pnl');
+                
+                let sign = variation >= 0 ? "+" : "";
+                pnlElement.innerText = sign + variation.toFixed(2) + "%";
+                
+                // Cor: Verde se positivo, Vermelho se negativo
+                pnlElement.className = "portfolio-value gain-loss " + (variation >= 0 ? "positive" : "negative");
+            } else {
+                document.getElementById('my-pnl').innerText = "0.00%";
+                document.getElementById('my-pnl').className = "portfolio-value gain-loss";
+            }
         }
 
         function showPopup(text) {
@@ -193,7 +242,7 @@
             document.body.appendChild(popup);
             setTimeout(() => {
                 popup.style.opacity = '0';
-                popup.style.transition = 'opacity 0.3s'; // Fade out suave
+                popup.style.transition = 'opacity 0.3s';
                 setTimeout(() => popup.remove(), 300);
             }, 1200);
         }
