@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // --- CONFIGURAÇÃO FINANCEIRA INICIAL (Narrativa Start-up) ---
 const INITIAL_SHARES = 10000000; // 10 Milhões de ações
 const INITIAL_EPS = -1.50;       // COMEÇA COM PREJUÍZO (Start-up)
-const INITIAL_REVENUE = "5M";    // Receita inicial modesta
+const INITIAL_REVENUE = "5M";    // Receita inicial
 
 // --- ESTADO DO JOGO ---
 let gameState = {
@@ -105,7 +105,7 @@ function broadcastMarketUpdate() {
         ? (marketCap/1000000000).toFixed(2) + "B" 
         : (marketCap/1000000).toFixed(1) + "M";
 
-    // Lógica P/E Ratio: Se EPS <= 0, mostra "N/A" (Empresa com prejuízo)
+    // Lógica P/E Ratio: Se EPS <= 0, mostra "N/A"
     let peRatio = gameState.currentEPS > 0 
         ? (currentPrice / gameState.currentEPS).toFixed(1) 
         : "N/A";
@@ -178,9 +178,9 @@ io.on('connection', (socket) => {
             gameState.voteMultiplier = parseInt(data.value);
         }
 
-        // --- NOTÍCIAS (INSIDERS, BOAS, MÁS) ---
+        // NOTÍCIAS (INSIDERS, BOAS, MÁS)
         if (data.command === 'NEWS_UPDATE') {
-            // Formata: Texto da notícia (Fonte: Sapo)
+            // Formata a notícia com a fonte recebida do Admin
             const fullText = `${data.text} (Fonte: ${data.source})`;
             gameState.currentNews = fullText;
             
@@ -190,12 +190,11 @@ io.on('connection', (socket) => {
             eventLog.push({ time: eventTime, price: gameState.price, text: data.text, impact: data.impact });
         }
 
-        // --- EARNINGS (RESULTADOS) ---
+        // EARNINGS (RESULTADOS)
         if (data.command === 'EARNINGS_UPDATE') {
             const fullText = `📊 ${data.text} (Fonte: ${data.source})`;
             gameState.currentNews = fullText;
 
-            // Atualiza Fundamentos
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             if (data.newEPS !== null) gameState.currentEPS = data.newEPS;
             if (data.newRevenue !== null) gameState.currentRevenue = data.newRevenue;
