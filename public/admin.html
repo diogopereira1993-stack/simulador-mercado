@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <style>
         .admin-panel { max-width: 1000px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
-        
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; }
         .stat-box { text-align: center; }
         .stat-val { font-size: 1.5rem; font-weight: bold; color: white; }
@@ -134,7 +133,7 @@
         <div class="story-arc">
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="news-input" placeholder="Notícia manual...">
-                <button class="btn hold" onclick="sendManual()">ENVIAR (Fonte: Admin)</button>
+                <button class="btn hold" onclick="sendManual()">ENVIAR 📤</button>
             </div>
         </div>
 
@@ -152,25 +151,22 @@
     <script>
         const socket = io();
         
-        // FONTES DEFINIDAS
+        // FONTES DISPONÍVEIS
         const ptSources = ["Jornal de Negócios", "Sapo", "Jornal de Notícias", "Público"];
         const intlSources = ["Bloomberg", "Wall Street Journal"];
 
         function sendCommand(cmd) { socket.emit('admin-action', { command: cmd }); }
+        function setMultiplier(val) { socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); }
         
-        function setMultiplier(val) { 
-            socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); 
-        }
-
         function confirmReset() {
             if(confirm("Reiniciar o IPO? Dados serão apagados.")) {
                 sendCommand('RESET');
             }
         }
 
-        // FUNÇÃO INTELIGENTE DE FONTE
+        // SELEÇÃO INTELIGENTE DE FONTE
         function resolveSource(impact) {
-            // Se o impacto for muito forte (positivo ou negativo) usa fonte internacional
+            // Impacto forte (>= 20) -> Fonte Internacional
             if (Math.abs(impact) >= 20) {
                 return intlSources[Math.floor(Math.random() * intlSources.length)];
             } else {
@@ -190,7 +186,9 @@
 
         function sendManual() {
             const text = document.getElementById('news-input').value;
-            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: 0, source: "Admin" });
+            // Notícias manuais também ganham fonte automática (como têm impacto 0, usam fontes PT)
+            const source = resolveSource(0);
+            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: 0, source: source });
         }
 
         let botInterval = null;
