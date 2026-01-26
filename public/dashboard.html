@@ -33,7 +33,6 @@
             margin-bottom: 15px;
         }
 
-        /* --- BARRA DE FUNDAMENTOS (NOVA) --- */
         .fundamentals-bar {
             display: flex;
             justify-content: space-around;
@@ -148,27 +147,29 @@
         initLiveChart();
         let lastPrice = 0;
 
-        // OUVIR UPDATE COMPLETO
         socket.on('market-update-full', (data) => {
             if (data.mode === 'LIVE') {
                 const currentPrice = parseFloat(data.price);
                 priceEl.innerText = data.price + "€";
                 dateEl.innerText = data.date;
                 
-                // Atualizar Fundamentos
                 document.getElementById('dash-mkt-cap').innerText = data.marketCap;
                 document.getElementById('dash-shares').innerText = data.shares;
                 document.getElementById('dash-pe').innerText = data.peRatio;
                 document.getElementById('dash-eps').innerText = data.eps + "€";
                 document.getElementById('dash-rev').innerText = data.revenue;
 
-                // Cor P/E
+                // COR P/E RATIO (Neutro se N/A)
                 const peEl = document.getElementById('dash-pe');
-                if (parseFloat(data.peRatio) > 40) peEl.style.color = "#ff4444";
-                else if (parseFloat(data.peRatio) < 15) peEl.style.color = "#00ff88";
-                else peEl.style.color = "white";
+                let pe = parseFloat(data.peRatio);
+                if (isNaN(pe)) {
+                    peEl.style.color = "white"; 
+                } else {
+                    if (pe > 40) peEl.style.color = "#ff4444";
+                    else if (pe < 15) peEl.style.color = "#00ff88";
+                    else peEl.style.color = "white";
+                }
 
-                // Cores Preço
                 if (currentPrice > lastPrice) { 
                     priceEl.className = "big-price-display price-up"; 
                     if(marketChart) marketChart.data.datasets[0].borderColor = '#00ff88'; 
@@ -185,14 +186,13 @@
                 if (newsEl.innerText !== data.news) newsEl.innerText = data.news;
 
                 if (marketChart) {
-                    marketChart.data.labels = data.history.map(h => h.time); // Agora são Datas!
+                    marketChart.data.labels = data.history.map(h => h.time); 
                     marketChart.data.datasets[0].data = data.history.map(h => h.price);
                     marketChart.update();
                 }
             }
         });
 
-        // MODO FINAL
         socket.on('market-finish', (data) => {
             statusEl.innerText = "ANÁLISE FINAL";
             statusEl.style.color = "#9d00ff";
