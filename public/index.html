@@ -109,14 +109,16 @@
         <button id="btn-sell" class="btn sell" onclick="vote('SELL')">VENDER 🔽</button>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+   <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         const priceDisplay = document.getElementById('price-display');
         const statusBar = document.getElementById('status-bar');
         const newsText = document.getElementById('news-text');
         
+        // --- VARIÁVEIS DE ESTADO ---
         let isCoolingDown = false; 
+        let isMarketPaused = true; // Começa bloqueado por segurança
         let currentMarketPrice = 0;
         
         let myShares = parseInt(localStorage.getItem('myShares')) || 0;
@@ -129,12 +131,14 @@
 
         socket.on('market-update-light', (data) => {
             currentMarketPrice = parseFloat(data.price);
-            
-            // Deteção de Reset do Servidor para limpar carteira local
+            isMarketPaused = data.isPaused; // Atualiza o estado real do mercado
+
+            // Deteção de Reset
             if (data.stats && data.stats.buys === 0 && data.stats.sells === 0 && myShares > 0) {
                 resetLocalPortfolio();
             }
 
+            // Atualiza Preço e Flash
             const oldPrice = parseFloat(priceDisplay.innerText.replace('€','')) || 0;
             priceDisplay.innerText = data.price + "€";
             
@@ -144,26 +148,26 @@
                 setTimeout(() => priceDisplay.classList.remove('flash-up', 'flash-down'), 500);
             }
 
+            // Dados Fundamentais
             document.getElementById('market-cap').innerText = data.marketCap + " €";
             document.getElementById('eps-val').innerText = data.eps + "€";
             
-            // LÓGICA DE COR DO P/E 
             const peEl = document.getElementById('pe-ratio');
             peEl.innerText = data.peRatio;
-            
             let pe = parseFloat(data.peRatio);
             if (isNaN(pe)) {
-                peEl.className = "portfolio-value pe-neutral"; // Neutro
+                peEl.className = "portfolio-value pe-neutral"; 
             } else {
                 peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
             }
 
             newsText.innerText = data.news;
             
+            // Barra de Estado
             if (data.isPaused) {
-                statusBar.innerText = "MERCADO PAUSADO";
+                statusBar.innerText = "MERCADO PAUSADO ⛔";
                 statusBar.className = "status-paused";
-                document.body.style.opacity = "0.7";
+                document.body.style.opacity = "0.8"; // Fica ligeiramente transparente
             } else {
                 statusBar.innerText = "MERCADO ABERTO 🟢";
                 statusBar.className = "status-live";
@@ -174,8 +178,17 @@
         });
 
         function vote(action) {
+            // 1. BLOQUEIO SE MERCADO FECHADO
+            if (isMarketPaused) {
+                showPopup("⛔ AGUARDE ABERTURA");
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Vibração de erro
+                return; // Pára a função aqui!
+            }
+
+            // 2. BLOQUEIO DE COOLDOWN
             if (isCoolingDown) return;
             
+            // Lógica de Compra/Venda Local
             if (action === 'BUY') {
                 let totalValue = (myShares * myAvgPrice) + currentMarketPrice;
                 myShares++; 
@@ -249,6 +262,13 @@
             const popup = document.createElement('div');
             popup.className = 'vote-popup';
             popup.innerText = text;
+            
+            // Se for erro, muda a cor para laranja/vermelho
+            if (text.includes("⛔")) {
+                popup.style.background = "rgba(255, 68, 68, 0.95)";
+                popup.style.color = "white";
+            }
+
             document.body.appendChild(popup);
             setTimeout(() => {
                 popup.style.opacity = '0';
