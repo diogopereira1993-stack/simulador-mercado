@@ -130,6 +130,7 @@
         socket.on('market-update-light', (data) => {
             currentMarketPrice = parseFloat(data.price);
             
+            // Deteção de Reset do Servidor para limpar carteira local
             if (data.stats && data.stats.buys === 0 && data.stats.sells === 0 && myShares > 0) {
                 resetLocalPortfolio();
             }
@@ -146,13 +147,13 @@
             document.getElementById('market-cap').innerText = data.marketCap + " €";
             document.getElementById('eps-val').innerText = data.eps + "€";
             
-            // LÓGICA DE COR DO P/E ATUALIZADA
+            // LÓGICA DE COR DO P/E 
             const peEl = document.getElementById('pe-ratio');
             peEl.innerText = data.peRatio;
             
             let pe = parseFloat(data.peRatio);
             if (isNaN(pe)) {
-                peEl.className = "portfolio-value pe-neutral"; // Fica branco se for N/A
+                peEl.className = "portfolio-value pe-neutral"; // Neutro
             } else {
                 peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
             }
