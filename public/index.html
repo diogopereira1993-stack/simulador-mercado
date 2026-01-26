@@ -26,6 +26,7 @@
         /* Cores P/E */
         .pe-high { color: #ff4444; } 
         .pe-low { color: #00ff88; }
+        .pe-neutral { color: white; }
         
         /* Animações de Preço */
         .flash-up { animation: flashGreen 0.5s; }
@@ -33,13 +34,13 @@
         @keyframes flashGreen { 0% { background-color: rgba(0,255,136,0.2); } 100% { background-color: transparent; } }
         @keyframes flashRed { 0% { background-color: rgba(255,68,68,0.2); } 100% { background-color: transparent; } }
 
-        /* O POPUP VISUAL (Restaurado) */
+        /* O POPUP VISUAL */
         .vote-popup {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 255, 136, 0.95); /* Verde Matrix */
+            background: rgba(0, 255, 136, 0.95);
             color: #000;
             padding: 15px 30px;
             border-radius: 30px;
@@ -115,34 +116,24 @@
         const statusBar = document.getElementById('status-bar');
         const newsText = document.getElementById('news-text');
         
-        // --- VARIÁVEIS DE CARTEIRA (Com Persistência) ---
         let isCoolingDown = false; 
         let currentMarketPrice = 0;
         
-        // Carrega do LocalStorage ou inicia a zero
         let myShares = parseInt(localStorage.getItem('myShares')) || 0;
         let myAvgPrice = parseFloat(localStorage.getItem('myAvgPrice')) || 0;
         let hasInteracted = myShares > 0;
 
-        // Se já tiver dados guardados, mostra a carteira ativa logo de início
         if(hasInteracted) {
             document.getElementById('portfolio-box').style.opacity = "1";
-            // Atualização inicial visual será feita assim que chegar o primeiro preço do socket
         }
 
-        // Ouve apenas o canal leve
         socket.on('market-update-light', (data) => {
             currentMarketPrice = parseFloat(data.price);
             
-            // --- DETEÇÃO DE RESET DO SERVIDOR ---
-            // Se o servidor reportar 0 compras e 0 vendas totais, mas eu tenho ações,
-            // significa que o jogo reiniciou e eu tenho dados "fantasmas".
             if (data.stats && data.stats.buys === 0 && data.stats.sells === 0 && myShares > 0) {
-                console.log("Reset detetado. Limpando carteira local.");
                 resetLocalPortfolio();
             }
 
-            // 1. Atualiza Preço Grande e Flash
             const oldPrice = parseFloat(priceDisplay.innerText.replace('€','')) || 0;
             priceDisplay.innerText = data.price + "€";
             
@@ -152,18 +143,20 @@
                 setTimeout(() => priceDisplay.classList.remove('flash-up', 'flash-down'), 500);
             }
 
-            // 2. Atualiza Dados Fundamentais
             document.getElementById('market-cap').innerText = data.marketCap + " €";
             document.getElementById('eps-val').innerText = data.eps + "€";
             
+            // LÓGICA DE COR DO P/E ATUALIZADA
             const peEl = document.getElementById('pe-ratio');
             peEl.innerText = data.peRatio;
+            
             let pe = parseFloat(data.peRatio);
-            // Proteção contra NaN no CSS
-            if (isNaN(pe)) pe = 0;
-            peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
+            if (isNaN(pe)) {
+                peEl.className = "portfolio-value pe-neutral"; // Fica branco se for N/A
+            } else {
+                peEl.className = "portfolio-value " + (pe > 40 ? "pe-high" : (pe < 15 ? "pe-low" : ""));
+            }
 
-            // 3. Notícias e Estado
             newsText.innerText = data.news;
             
             if (data.isPaused) {
@@ -176,16 +169,13 @@
                 document.body.style.opacity = "1";
             }
 
-            // 4. ATUALIZA A CARTEIRA PESSOAL
             if (hasInteracted) updateMyPortfolio();
         });
 
         function vote(action) {
             if (isCoolingDown) return;
             
-            // Lógica de Carteira (Client-Side)
             if (action === 'BUY') {
-                // Cálculo de Preço Médio Ponderado
                 let totalValue = (myShares * myAvgPrice) + currentMarketPrice;
                 myShares++; 
                 myAvgPrice = totalValue / myShares;
@@ -203,7 +193,6 @@
                 showPopup("MANTER ⏸");
             }
 
-            // --- SALVAR NO LOCALSTORAGE ---
             localStorage.setItem('myShares', myShares);
             localStorage.setItem('myAvgPrice', myAvgPrice);
 
@@ -213,18 +202,15 @@
             }
 
             socket.emit('vote', action);
-            
             if (navigator.vibrate) navigator.vibrate(50);
             updateMyPortfolio();
             activateCooldown(3000); 
         }
 
         function updateMyPortfolio() {
-            // Verifica se valores são válidos
             if (isNaN(myShares)) myShares = 0;
             if (isNaN(myAvgPrice)) myAvgPrice = 0;
 
-            // Mostra Preço Médio e Quantidade
             document.getElementById('my-entry').innerText = 
                 myShares > 0 
                 ? `${myAvgPrice.toFixed(2)}€ (${myShares}x)` 
@@ -235,11 +221,9 @@
                 ? "Investidor Ativo" 
                 : "Sem Posições Abertas";
 
-            // Cálculo do PnL
             if (myShares > 0 && myAvgPrice > 0) {
                 let variation = ((currentMarketPrice - myAvgPrice) / myAvgPrice) * 100;
                 const pnlElement = document.getElementById('my-pnl');
-                
                 let sign = variation >= 0 ? "+" : "";
                 pnlElement.innerText = sign + variation.toFixed(2) + "%";
                 pnlElement.className = "portfolio-value gain-loss " + (variation >= 0 ? "positive" : "negative");
@@ -249,7 +233,6 @@
             }
         }
 
-        // Função para resetar carteira localmente (chamada quando o servidor reseta)
         function resetLocalPortfolio() {
             myShares = 0;
             myAvgPrice = 0;
