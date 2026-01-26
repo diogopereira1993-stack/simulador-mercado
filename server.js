@@ -8,10 +8,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- CONFIGURAÇÃO FINANCEIRA INICIAL (Realista) ---
-const INITIAL_SHARES = 10000000; // 10 Milhões de ações (Market Cap ~500M)
-const INITIAL_EPS = 2.50;        // Lucro por ação inicial (P/E = 20)
-const INITIAL_REVENUE = "150M";  // Receita Trimestral base
+// --- CONFIGURAÇÃO FINANCEIRA INICIAL (Narrativa Start-up) ---
+const INITIAL_SHARES = 10000000; // 10 Milhões de ações
+const INITIAL_EPS = -1.50;       // COMEÇA COM PREJUÍZO (Start-up)
+const INITIAL_REVENUE = "5M";    // Receita inicial modesta
 
 // --- ESTADO DO JOGO ---
 let gameState = {
@@ -27,7 +27,7 @@ let gameState = {
     currentRevenue: INITIAL_REVENUE,
     
     // Simulação de Tempo
-    simulatedDate: new Date("2024-01-01"), // Data de início
+    simulatedDate: new Date("2024-01-01"),
 
     // Multiplicador de Votos
     voteMultiplier: 1, 
@@ -49,7 +49,7 @@ let fullHistory = [];
 let eventLog = [];    
 let lastVoteTime = new Map(); 
 
-// Função auxiliar para formatar data (DD/MM/AAAA)
+// Formatação de Data
 function formatDate(date) {
     return date.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
@@ -60,25 +60,24 @@ function formatDate(date) {
 setInterval(() => {
     if (!gameState.isPaused) {
         // --- A. AVANÇAR NO TEMPO ---
-        // Avança 1 dia por cada tick de 2 segundos
         gameState.simulatedDate.setDate(gameState.simulatedDate.getDate() + 1);
 
         // --- B. FÍSICA DO MERCADO ---
         let netPressure = gameState.buyCount - gameState.sellCount;
         let voteEffect = netPressure * gameState.volatility;
         
-        // Força da Gravidade
+        // Gravidade (Puxa para o Valor Intrínseco)
         let gap = gameState.intrinsicValue - gameState.price;
         let correction = gap * gameState.gravity; 
         
-        // Fator Caos
+        // Caos
         let chaosLevel = 0.1 + (Math.abs(gap) * 0.15);
         let randomFluctuation = (Math.random() - 0.5) * chaosLevel;
 
         gameState.price = gameState.price + voteEffect + correction + randomFluctuation;
         if (gameState.price < 0.01) gameState.price = 0.01;
 
-        // --- C. HISTÓRICO (Com Data Simulada) ---
+        // --- C. HISTÓRICO ---
         const dateLabel = formatDate(gameState.simulatedDate);
         const dataPoint = { time: dateLabel, price: gameState.price };
 
@@ -100,22 +99,17 @@ setInterval(() => {
 // ==================================================
 function broadcastMarketUpdate() {
     let currentPrice = gameState.price;
-    
-    // Cálculos Financeiros
     let marketCap = currentPrice * INITIAL_SHARES;
     
-    // Formatação Market Cap (Ex: 500.5M)
     let marketCapFormatted = marketCap > 1000000000 
-        ? (marketCap/1000000000).toFixed(2) + "B" // Bilhões
-        : (marketCap/1000000).toFixed(1) + "M";   // Milhões
+        ? (marketCap/1000000000).toFixed(2) + "B" 
+        : (marketCap/1000000).toFixed(1) + "M";
 
-    // P/E Ratio Real (Baseado no EPS atual definido pelos Earnings)
-    // Se o EPS for negativo ou zero, o P/E é tecnicamente N/A, mas mostramos traço ou numero alto
+    // Lógica P/E Ratio: Se EPS <= 0, mostra "N/A" (Empresa com prejuízo)
     let peRatio = gameState.currentEPS > 0 
         ? (currentPrice / gameState.currentEPS).toFixed(1) 
         : "N/A";
 
-    // Dados base para todos
     const commonData = {
         price: currentPrice.toFixed(2),
         news: gameState.currentNews,
@@ -125,11 +119,11 @@ function broadcastMarketUpdate() {
         peRatio: peRatio,
         eps: gameState.currentEPS.toFixed(2),
         revenue: gameState.currentRevenue,
-        shares: "10M", // Estático para simplificar visualização
+        shares: "10M",
         date: formatDate(gameState.simulatedDate)
     };
 
-    // CANAL 1: Mobile (Leve)
+    // CANAL 1: Mobile
     io.emit('market-update-light', {
         ...commonData,
         intrinsicValue: gameState.intrinsicValue.toFixed(2),
@@ -141,7 +135,7 @@ function broadcastMarketUpdate() {
         }
     });
 
-    // CANAL 2: Dashboard (Pesado - Com Gráfico)
+    // CANAL 2: Dashboard
     io.to('dashboard-room').emit('market-update-full', {
         ...commonData,
         history: liveHistory,
@@ -157,7 +151,7 @@ io.on('connection', (socket) => {
     
     socket.on('register-dashboard', () => {
         socket.join('dashboard-room');
-        broadcastMarketUpdate(); // Atualiza logo ao entrar
+        broadcastMarketUpdate();
     });
 
     socket.on('vote', (action) => {
@@ -184,31 +178,33 @@ io.on('connection', (socket) => {
             gameState.voteMultiplier = parseInt(data.value);
         }
 
-        // Notícias Normais (Rumores, CEO, etc)
+        // --- NOTÍCIAS (INSIDERS, BOAS, MÁS) ---
         if (data.command === 'NEWS_UPDATE') {
-            gameState.currentNews = data.text;
+            // Formata: Texto da notícia (Fonte: Sapo)
+            const fullText = `${data.text} (Fonte: ${data.source})`;
+            gameState.currentNews = fullText;
+            
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             
             let eventTime = fullHistory.length > 0 ? fullHistory[fullHistory.length - 1].time : formatDate(gameState.simulatedDate);
             eventLog.push({ time: eventTime, price: gameState.price, text: data.text, impact: data.impact });
         }
 
-        // --- NOVO: EARNINGS REPORTS (Atualiza Fundamentos) ---
+        // --- EARNINGS (RESULTADOS) ---
         if (data.command === 'EARNINGS_UPDATE') {
-            gameState.currentNews = data.text;
-            // Atualiza o Valor Intrínseco
+            const fullText = `📊 ${data.text} (Fonte: ${data.source})`;
+            gameState.currentNews = fullText;
+
+            // Atualiza Fundamentos
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
-            // Atualiza o EPS (Fundamental)
             if (data.newEPS !== null) gameState.currentEPS = data.newEPS;
-            // Atualiza Receita (Texto)
             if (data.newRevenue !== null) gameState.currentRevenue = data.newRevenue;
 
             let eventTime = fullHistory.length > 0 ? fullHistory[fullHistory.length - 1].time : formatDate(gameState.simulatedDate);
-            // Marcamos como evento especial com ícone 📊
             eventLog.push({ 
                 time: eventTime, 
                 price: gameState.price, 
-                text: "📊 " + data.text, 
+                text: fullText, 
                 impact: data.impact 
             });
         }
@@ -218,7 +214,7 @@ io.on('connection', (socket) => {
             gameState.intrinsicValue = 50.00;
             gameState.currentEPS = INITIAL_EPS;
             gameState.currentRevenue = INITIAL_REVENUE;
-            gameState.simulatedDate = new Date("2024-01-01"); // Reset Data
+            gameState.simulatedDate = new Date("2024-01-01");
 
             gameState.buyCount = 0; gameState.sellCount = 0;
             gameState.totalVotesEver = 0; gameState.totalBuys = 0; gameState.totalSells = 0; gameState.totalHolds = 0;
@@ -244,5 +240,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-    console.log(`Servidor MoneyFlix a correr na porta ${PORT}`);
+    console.log(`Servidor WallStreetLive a correr na porta ${PORT}`);
 });
