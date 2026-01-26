@@ -6,6 +6,23 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+// --- PROTEÇÃO DE PASSWORD (BASIC AUTH) ---
+// Colar isto ANTES da linha: app.use(express.static(...))
+app.use('/admin.html', (req, res, next) => {
+    // 1. CONFIGURA AQUI O TEU LOGIN
+    const auth = { login: 'admin', password: '123' }; // <--- MUDA A PASSWORD AQUI
+
+    const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+    const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+    if (login && password && login === auth.login && password === auth.password) {
+        return next();
+    }
+
+    res.set('WWW-Authenticate', 'Basic realm="Area Restrita"');
+    res.status(401).send('Acesso Negado: Password incorreta.');
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- CONFIGURAÇÃO FINANCEIRA INICIAL (Narrativa Start-up) ---
@@ -187,7 +204,7 @@ io.on('connection', (socket) => {
             if (data.impact !== 0) gameState.intrinsicValue += data.impact;
             
             let eventTime = fullHistory.length > 0 ? fullHistory[fullHistory.length - 1].time : formatDate(gameState.simulatedDate);
-            eventLog.push({ time: eventTime, price: gameState.price, text: data.text, impact: data.impact });
+            eventLog.push({ time: eventTime, price: gameState.price, text: fullText, impact: data.impact });
         }
 
         // EARNINGS (RESULTADOS)
