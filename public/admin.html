@@ -6,7 +6,7 @@
     <title>ADMIN - GOD MODE</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .admin-panel { max-width: 900px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
+        .admin-panel { max-width: 1000px; margin: 20px auto; padding: 20px; background: #111; border-radius: 10px; border: 1px solid #333; }
         
         .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; }
         .stat-box { text-align: center; }
@@ -15,10 +15,11 @@
 
         .story-arc { margin-bottom: 25px; padding: 15px; border-radius: 8px; border-left: 5px solid #555; background: #1a1a1a; }
         .arc-title { margin: 0 0 10px 0; font-size: 1rem; text-transform: uppercase; color: #ddd; display: flex; justify-content: space-between; }
-        .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+        .grid-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; }
 
-        .btn-game { height: 50px; font-size: 0.9rem; font-weight: 600; padding: 10px; color:white; border:none; border-radius: 5px; cursor: pointer; }
-        .val-tag { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 2px; }
+        .btn-game { height: auto; min-height: 80px; font-size: 0.8rem; font-weight: 600; padding: 12px; color:white; border:none; border-radius: 5px; cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: center; line-height: 1.2;}
+        .val-tag { display: block; font-size: 0.7rem; opacity: 0.7; margin-top: 6px; font-style: italic; color: #aaa; }
+        .source-tag { display: block; font-size: 0.65rem; color: #00d9ff; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Cores Temáticas */
         .theme-green { border-color: #00ff88; } .btn-green { background: #132f20; border: 1px solid #004422; }
@@ -28,8 +29,6 @@
         .theme-cyan { border-color: #00d9ff; }
         .theme-blue { border-color: #007bff; } .btn-blue { background: #002a55; border: 1px solid #004080; }
 
-        #download-area { display: none; margin-top: 20px; padding: 20px; background: #1a0526; border: 2px dashed #9d00ff; text-align: center; border-radius: 10px; }
-        
         .bot-zone { border: 1px dashed #bc6ff1; opacity: 0.9; }
         .blinking { animation: blinker 1s linear infinite; color: #ff00ff; font-weight: bold; }
         @keyframes blinker { 50% { opacity: 0; } }
@@ -44,78 +43,98 @@
             <div class="stat-box"><div class="stat-val" id="status-display" style="color: yellow;">PAUSADO</div></div>
         </div>
 
-        <div id="download-area">
-            <h3 style="color: #9d00ff;">📊 SESSÃO TERMINADA</h3>
-            <button class="btn hold" style="background: #9d00ff; width: 80%;" onclick="downloadReport()">📥 BAIXAR EXCEL</button>
-        </div>
-
-        <div class="story-arc theme-cyan">
-            <h3 class="arc-title" style="color: #00d9ff;">⚙️ Multiplicador de Voto (Atual: x<span id="mult-display">1</span>)</h3>
-            <div class="grid-buttons">
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(1)">👤 Normal (x1)</button>
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(10)">🚀 Boost (x10)</button>
-                <button class="btn hold" style="background: #004455;" onclick="setMultiplier(100)">🧪 Teste (x100)</button>
-            </div>
-        </div>
-
-        <div class="story-arc theme-blue">
-            <h3 class="arc-title" style="color: #007bff;">📅 RELATÓRIOS TRIMESTRAIS (Earnings)</h3>
-            <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">Isto altera o EPS e Receita, afetando o P/E Ratio real.</p>
-            <div class="grid-buttons">
-                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Resultados superam estimativas!', 3.50, '200M', 10)">
-                    🚀 Superou Estimativas
-                    <span class="val-tag">EPS sobe p/ 3.50€</span>
-                </button>
-                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Resultados em linha com o esperado.', 2.50, '155M', 2)">
-                    😐 Em Linha
-                    <span class="val-tag">EPS mantém 2.50€</span>
-                </button>
-                <button class="btn-game btn-blue" onclick="sendEarnings('EARNINGS: Falhou nas receitas e lucros.', 1.20, '100M', -15)">
-                    📉 Falhou Estimativas
-                    <span class="val-tag">EPS cai p/ 1.20€</span>
-                </button>
-            </div>
-        </div>
-
         <div class="story-arc theme-purple">
-            <div class="grid-buttons">
+            <h3 class="arc-title" style="color: #9d00ff;">🎮 Controlo de Jogo</h3>
+            <div class="grid-buttons" style="grid-template-columns: repeat(3, 1fr);">
                 <button class="btn hold" onclick="sendCommand('START_STOP')">⏯ INICIAR / PAUSAR</button>
                 <button class="btn hold" style="background: #551166;" onclick="sendCommand('SHOW_FINAL_CHART')">🏁 ENCERRAR</button>
                 <button class="btn sell" style="background: darkred;" onclick="confirmReset()">⚠️ RESET</button>
             </div>
+            <div style="margin-top: 10px; text-align: center;">
+                <span style="color:#00d9ff; font-size: 0.8rem; margin-right: 10px;">MULTIPLICADOR:</span>
+                <button class="btn hold" style="padding: 5px 10px; font-size: 0.7rem; width: auto;" onclick="setMultiplier(1)">x1</button>
+                <button class="btn hold" style="padding: 5px 10px; font-size: 0.7rem; width: auto;" onclick="setMultiplier(10)">x10</button>
+                <button class="btn hold" style="padding: 5px 10px; font-size: 0.7rem; width: auto; background: #004455;" onclick="setMultiplier(100)">x100 (Teste)</button>
+                <span style="color: white; font-weight: bold; margin-left: 5px;">Atual: x<span id="mult-display">1</span></span>
+            </div>
         </div>
 
         <div class="story-arc theme-gold">
-            <h3 class="arc-title" style="color: #ffd700;">🎭 Arco: Insider</h3>
+            <h3 class="arc-title" style="color: #ffd700;">🎭 INSIDERS</h3>
             <div class="grid-buttons">
-                <button class="btn-game btn-gold" onclick="sendNews('INSIDER: CEO comprou 50.000 ações!', 0)">🐂 CEO Comprou (Bluff)</button>
-                <button class="btn-game btn-gold" onclick="sendNews('INSIDER: CEO reforça posição.', 5)">🐂 CEO Comprou (Real)</button>
-                <button class="btn-game btn-gold" onclick="sendNews('ALERTA: CEO vendeu ações.', 0)">🐻 CEO Vendeu (Pânico)</button>
+                <button class="btn-game btn-gold" onclick="sendNews('CEO da LusiTech reporta venda de €122.000 em ações da empresa, completando terceira venda em apenas 15 dias.', -8)">
+                    CEO Vende €122k
+                    <span class="val-tag">Sinal Negativo</span>
+                </button>
+                <button class="btn-game btn-gold" onclick="sendNews('CEO da LusiTech adquire €2.5 milhões em ações da empresa, duplicando a sua posição.', 8)">
+                    CEO Compra €2.5M
+                    <span class="val-tag">Sinal Positivo</span>
+                </button>
+                <button class="btn-game btn-gold" onclick="sendNews('Governo Português adquire participação de 5% na LusiTech em negócio inédito.', 12)">
+                    Governo Compra 5%
+                    <span class="val-tag">Estabilidade</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="story-arc theme-blue">
+            <h3 class="arc-title" style="color: #007bff;">📅 EARNINGS (Resultados)</h3>
+            <div class="grid-buttons">
+                <button class="btn-game btn-blue" onclick="sendEarnings('LusiTech reporta resultados, com receita a crescer +150% YoY para os €15.355 milhões mas lucros persistem no vermelho (EPS: -€2.57)', -2.57, '15.4M', -5)">
+                    1. Crescimento mas Prejuízo
+                    <span class="val-tag">EPS: -€2.57 (Ainda N/A)</span>
+                </button>
+                <button class="btn-game btn-blue" onclick="sendEarnings('LusiTech cresce receita +27% YoY e apresenta, pela primeira vez um lucro (EPS: +€0.09/ação) mas abaixo das expetativas dos analistas.', 0.09, '19.5M', 5)">
+                    2. Primeiro Lucro (Tímido)
+                    <span class="val-tag">EPS: +€0.09 (Positivo)</span>
+                </button>
+                <button class="btn-game btn-blue" onclick="sendEarnings('LusiTech surpreende na receita (+€50 milhões), no lucro (EPS +€6/ação), expande margens e torna-se uma das mais rentáveis empresas portuguesas cotadas em Bolsa.', 6.00, '50M', 30)">
+                    3. EXPLOSÃO DE LUCRO
+                    <span class="val-tag">EPS: +€6.00 (Unicórnio)</span>
+                </button>
             </div>
         </div>
 
         <div class="story-arc theme-green">
-            <h3 class="arc-title" style="color: #00ff88;">🚀 Arco: Crescimento</h3>
+            <h3 class="arc-title" style="color: #00ff88;">🚀 NOTÍCIAS BOAS</h3>
             <div class="grid-buttons">
-                <button class="btn-game btn-green" onclick="sendNews('LUCRO: Margens aumentam.', 8)">💰 Margens Melhores</button>
-                <button class="btn-game btn-green" onclick="sendNews('INOVAÇÃO: Produto revolucionário!', 12)">📦 Produto Novo</button>
-                <button class="btn-game btn-green" onclick="sendNews('MONOPÓLIO: Aquisição aprovada!', 20)">🏆 Aquisição</button>
+                <button class="btn-game btn-green" onclick="sendNews('LusiTech celebra contrato com a TE Connectivity para fornecimento para os próximos 10 anos.', 10)">
+                    Contrato TE Connectivity
+                    <span class="val-tag">10 Anos</span>
+                </button>
+                <button class="btn-game btn-green" onclick="sendNews('LusiTech distribui um dividendo especial de Natal no valor de €2.4/ação.', 5)">
+                    Dividendo Especial
+                    <span class="val-tag">€2.4/ação</span>
+                </button>
+                <button class="btn-game btn-green" onclick="sendNews('Rumor: Amphenol interessada na aquisição da LusiTech, num negócio que pode valorizar a empresa nos €2.5 mil milhões.', 25)">
+                    Rumor Aquisição
+                    <span class="val-tag">To the Moon</span>
+                </button>
             </div>
         </div>
 
         <div class="story-arc theme-red">
-            <h3 class="arc-title" style="color: #ff4444;">🩸 Arco: Crise</h3>
+            <h3 class="arc-title" style="color: #ff4444;">🩸 NOTÍCIAS MÁS</h3>
             <div class="grid-buttons">
-                <button class="btn-game btn-red" onclick="sendNews('CORREÇÃO: Baixa de rating.', -5)">📉 Baixa Rating</button>
-                <button class="btn-game btn-red" onclick="sendNews('CIBERATAQUE: Dados expostos!', -15)">🔓 Hack</button>
-                <button class="btn-game btn-red" onclick="sendNews('FRAUDE: Contas falsificadas!', -25)">⚖️ Fraude</button>
+                <button class="btn-game btn-red" onclick="sendNews('Suspeita de fraude na LusiTech: antigo engenheiro afirma que sistema de eficiência energética manipula resultados.', -25)">
+                    Suspeita de Fraude
+                    <span class="val-tag">Engenheiro Denuncia</span>
+                </button>
+                <button class="btn-game btn-red" onclick="sendNews('Ameaça de recessão coloca em causa a construção de data centers em toda a Europa. LusiTech pode sofrer.', -10)">
+                    Ameaça Recessão
+                    <span class="val-tag">Data Centers em Risco</span>
+                </button>
+                <button class="btn-game btn-red" onclick="sendNews('Incêndio nas instalações da LusiTech na Maia. Estimam-se milhões em perdas.', -15)">
+                    Incêndio na Maia
+                    <span class="val-tag">Perdas Milionárias</span>
+                </button>
             </div>
         </div>
 
         <div class="story-arc">
             <div style="display: flex; gap: 10px;">
                 <input type="text" id="news-input" placeholder="Notícia manual...">
-                <button class="btn hold" onclick="sendManual()">ENVIAR</button>
+                <button class="btn hold" onclick="sendManual()">ENVIAR (Fonte: Admin)</button>
             </div>
         </div>
 
@@ -132,42 +151,49 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let sessionData = null;
-        let botInterval = null;
+        
+        // FONTES DEFINIDAS
+        const ptSources = ["Jornal de Negócios", "Sapo", "Jornal de Notícias", "Público"];
+        const intlSources = ["Bloomberg", "Wall Street Journal"];
 
         function sendCommand(cmd) { socket.emit('admin-action', { command: cmd }); }
         
-        // Função do Multiplicador
         function setMultiplier(val) { 
             socket.emit('admin-action', { command: 'SET_MULTIPLIER', value: val }); 
         }
 
         function confirmReset() {
-            if(confirm("Apagar tudo?")) {
+            if(confirm("Reiniciar o IPO? Dados serão apagados.")) {
                 sendCommand('RESET');
-                document.getElementById('download-area').style.display = 'none';
+            }
+        }
+
+        // FUNÇÃO INTELIGENTE DE FONTE
+        function resolveSource(impact) {
+            // Se o impacto for muito forte (positivo ou negativo) usa fonte internacional
+            if (Math.abs(impact) >= 20) {
+                return intlSources[Math.floor(Math.random() * intlSources.length)];
+            } else {
+                return ptSources[Math.floor(Math.random() * ptSources.length)];
             }
         }
 
         function sendNews(text, impactValue) {
-            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue });
+            const source = resolveSource(impactValue);
+            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: impactValue, source: source });
         }
 
         function sendEarnings(text, newEPS, newRevenue, impact) {
-            socket.emit('admin-action', { 
-                command: 'EARNINGS_UPDATE', 
-                text: text, 
-                newEPS: newEPS, 
-                newRevenue: newRevenue,
-                impact: impact 
-            });
+            const source = resolveSource(impact);
+            socket.emit('admin-action', { command: 'EARNINGS_UPDATE', text: text, newEPS: newEPS, newRevenue: newRevenue, impact: impact, source: source });
         }
 
         function sendManual() {
             const text = document.getElementById('news-input').value;
-            sendNews(text, 0);
+            socket.emit('admin-action', { command: 'NEWS_UPDATE', text: text, impact: 0, source: "Admin" });
         }
 
+        let botInterval = null;
         function startBots(sentiment) {
             if (botInterval) clearInterval(botInterval);
             document.getElementById('bot-status').innerHTML = `<span class="blinking">(${sentiment})...</span>`;
@@ -185,22 +211,6 @@
             document.getElementById('bot-status').innerText = "INATIVO";
         }
 
-        function downloadReport() {
-            if (!sessionData) return alert("Sem dados.");
-            let csv = "data:text/csv;charset=utf-8,RELATORIO,Participantes," + document.getElementById('online-count').innerText + "\nData,Preco,Noticia\n";
-            sessionData.fullHistory.forEach(point => {
-                let event = sessionData.events.find(e => e.time === point.time);
-                let txt = event ? event.text.replace(/,/g, ";") : "";
-                csv += `${point.time},${point.price.toFixed(2)},${txt}\n`;
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csv));
-            link.setAttribute("download", "report.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
         socket.on('market-update-light', (data) => {
             const statusEl = document.getElementById('status-display');
             statusEl.innerText = data.isPaused ? "PAUSADO" : "AO VIVO";
@@ -209,20 +219,10 @@
             if(data.stats) {
                 document.getElementById('count-buy').innerText = data.stats.buys;
                 document.getElementById('count-sell').innerText = data.stats.sells;
-                
-                // Atualiza o texto do multiplicador na barra
                 if (data.stats.multiplier) {
                     document.getElementById('mult-display').innerText = data.stats.multiplier;
                 }
             }
-        });
-
-        socket.on('market-finish', (data) => {
-            sessionData = data;
-            document.getElementById('status-display').innerText = "ENCERRADO";
-            document.getElementById('download-area').style.display = 'block';
-            stopBots(); 
-            window.scrollTo(0, 0);
         });
     </script>
 </body>
