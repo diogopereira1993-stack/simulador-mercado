@@ -65,7 +65,8 @@
                 <div class="controls">
                     <button class="btn btn-primary" id="btn-next" onclick="cmd('NEXT')">▶ Começar: ronda 1</button>
                     <button class="btn btn-secondary" id="btn-pause" onclick="cmd(state && state.paused ? 'RESUME' : 'PAUSE')">⏸ Pausar mercado</button>
-                    <button class="btn btn-secondary" id="btn-concl" onclick="cmd(state && state.status === 'CONCLUSION' ? 'HIDE_CONCLUSION' : 'SHOW_CONCLUSION')" disabled>📊 Mostrar conclusão</button>
+                    <button class="btn btn-secondary" id="btn-sound" onclick="cmd(state && state.sound ? 'SOUND_OFF' : 'SOUND_ON')">🔊 Som ligado</button>
+                    <button class="btn btn-secondary" id="btn-concl" onclick="cmd(state && state.nextConclusion ? 'SHOW_CONCLUSION' : 'HIDE_CONCLUSION')" disabled>📊 Mostrar conclusão</button>
                 </div>
                 <div class="controls" style="margin-top: 8px;">
                     <button class="btn btn-secondary" style="height: 40px; font-size: 0.85rem;" onclick="if (confirm('Terminar o jogo agora e mostrar os resultados?')) cmd('FINISH')">🏁 Terminar</button>
@@ -135,8 +136,8 @@
                 WINDOW: 'O mercado corre os meses da pergunta. Cria suspense.',
                 REVEAL: 'Explica o que costuma acontecer e porquê. Depois mostra o exemplo histórico.',
                 HISTORY: 'Conta o exemplo histórico. Depois avança.',
-                FINISHED: 'Jogo terminado. Comenta os três planos e o que a sala fez na crise. Depois mostra a conclusão.',
-                CONCLUSION: 'A conclusão está no ecrã grande e nos telemóveis.'
+                FINISHED: 'Jogo terminado. Comenta quanto juntou cada reforço e o que a sala fez na crise. Depois mostra a conclusão.',
+                CONCLUSION: 'A conclusão está no ecrã grande e nos telemóveis. Primeiro com 150€ por mês, depois com 300€.'
             }[s.status];
         }
 
@@ -172,10 +173,11 @@
             next.innerText = nextLabel(s);
             const concl = document.getElementById('btn-concl');
             concl.disabled = !(s.status === 'FINISHED' || s.status === 'CONCLUSION');
-            concl.innerText = s.status === 'CONCLUSION' ? '↩ Voltar ao resultado' : '📊 Mostrar conclusão';
+            concl.innerText = s.nextConclusion ? `📊 Conclusão com ${s.nextConclusion}€ por mês` : '↩ Voltar ao resultado';
             const pause = document.getElementById('btn-pause');
             pause.disabled = !(s.status === 'FAST' || s.status === 'WINDOW');
             pause.innerText = s.paused ? '▶ Retomar mercado' : '⏸ Pausar mercado';
+            document.getElementById('btn-sound').innerText = s.sound ? '🔊 Som ligado no ecrã' : '🔇 Som desligado no ecrã';
 
             document.getElementById('s-players').innerText = s.players;
             const deciding = s.status === 'DECIDE';
@@ -201,11 +203,11 @@
             if (!state || !rounds.length) return;
             const s = state, el = document.getElementById('notes');
             if (s.status === 'CONCLUSION') {
-                el.innerHTML = '<b>Conclusão</b>O jogo usou a média do mercado. Mostra o mesmo plano com médias mais altas e explica que vêm com mais risco e quedas maiores pelo caminho. Fecha com: tudo começa no mesmo sítio, 1.000€ e um reforço todos os meses, sem desistir.';
+                el.innerHTML = '<b>Conclusão</b>O jogo usou a média do mercado. Mostra o mesmo plano com médias mais altas e explica que vêm com mais risco e quedas maiores pelo caminho. Depois carrega outra vez no botão da conclusão para mostrar o mesmo plano com 300€ por mês: o reforço muda mais o resultado do que a rentabilidade. Fecha com: tudo começa no mesmo sítio, 1.000€ e um reforço todos os meses, sem desistir.';
                 return;
             }
             if (s.status === 'FINISHED') {
-                el.innerHTML = '<b>Fim do jogo</b>Mostra os três planos e o que a sala fez na crise: quem manteve chegou primeiro aos 10K. Depois as previsões: quem acertou mais e quem acertou menos tiveram o mesmo plano. Fecha: o que fez a diferença foi o reforço de todos os meses e não desistir. Depois mostra a conclusão.';
+                el.innerHTML = '<b>Fim do jogo</b>Mostra quanto juntou cada reforço mensal (quem pôs mais chegou mais cedo) e o que a sala fez na crise: quem manteve chegou primeiro aos 10K. Depois as previsões: quem acertou mais e quem acertou menos tiveram o mesmo plano. Fecha: o que fez a diferença foi o reforço de todos os meses e não desistir. Depois mostra a conclusão.';
                 return;
             }
             if (s.status === 'DECIDE') {

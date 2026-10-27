@@ -257,7 +257,7 @@
             <p class="lesson">As tuas previsões não mexeram no plano. O que fez a diferença foi o reforço de todos os meses e não desistir na crise.</p>
             <div id="concl" class="card concl" style="display: none;">
                 <div class="concl-head">E se a média fosse outra?</div>
-                <p class="concl-sub">O mesmo plano de 1.000€ + 150€ por mês, com rentabilidades médias diferentes.</p>
+                <p class="concl-sub" id="concl-sub">O mesmo plano de 1.000€ + 150€ por mês, com rentabilidades médias diferentes.</p>
                 <table class="concl-table"><thead><tr><th></th><th>7%<small>média</small></th><th>10%</th><th>15%</th></tr></thead><tbody id="concl-body"></tbody></table>
                 <p class="concl-note">Cenários hipotéticos. Rentabilidades mais altas implicam mais risco e não são garantidas.</p>
             </div>
@@ -593,6 +593,7 @@
             const concl = document.getElementById('concl');
             if (s.status === 'CONCLUSION' && s.scenarios) {
                 const sc = s.scenarios;
+                document.getElementById('concl-sub').innerText = `O mesmo plano de 1.000€ + ${sc.monthly}€ por mês, com rentabilidades médias diferentes.`;
                 document.getElementById('concl-body').innerHTML = sc.years.map(y =>
                     `<tr><td>${y} anos<small>${eur(sc.pocket[y])} do bolso</small></td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`).join('');
                 if (concl.style.display === 'none') { finalClosed = false; concl.style.display = 'block'; }

@@ -106,7 +106,7 @@
         .hist-chart .lbl { margin-bottom: 0.6vh; }
         .hist-box { position: relative; height: 42vh; }
 
-        .final-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+        .final-grid { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 1.6vw; }
         .final-grid .card { padding: 2.8vh 2vw; }
         .final-grid .name { font-size: 2.3vh; font-weight: 700; display: flex; align-items: center; gap: 0.6vw; }
         .final-grid .name i { width: 1.4vh; height: 1.4vh; border-radius: 50%; display: inline-block; }
@@ -135,6 +135,8 @@
         .concl-table td.pocket { color: var(--sub); font-weight: 600; }
         .concl-table tr.hit td { font-size: 2.4vh; font-weight: 700; color: var(--sub); }
         .concl-note { font-size: 1.8vh; color: var(--muted); line-height: 1.4; }
+        /* O browser só deixa tocar som depois de um clique */
+        #ativar-som { position: fixed; right: 2vw; bottom: 2vh; z-index: 50; font: inherit; font-size: 1.7vh; font-weight: 600; color: var(--sub); background: var(--card); border: 1px solid var(--border); border-radius: 99px; padding: 0.9vh 1.4vw; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
     </style>
 </head>
 <body>
@@ -148,7 +150,7 @@
     <main>
         <section class="card chart-card">
             <div class="chart-head">
-                <h2>O plano de cada perfil</h2>
+                <h2>O plano de cada perfil, com 150€ por mês</h2>
                 <div class="legend">
                     <span><i style="background: var(--c-indice)"></i>Índice</span>
                     <span><i style="background: var(--c-misto)"></i>Índice + ações escolhidas</span>
@@ -266,14 +268,10 @@
     <!-- ── FIM DO JOGO ─────────────────────────────────── -->
     <div class="overlay" id="final">
         <div>
-            <div class="kicker">7 anos depois · 1.000€ + 150€ por mês</div>
-            <h2 style="font-size: 6.4vh; line-height: 1.05;" id="fin-title">Os três planos chegaram aos 10K</h2>
+            <div class="kicker">7 anos depois · com o reforço que cada um escolheu</div>
+            <h2 style="font-size: 6.4vh; line-height: 1.05;">Quanto juntou a sala</h2>
         </div>
-        <div class="final-grid">
-            <div class="card"><div class="name"><i style="background: var(--c-indice)"></i>Índice</div><div class="val" id="fin-indice">—</div><div class="sub" id="fin-indice-t"></div></div>
-            <div class="card"><div class="name"><i style="background: var(--c-misto)"></i>Índice + ações escolhidas</div><div class="val" id="fin-misto">—</div><div class="sub" id="fin-misto-t"></div></div>
-            <div class="card"><div class="name"><i style="background: var(--c-escolhidas)"></i>Ações escolhidas</div><div class="val" id="fin-escolhidas">—</div><div class="sub" id="fin-escolhidas-t"></div></div>
-        </div>
+        <div class="final-grid" id="fin-grid"></div>
         <div class="final-row">
             <div class="card">
                 <div class="lbl">O que fizeram na crise</div>
@@ -281,9 +279,8 @@
                 <table class="dec-table" id="fin-dec-table"></table>
             </div>
             <div class="card">
-                <div class="lbl">E as previsões?</div>
-                <div class="big-line" id="fin-extremes">—</div>
-                <div class="sub" id="fin-avg"></div>
+                <div class="lbl">Índice + ações escolhidas, com cada reforço</div>
+                <div style="position: relative; height: 33vh; margin-top: 0.4vh;"><canvas id="fin-lines"></canvas></div>
             </div>
         </div>
         <div class="closing">O que fez a diferença não foi acertar no mercado: foi o reforço de todos os meses e não desistir na crise.</div>
@@ -292,7 +289,7 @@
     <!-- ── CONCLUSÃO ───────────────────────────────────── -->
     <div class="overlay" id="conclusion">
         <div>
-            <div class="kicker">O mesmo plano: 1.000€ + 150€ por mês</div>
+            <div class="kicker" id="concl-kicker">O mesmo plano: 1.000€ + 150€ por mês</div>
             <h2 class="concl-title">E se a média fosse outra?</h2>
             <p class="concl-sub">O jogo usou a média do mercado. Com outras rentabilidades médias, o mesmo plano chegava a isto, com mais risco pelo caminho.</p>
         </div>
@@ -302,6 +299,8 @@
         </table>
         <p class="concl-note">Cenários hipotéticos com rentabilidades médias constantes. Rentabilidades mais altas implicam mais risco e mais volatilidade, e não são garantidas.</p>
     </div>
+
+    <button id="ativar-som" hidden>🔊 Clica para ativar o som</button>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -408,8 +407,49 @@
         let histShown = null;
 
         let state = null, clockOffset = 0;
+        // ── SONS (só no ecrã grande; gerados com Web Audio, sem ficheiros) ──
+        let audio = null, somAtivo = false, ultimoEstado = null, ultimoTique = null;
+        const ac = () => (audio ||= new AudioContext());
+        // Uma nota: tom puro com ataque rápido e fade suave
+        function nota(freq, inicio = 0, dur = 0.25, ganho = 0.25, tipo = 'sine') {
+            const a = ac(), t = a.currentTime + inicio;
+            const o = a.createOscillator(), g = a.createGain();
+            o.type = tipo; o.frequency.value = freq;
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(ganho, t + 0.012);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+        }
+        const sons = {
+            abre: () => { nota(660, 0, 0.18, 0.22); nota(990, 0.06, 0.22, 0.12); },
+            tique: ultimo => nota(ultimo ? 1320 : 1100, 0, 0.06, 0.12, 'triangle'),
+            fecha: () => nota(220, 0, 0.09, 0.3, 'triangle'),
+            subiu: () => { nota(523, 0, 0.3, 0.2); nota(784, 0.14, 0.45, 0.2); },
+            desceu: () => { nota(523, 0, 0.3, 0.2); nota(392, 0.14, 0.45, 0.2); },
+            crise: () => { nota(110, 0, 1.4, 0.3); nota(165, 0.05, 1.2, 0.1); },
+            historia: () => { [392, 494, 587].forEach((f, i) => nota(f, i * 0.07, 0.6, 0.08)); },
+            final: () => { [523, 659, 784, 1047].forEach((f, i) => nota(f, i * 0.04, 1.6, 0.1)); }
+        };
+        const tocar = (nome, ...args) => { if (somAtivo && state && state.sound) sons[nome](...args); };
+        const botaoSom = document.getElementById('ativar-som');
+        botaoSom.onclick = () => { ac().resume(); somAtivo = true; botaoSom.hidden = true; };
+        // Só toca quando o estado muda, não a cada atualização
+        function somDaTransicao(s) {
+            const de = ultimoEstado;
+            ultimoEstado = s.status;
+            if (de === null || de === s.status) return;
+            if (s.status === 'VOTING') tocar('abre');
+            if (s.status === 'WINDOW' && de === 'VOTING') tocar('fecha');
+            if (s.status === 'REVEAL' && s.result) tocar(s.result.answer === 'SOBE' ? 'subiu' : 'desceu');
+            if (s.status === 'DECIDE') tocar('crise');
+            if (s.status === 'HISTORY') tocar('historia');
+            if (s.status === 'FINISHED') tocar('final');
+        }
+
         socket.on('state', s => {
             state = s;
+            botaoSom.hidden = somAtivo || !s.sound;
+            somDaTransicao(s);
             clockOffset = s.serverNow - Date.now();
             const roundNo = s.round + 1;
             const kicker = `Ronda ${roundNo} de ${s.totalRounds} · Ano ${s.year}, ${s.monthLabel}`;
@@ -534,32 +574,47 @@
         function renderFinal(s) {
             document.getElementById('final').classList.add('show');
             const r = s.refs;
-            const all = ['indice', 'misto', 'escolhidas'].every(k => r[k].hitMonth);
-            document.getElementById('fin-title').innerText = all ? 'Os três planos chegaram aos 10K' : 'Os planos ao fim de 7 anos';
-            ['indice', 'misto', 'escolhidas'].forEach(k => {
-                document.getElementById('fin-' + k).innerText = eur(r[k].value);
-                document.getElementById('fin-' + k + '-t').innerText = `${r[k].hitMonth ? `10.000€ ao fim de ${duracao(r[k].hitMonth)}` : 'Ainda sem os 10.000€'} · na crise caiu ${pctAbs(r[k].worstDrawdown)}`;
-            });
+            // Um cartão por reforço mensal que alguém escolheu: o valor médio ao fim de 7 anos e quando chegaram aos 10K
+            document.getElementById('fin-grid').innerHTML = (s.byMonthly || []).map(g => `<div class="card">
+                <div class="name">${g.monthly}€ por mês · ${g.people} ${g.people === 1 ? 'pessoa' : 'pessoas'}</div>
+                <div class="val">${eur(g.value)}</div>
+                <div class="sub">${eur(g.pocket)} do bolso · ${g.hitMonth ? `10.000€ ao fim de ${duracao(g.hitMonth)}` : `10.000€ por volta dos ${Math.round(g.projectedMonth / 12)} anos`}</div></div>`).join('');
             const d = s.decisions;
             document.getElementById('fin-decisions').innerText = d
-                ? `Na sala, ${d.MANTENHO} mantiveram o plano, ${d.PARO} pararam os reforços e ${d.VENDO} venderam tudo.`
+                ? `Na sala, ${d.MANTENHO} ${d.MANTENHO === 1 ? 'manteve' : 'mantiveram'} o plano, ${d.PARO} ${d.PARO === 1 ? 'parou' : 'pararam'} os reforços e ${d.VENDO} ${d.VENDO === 1 ? 'vendeu' : 'venderam'} tudo.`
                 : 'A sala não chegou à decisão na crise.';
             const hit = p => p.hitMonth ? duracao(p.hitMonth) : 'não chegou';
             document.getElementById('fin-dec-table').innerHTML =
                 `<tr><td style="color: var(--sub);">Com 150€ por mês no Índice</td><td style="color: var(--sub); font-weight: 600;">Chegou aos 10.000€ em</td><td style="color: var(--sub); font-weight: 600;">Ao fim de 7 anos</td></tr>` +
                 [['Manteve', r.indice], ['Parou um ano', r.parou], ['Vendeu e voltou um ano depois', r.vendeu]]
                     .map(([label, p]) => `<tr><td>${label}</td><td>${hit(p)}</td><td>${eur(p.value)}</td></tr>`).join('');
-            const x = s.extremes;
-            document.getElementById('fin-extremes').innerText = x && x.best.score !== x.worst.score
-                ? `${x.best.name} acertou ${x.best.score} de ${s.totalRounds} e ${x.worst.name} acertou ${x.worst.score}. As previsões não mexeram em nenhum plano.`
-                : 'As previsões não mexeram em nenhum plano.';
-            document.getElementById('fin-avg').innerText = `Média da sala: ${s.avgScore.toFixed(1).replace('.', ',')} de ${s.totalRounds} previsões certas.`;
+            // O mesmo perfil com os 4 reforços: o valor por mês muda mais o resultado do que tudo o resto
+            const L = s.monthlyLines || {}, cores = { 50: '#A1A1A6', 100: '#5E5CE6', 150: '#0071E3', 300: '#FF9F0A' };
+            if (!linesChart) linesChart = new Chart(document.getElementById('fin-lines'), {
+                type: 'line',
+                data: { datasets: [] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: { duration: 900 },
+                    plugins: { legend: { position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 3, font: { size: 13, weight: '600' } } }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { type: 'linear', min: 0, max: 84, grid: { display: false }, ticks: { stepSize: 12, font: { size: 12 }, callback: v => v === 0 ? 'Início' : 'Ano ' + v / 12 } },
+                        y: { min: 0, position: 'right', grid: { color: '#EEEEF0' }, ticks: { font: { size: 12 }, callback: v => (v / 1000) + 'K€' } }
+                    }
+                }
+            });
+            linesChart.data.datasets = [300, 150, 100, 50].filter(m => L[m]).map(m => ({
+                label: `${m}€/mês`, data: L[m].map((v, i) => ({ x: i, y: v })), borderColor: cores[m], borderWidth: 3, pointRadius: 0, tension: 0.25 }))
+                .concat([{ label: '10K', data: [{ x: 0, y: 10000 }, { x: 84, y: 10000 }], borderColor: css('--text'), borderWidth: 1.5, borderDash: [3, 5], pointRadius: 0 }]);
+            linesChart.resize();
+            linesChart.update();
         }
+        let linesChart = null;
 
         function renderConclusion(sc) {
             document.getElementById('conclusion').classList.add('show');
+            document.getElementById('concl-kicker').innerText = `O mesmo plano: 1.000€ + ${sc.monthly}€ por mês`;
             const rows = sc.years.map(y => `<tr><td>${y} anos</td><td class="pocket">${eur(sc.pocket[y])}</td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`);
-            rows.push(`<tr class="hit"><td>Chega aos 10.000€</td><td class="pocket">${duracao(Math.ceil((10000 - 1000) / 150))}</td>${sc.rates.map(r => `<td>${duracao(r.hitMonth)}</td>`).join('')}</tr>`);
+            rows.push(`<tr class="hit"><td>Chega aos 10.000€</td><td class="pocket">${duracao(sc.pocketHit)}</td>${sc.rates.map(r => `<td>${duracao(r.hitMonth)}</td>`).join('')}</tr>`);
             document.getElementById('concl-body').innerHTML = rows.join('');
         }
 
@@ -578,6 +633,9 @@
             const el = document.getElementById(state.status === 'VOTING' ? 'countdown' : 'decide-countdown');
             el.innerText = left;
             el.classList.toggle('soon', left <= 5);
+            // Um tique por segundo nos últimos 5 segundos da votação; o último mais agudo
+            if (state.status === 'VOTING' && left >= 1 && left <= 5 && left !== ultimoTique) tocar('tique', left === 1);
+            ultimoTique = left;
         }
         setInterval(tick, 250);
     </script>

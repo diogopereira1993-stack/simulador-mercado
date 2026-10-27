@@ -12,8 +12,8 @@ const GOAL = 10000;
 const TOTAL_MONTHS = 84;            // 7 anos
 const VOTE_SECONDS = 25;            // por omissão; a ronda 1 tem mais tempo (seconds)
 const DECIDE_SECONDS = 30;
-const FAST_MS = 400;                // avanço rápido até à ronda seguinte (por mês)
-const WINDOW_MS = 1000;             // meses da pergunta, mais devagar para a sala ver (por mês)
+const FAST_MS = 800;                // o mercado até à ronda seguinte (por mês), devagar para a sala acompanhar
+const WINDOW_MS = 1500;             // meses da pergunta, mais devagar ainda (por mês)
 const CASH_RATE = 0.01;             // depósito: onde fica o dinheiro de quem para ou vende
 const DECISION_MONTHS = 12;         // quem para ou vende volta ao plano um ano depois
 const PICKS_BETA = 1.3;             // simulação: as ações escolhidas oscilam 1,3 vezes o índice
@@ -213,22 +213,23 @@ function cleanAnswers(raw) {
 // --- CONCLUSÃO: o mesmo plano de referência com rentabilidades médias constantes (cenários hipotéticos) ---
 const SCENARIO_RATES = [0.07, 0.10, 0.15];   // 7% = referência da média do mercado
 const SCENARIO_YEARS = [7, 10, 15, 30];
-function buildScenarios() {
+const CONCLUSION_MONTHLY = [150, 300];   // a conclusão mostra primeiro 150€ por mês e depois 300€
+function buildScenarios(monthly) {
     const rates = SCENARIO_RATES.map(R => {
         const r = Math.pow(1 + R, 1 / 12) - 1;
         let v = INITIAL, hitMonth = null;
         const byYear = {};
         for (let m = 1; m <= 30 * 12; m++) {
-            v = v * (1 + r) + REF_MONTHLY;
+            v = v * (1 + r) + monthly;
             if (hitMonth === null && v >= GOAL) hitMonth = m;
             if (m % 12 === 0 && SCENARIO_YEARS.includes(m / 12)) byYear[m / 12] = Math.round(v);
         }
         return { rate: R, byYear, hitMonth };
     });
-    const pocket = Object.fromEntries(SCENARIO_YEARS.map(y => [y, INITIAL + REF_MONTHLY * 12 * y]));
-    return { years: SCENARIO_YEARS, pocket, rates };
+    const pocket = Object.fromEntries(SCENARIO_YEARS.map(y => [y, INITIAL + monthly * 12 * y]));
+    return { monthly, years: SCENARIO_YEARS, pocket, pocketHit: Math.ceil((GOAL - INITIAL) / monthly), rates };
 }
-const SCENARIOS = buildScenarios();
+const SCENARIOS = Object.fromEntries(CONCLUSION_MONTHLY.map(m => [m, buildScenarios(m)]));
 
 function gaussian() {
     let u = 0, v = 0;
@@ -317,6 +318,7 @@ module.exports = function setupGame10k(io, opts = {}) {
     const drawdown = plan => plan.nav / plan.peakNav - 1;
 
     let game;
+    let sound = true;   // sons do ecrã grande; liga e desliga no admin e sobrevive a reiniciar o jogo
     function resetGame() {
         const index = buildIndexPath();
         game = {
@@ -330,13 +332,16 @@ module.exports = function setupGame10k(io, opts = {}) {
             voteEndsAt: null,
             decideEndsAt: null,
             decidedAt: null,          // mês em que a sala decidiu o que fazer na crise
+            conclusion: null,         // o reforço mensal que a conclusão está a mostrar
             index,
             picks: buildPicksPath(index),
             news: 'O jogo vai começar. Faz o check-in e entra.',
             // Planos de referência (1.000€ + 150€/mês): os três perfis no ecrã grande e o Índice com cada decisão
             refs: {
                 indice: newPlan('indice', REF_MONTHLY), misto: newPlan('misto', REF_MONTHLY), escolhidas: newPlan('escolhidas', REF_MONTHLY),
-                parou: newPlan('indice', REF_MONTHLY, 'PARO'), vendeu: newPlan('indice', REF_MONTHLY, 'VENDO')
+                parou: newPlan('indice', REF_MONTHLY, 'PARO'), vendeu: newPlan('indice', REF_MONTHLY, 'VENDO'),
+                // o perfil equilibrado com cada reforço, para o gráfico do fim
+                misto50: newPlan('misto', 50), misto100: newPlan('misto', 100), misto300: newPlan('misto', 300)
             },
             history: [{ month: 0, pocket: INITIAL, indice: INITIAL, misto: INITIAL, escolhidas: INITIAL }],
             results: [],              // por ronda: { answer, marketReturn, votes, correct }
@@ -491,6 +496,20 @@ module.exports = function setupGame10k(io, opts = {}) {
         return c;
     }
 
+    // O resultado real da sala, por reforço mensal: cada pessoa vê o seu no telemóvel, o ecrã mostra os grupos
+    function byMonthly() {
+        return MONTHLY_OPTIONS.map(monthly => {
+            const plans = [...game.players.values()].filter(p => p.monthly === monthly).map(p => p.plan);
+            if (!plans.length) return null;
+            const value = plans.reduce((a, p) => a + p.value, 0) / plans.length;
+            const hits = plans.map(p => p.hitMonth).filter(Boolean).sort((a, b) => a - b);
+            const reached = hits.length * 2 >= plans.length;   // a maioria chegou: mostra o tempo do meio
+            return { monthly, people: plans.length, value, pocket: INITIAL + monthly * TOTAL_MONTHS,
+                hitMonth: reached ? hits[Math.floor((hits.length - 1) / 2)] : null,
+                projectedMonth: reached ? null : TOTAL_MONTHS + monthsToGoal(value, monthly) };
+        }).filter(Boolean);
+    }
+
     function ranking() {
         const list = [];
         game.players.forEach((p, id) => list.push({ id, name: p.name, profile: PROFILES[p.profile].label, score: p.score }));
@@ -535,6 +554,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             gameId: game.id,
             status: s,
             paused: game.paused,
+            sound,
             month: game.month,
             year: d.year,
             monthLabel: d.monthLabel,
@@ -564,9 +584,12 @@ module.exports = function setupGame10k(io, opts = {}) {
             decisions: s === 'DECIDE' ? { answered: game.players.size - decisionCounts().none } : (decided ? decisionCounts() : null),
             result: result && { ...result, usual: r.usual, lesson: r.lesson, horizon: r.horizon },
             players: game.players.size,
-            extremes: over && ranked.length ? { best: ranked[0], worst: ranked[ranked.length - 1] } : null,
+            // O perfil equilibrado mês a mês com cada reforço, para o gráfico do fim
+            monthlyLines: over ? { 50: game.refs.misto50.history, 100: game.refs.misto100.history, 150: game.refs.misto.history, 300: game.refs.misto300.history } : null,
             avgScore: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0,
-            scenarios: over ? SCENARIOS : null,
+            scenarios: over ? SCENARIOS[game.conclusion || CONCLUSION_MONTHLY[0]] : null,
+            nextConclusion: s === 'CONCLUSION' ? CONCLUSION_MONTHLY[CONCLUSION_MONTHLY.indexOf(game.conclusion) + 1] || null : CONCLUSION_MONTHLY[0],
+            byMonthly: over ? byMonthly() : null,
             refs: Object.fromEntries(Object.entries(game.refs).map(([k, p]) => [k, planSummary(p)])),
             bands: BANDS.filter(b => game.month >= b.from)
         };
@@ -689,10 +712,14 @@ module.exports = function setupGame10k(io, opts = {}) {
             if (!socket.data.isAdmin) return;
             if (command === 'NEXT' || command === 'NEXT_ROUND') next();
             if (command === 'CLOSE_VOTE') closeVote();
+            if (command === 'SOUND_ON') sound = true;
+            if (command === 'SOUND_OFF') sound = false;
             if (command === 'PAUSE') game.paused = true;
             if (command === 'RESUME') game.paused = false;
             if (command === 'FINISH') finish();
-            if (command === 'SHOW_CONCLUSION' && game.status === 'FINISHED') game.status = 'CONCLUSION';
+            // A conclusão tem dois passos: primeiro com 150€ por mês, depois com 300€
+            if (command === 'SHOW_CONCLUSION' && game.status === 'FINISHED') { game.status = 'CONCLUSION'; game.conclusion = CONCLUSION_MONTHLY[0]; }
+            else if (command === 'SHOW_CONCLUSION' && game.status === 'CONCLUSION') game.conclusion = CONCLUSION_MONTHLY[CONCLUSION_MONTHLY.indexOf(game.conclusion) + 1] || game.conclusion;
             if (command === 'HIDE_CONCLUSION' && game.status === 'CONCLUSION') game.status = 'FINISHED';
             if (command === 'RESET') { stop(); resetGame(); }
             broadcast();
