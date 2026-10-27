@@ -1,0 +1,59 @@
+/* ── O JOGO — estilo partilhado, com as cores do site MoneyFlix ── */
+:root {
+    --bg: #F5F5F7;
+    --card: #FFFFFF;
+    --border: #E5E5EA;
+    --track: #E8E8ED;
+    --text: #1D1D1F;
+    --sub: #6E6E73;
+    --muted: #A1A1A6;
+    --accent: #0071E3;          /* azul do site: ações e destaques */
+    --accent-ink: #0058B0;
+    --accent-soft: #E8F1FC;
+    --flix: #DC2626;            /* o vermelho do logótipo */
+    --green: #1FA84F;           /* sobe */
+    --green-ink: #15803D;
+    --green-soft: #E6F6EC;
+    --red: #E5484D;             /* desce */
+    --red-ink: #C62A2F;
+    --red-soft: #FDECEC;
+    --amber: #F5A524;
+    --amber-ink: #B45309;
+    --amber-soft: #FEF3E2;
+    --c-indice: #0071E3;
+    --c-misto: #5E5CE6;
+    --c-escolhidas: #FF9F0A;
+    --c-pocket: #A1A1A6;
+    --crise: rgba(229, 72, 77, 0.07);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-weight: 800; letter-spacing: -0.035em; }
+
+/* O logótipo MONEYFLIX (imagem) com o nome da página ao lado */
+.brand { display: flex; align-items: center; gap: 10px; font-size: 1rem; }
+.brand img { height: 18px; width: auto; display: block; }
+.brand span { font-weight: 500; color: var(--sub); }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
+
+.btn {
+    display: block; width: 100%; height: 52px; border: none; border-radius: 14px;
+    font: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; transition: transform 0.08s, opacity 0.15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn-danger { background: var(--card); color: var(--red-ink); border: 1px solid #F5C2C3; }
+
+.pill { font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 99px; white-space: nowrap; }
+.pill-live { background: var(--accent-soft); color: var(--accent-ink); }
+.pill-wait { background: var(--track); color: var(--sub); }

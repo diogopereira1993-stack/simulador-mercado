@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyFlix · Admin do jogo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="jogo.css">
+    <style>
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 48px; display: flex; flex-direction: column; gap: 16px; }
+        header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        header img { height: 22px; }
+        header h1 { font-size: 1.5rem; flex: 1; }
+        .links a { font-size: 0.85rem; color: var(--accent-ink); margin-left: 12px; }
+        .grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+        @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+        .card { padding: 18px; }
+        .card h2 { font-size: 1.05rem; margin-bottom: 12px; letter-spacing: -0.01em; }
+        .now { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+        .now .big { font-size: 2rem; font-weight: 900; letter-spacing: -0.03em; }
+        .now .sub { color: var(--sub); font-size: 0.9rem; }
+        .notes { margin-top: 12px; padding: 14px; background: var(--bg); border-radius: 12px; font-size: 0.92rem; line-height: 1.5; }
+        .notes b { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sub); margin-top: 10px; }
+        .notes b:first-child { margin-top: 0; }
+        .notes ul { padding-left: 18px; }
+        .notes li { margin-bottom: 4px; }
+        .ans-up { color: var(--green-ink); font-weight: 800; }
+        .ans-down { color: var(--red-ink); font-weight: 800; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+        .controls .btn-primary { grid-column: span 2; height: 64px; font-size: 1.15rem; }
+        .export-btn { display: flex; align-items: center; justify-content: center; margin-top: 8px; height: 44px; font-size: 0.9rem; text-decoration: none; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .stats div { background: var(--bg); border-radius: 10px; padding: 10px; }
+        .stats b { display: block; font-size: 1.4rem; font-variant-numeric: tabular-nums; }
+        .stats span { font-size: 0.75rem; color: var(--sub); }
+        .script li { list-style: none; padding: 10px 12px; border-radius: 10px; margin-bottom: 6px; background: var(--bg); font-size: 0.85rem; line-height: 1.4; }
+        .script li b { display: block; }
+        .script li small { display: block; color: var(--sub); margin-top: 2px; }
+        .script li.current { background: var(--accent-soft); outline: 1.5px solid var(--accent); }
+        .script li.done { opacity: 0.5; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th { text-align: left; font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+        td { padding: 7px 8px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <img src="logo-moneyflix.png" alt="MoneyFlix">
+            <h1>Admin do jogo</h1>
+            <span class="pill pill-wait" id="status-pill">—</span>
+            <span class="links"><a href="ecra.html" target="_blank">Abrir ecrã grande</a><a href="./" target="_blank">Abrir telemóvel</a></span>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <h2>Agora</h2>
+                <div class="now">
+                    <div class="big" id="now-title">À espera</div>
+                    <div class="sub" id="now-date">Ano 1 · jan</div>
+                </div>
+                <div class="sub" id="status-help" style="color: var(--sub); margin-top: 6px;">—</div>
+                <div class="notes" id="notes">As notas aparecem aqui.</div>
+                <div class="controls">
+                    <button class="btn btn-primary" id="btn-next" onclick="cmd('NEXT')">▶ Começar: ronda 1</button>
+                    <button class="btn btn-secondary" id="btn-pause" onclick="cmd(state && state.paused ? 'RESUME' : 'PAUSE')">⏸ Pausar mercado</button>
+                    <button class="btn btn-secondary" id="btn-concl" onclick="cmd(state && state.status === 'CONCLUSION' ? 'HIDE_CONCLUSION' : 'SHOW_CONCLUSION')" disabled>📊 Mostrar conclusão</button>
+                </div>
+                <div class="controls" style="margin-top: 8px;">
+                    <button class="btn btn-secondary" style="height: 40px; font-size: 0.85rem;" onclick="if (confirm('Terminar o jogo agora e mostrar os resultados?')) cmd('FINISH')">🏁 Terminar</button>
+                    <button class="btn btn-danger" style="height: 40px; font-size: 0.85rem;" onclick="confirmReset()">Reiniciar jogo</button>
+                </div>
+                <a class="btn btn-secondary export-btn" id="export-btn" href="export.csv" download onclick="exported = true">⬇ Exportar respostas (CSV)</a>
+            </div>
+
+            <div class="card">
+                <h2>Sala</h2>
+                <div class="stats">
+                    <div><b id="s-players">0</b><span>jogadores</span></div>
+                    <div><b id="s-voted">—</b><span id="s-voted-label">votaram nesta ronda</span></div>
+                    <div><b id="s-avg">0</b><span>média de pontos</span></div>
+                </div>
+                <div id="survey-line" style="margin-top: 10px; font-size: 0.85rem; color: var(--sub); line-height: 1.5;">Check-in: ainda sem respostas.</div>
+                <h2 style="margin-top: 18px;" id="script-title">As rondas</h2>
+                <ol class="script" id="script"></ol>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Jogadores</h2>
+            <table>
+                <thead><tr><th>#</th><th>Nome</th><th>Perfil</th><th>Por mês</th><th>Pontos</th><th>Voto atual</th><th>Na crise</th></tr></thead>
+                <tbody id="roster"><tr><td colspan="7" style="color: var(--sub);">À espera de jogadores…</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        let state = null, rounds = [];
+
+        // A chave de admin só é entregue a quem passou o login desta página
+        socket.on('connect', async () => {
+            const { key } = await (await fetch('admin-key')).json();
+            socket.emit('register-admin', key);
+        });
+
+        function cmd(command) { socket.emit('admin', { command }); }
+
+        // Reiniciar apaga as respostas da sessão: avisa se ainda não se exportou o CSV
+        let exported = false;
+        function confirmReset() {
+            const players = state ? state.players : 0;
+            const msg = players && !exported
+                ? `Ainda não exportaste as respostas desta sessão (${players} jogadores). Reiniciar apaga-as. Reiniciar mesmo assim?`
+                : 'Reiniciar o jogo? Todos os jogadores voltam ao início.';
+            if (confirm(msg)) { cmd('RESET'); exported = false; }
+        }
+
+        const labels = { LOBBY: 'À espera', FAST: 'O tempo passa', DECIDE: 'Decisão na crise', NEWS: 'Notícia', VOTING: 'Votação aberta', WINDOW: 'Mercado a correr',
+            REVEAL: 'Resposta', HISTORY: 'Na história', FINISHED: 'Fim do jogo', CONCLUSION: 'Conclusão' };
+        const DECISION = { MANTENHO: 'Mantém', PARO: 'Para um ano', VENDO: 'Vende' };
+
+        function help(s) {
+            const seconds = s.round === 0 ? s.firstVoteSeconds : s.voteSeconds;
+            return {
+                LOBBY: 'As pessoas entram pelo QR code no ecrã grande. Quando estiverem prontas, começa a ronda 1.',
+                FAST: 'O mercado avança até à data da próxima notícia.',
+                DECIDE: `A sala decide o que faz ao plano. Fecha sozinha ao fim de ${s.decideSeconds} segundos.`,
+                NEWS: 'Lê a notícia e o contexto em voz alta. Depois abre a votação.',
+                VOTING: `A votação fecha sozinha ao fim de ${seconds} segundos.`,
+                WINDOW: 'O mercado corre os meses da pergunta. Cria suspense.',
+                REVEAL: 'Explica o que costuma acontecer e porquê. Depois mostra o exemplo histórico.',
+                HISTORY: 'Conta o exemplo histórico. Depois avança.',
+                FINISHED: 'Jogo terminado. Comenta os três planos e o que a sala fez na crise. Depois mostra a conclusão.',
+                CONCLUSION: 'A conclusão está no ecrã grande e nos telemóveis.'
+            }[s.status];
+        }
+
+        // O botão principal faz sempre o passo seguinte
+        function nextLabel(s) {
+            const roundNo = s.round + 1;
+            if (s.status === 'LOBBY') return '▶ Começar: ronda 1';
+            if (s.status === 'NEWS') return '🗳 Abrir a votação';
+            if (s.status === 'VOTING') return '⏹ Fechar a votação já';
+            if (s.status === 'DECIDE') return '⏹ Fechar a decisão';
+            if (s.status === 'REVEAL') return '📜 Mostrar a história';
+            if (s.status === 'HISTORY') {
+                if (roundNo >= s.totalRounds) return '▶ Correr os últimos meses e terminar';
+                return s.nextIsDecision ? '▶ Avançar para a decisão na crise' : `▶ Lançar a ronda ${roundNo + 1}`;
+            }
+            if (s.status === 'FINISHED' || s.status === 'CONCLUSION') return 'Jogo terminado';
+            return 'O mercado está a correr…';
+        }
+
+        socket.on('state', s => {
+            state = s;
+            const pill = document.getElementById('status-pill');
+            pill.innerText = labels[s.status] + (s.paused ? ' (em pausa)' : '');
+            pill.className = 'pill ' + (['VOTING', 'WINDOW', 'DECIDE'].includes(s.status) ? 'pill-live' : 'pill-wait');
+            const roundNo = s.round + 1;
+            document.getElementById('now-title').innerText = s.status === 'DECIDE' ? 'Decisão na crise'
+                : s.round >= 0 && roundNo <= s.totalRounds ? `Ronda ${roundNo} de ${s.totalRounds}` : labels[s.status];
+            document.getElementById('now-date').innerText = `Ano ${s.year} · ${s.monthLabel}`;
+            document.getElementById('status-help').innerText = help(s);
+
+            const next = document.getElementById('btn-next');
+            next.disabled = !['LOBBY', 'NEWS', 'VOTING', 'DECIDE', 'REVEAL', 'HISTORY'].includes(s.status);
+            next.innerText = nextLabel(s);
+            const concl = document.getElementById('btn-concl');
+            concl.disabled = !(s.status === 'FINISHED' || s.status === 'CONCLUSION');
+            concl.innerText = s.status === 'CONCLUSION' ? '↩ Voltar ao resultado' : '📊 Mostrar conclusão';
+            const pause = document.getElementById('btn-pause');
+            pause.disabled = !(s.status === 'FAST' || s.status === 'WINDOW');
+            pause.innerText = s.paused ? '▶ Retomar mercado' : '⏸ Pausar mercado';
+
+            document.getElementById('s-players').innerText = s.players;
+            const deciding = s.status === 'DECIDE';
+            document.getElementById('s-voted').innerText = deciding ? (s.decisions ? s.decisions.answered : 0) : (s.voted !== null ? s.voted : (s.votes ? s.votes.SOBE + s.votes.DESCE : '—'));
+            document.getElementById('s-voted-label').innerText = deciding ? 'já decidiram' : 'votaram nesta ronda';
+            document.getElementById('s-avg').innerText = s.avgScore.toFixed(1).replace('.', ',');
+            const sv = s.survey, share = n => Math.round(n / sv.answered * 100) + '%';
+            document.getElementById('survey-line').innerText = sv.answered
+                ? `Check-in (${sv.answered}): ${sv.profiles.indice} Índice, ${sv.profiles.misto} Índice + ações, ${sv.profiles.escolhidas} Ações escolhidas · ${sv.avgMonthly}€ por mês em média · ${share(sv.neverInvested)} nunca investiram · ${share(sv.wouldSell)} vendiam numa queda de 30% · ${share(sv.noEmergency)} sem fundo de emergência`
+                : 'Check-in: ainda sem respostas.';
+            renderNotes(); renderScript();
+        });
+
+        socket.on('admin', ({ roster, rounds: r }) => {
+            rounds = r; renderNotes(); renderScript();
+            document.getElementById('roster').innerHTML = roster.length
+                ? roster.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.name)}</td><td>${esc(p.profile)}</td><td>${p.monthly}€</td><td>${p.score}</td><td>${p.vote ? (p.vote === 'SOBE' ? '▲ Sobe' : '▼ Desce') : '—'}</td><td>${p.decision ? DECISION[p.decision] : '—'}</td></tr>`).join('')
+                : '<tr><td colspan="7" style="color: var(--sub);">À espera de jogadores…</td></tr>';
+        });
+
+        // Notas do apresentador para o passo em que se está
+        function renderNotes() {
+            if (!state || !rounds.length) return;
+            const s = state, el = document.getElementById('notes');
+            if (s.status === 'CONCLUSION') {
+                el.innerHTML = '<b>Conclusão</b>O jogo usou a média do mercado. Mostra o mesmo plano com médias mais altas e explica que vêm com mais risco e quedas maiores pelo caminho. Fecha com: tudo começa no mesmo sítio, 1.000€ e um reforço todos os meses, sem desistir.';
+                return;
+            }
+            if (s.status === 'FINISHED') {
+                el.innerHTML = '<b>Fim do jogo</b>Mostra os três planos e o que a sala fez na crise: quem manteve chegou primeiro aos 10K. Depois as previsões: quem acertou mais e quem acertou menos tiveram o mesmo plano. Fecha: o que fez a diferença foi o reforço de todos os meses e não desistir. Depois mostra a conclusão.';
+                return;
+            }
+            if (s.status === 'DECIDE') {
+                const sv = s.survey;
+                const recall = sv.answered ? `<b>Lembrar a sala</b>No check-in, ${Math.round(sv.wouldSell / sv.answered * 100)}% disseram que vendiam tudo se a carteira caísse 30%.` : '';
+                el.innerHTML = `<b>Decisão na crise</b>Diz: "As vossas carteiras caíram. Cada um decide no telemóvel o que faz ao seu plano. Não há resposta certa no ecrã: no fim vamos ver o que aconteceu a cada escolha."${recall}`;
+                return;
+            }
+            const r = rounds[s.status === 'LOBBY' ? 0 : s.round];
+            if (!r) { el.innerHTML = 'Os últimos meses do plano.'; return; }
+            if (s.status === 'HISTORY') {
+                const h = r.historia;
+                el.innerHTML = `<b>Na história · ${esc(h.titulo)}</b><ul>${h.texto.map(t => `<li>${esc(t)}</li>`).join('')}</ul><b>Gráfico no ecrã</b>${esc(h.serie.nome)}: ${h.serie.pontos.map(p => `${esc(p[0])} ${p[1].toLocaleString('pt-PT')}`).join(' → ')}`;
+                return;
+            }
+            const ans = r.answer === 'SOBE' ? '<span class="ans-up">▲ Sobe</span>' : '<span class="ans-down">▼ Desce</span>';
+            el.innerHTML = `<b>Notícia</b>${esc(r.news)}<b>Contexto</b>${esc(r.context || '')}<b>Pergunta</b>${esc(r.question)}<b>Resposta (não dizer antes do fim)</b>${ans}<b>O que costuma acontecer</b>${esc(r.usual)}<b>Porquê</b>${esc(r.lesson)}<b>A seguir, na história</b>${esc(r.historia.titulo)}`;
+        }
+
+        function renderScript() {
+            if (!state || !rounds.length) return;
+            const current = state.round;
+            document.getElementById('script-title').innerText = `As ${rounds.length} rondas`;
+            document.getElementById('script').innerHTML = rounds.map((r, i) => {
+                const over = state.status === 'FINISHED' || state.status === 'CONCLUSION';
+                const cls = i === current && !over ? 'current' : (i < current || over ? 'done' : '');
+                return `<li class="${cls}"><b>${i + 1}. ${esc(r.news)}</b>${r.answer === 'SOBE' ? '▲ Sobe' : '▼ Desce'} · ${esc(r.question)}${r.decisao ? ' · antes: decisão na crise' : ''}<small>Na história: ${esc(r.historia.titulo)}</small></li>`;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

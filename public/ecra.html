@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyFlix · Ecrã</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="jogo.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        html, body { height: 100%; overflow: hidden; }
+        body { display: grid; grid-template-rows: auto 1fr auto; gap: 1.6vh; padding: 2.6vh 3vw; }
+
+        header { display: flex; align-items: center; gap: 2vw; }
+        header .logo { height: 3.2vh; width: auto; }
+        header .ref { flex: 1; font-size: 2.2vh; font-weight: 600; color: var(--sub); }
+        #round-label { font-size: 2.4vh; font-weight: 700; color: var(--sub); }
+        #date { font-size: 3.6vh; font-weight: 800; letter-spacing: -0.02em; }
+
+        main { display: grid; grid-template-columns: 2.1fr 1fr; gap: 1.6vw; min-height: 0; }
+        .chart-card { padding: 2.4vh 1.6vw 1.6vh; display: flex; flex-direction: column; min-height: 0; }
+        .chart-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1vh; gap: 1vw; }
+        .chart-head h2 { font-size: 2.6vh; }
+        .legend { display: flex; gap: 1.2vw; font-size: 1.7vh; color: var(--sub); flex-wrap: wrap; justify-content: flex-end; }
+        .legend i { display: inline-block; width: 1.4vw; height: 0.5vh; border-radius: 2px; vertical-align: middle; margin-right: 0.4vw; }
+        .chart-box { position: relative; flex: 1; min-height: 0; }
+
+        aside { display: grid; grid-template-rows: auto 1fr; gap: 1.6vh; min-height: 0; }
+        .panel { padding: 2.4vh 1.6vw; }
+        .lbl { font-size: 1.7vh; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.2vh; }
+        .sala-big { font-size: 5.6vh; font-weight: 900; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+        .sala-sub { font-size: 1.9vh; color: var(--sub); margin: 0.6vh 0 1.4vh; }
+        .sala-row { display: flex; align-items: center; gap: 0.6vw; font-size: 2vh; font-weight: 600; padding: 0.5vh 0; }
+        .sala-row i { width: 1.2vh; height: 1.2vh; border-radius: 50%; display: inline-block; }
+        .sala-row b { margin-left: auto; font-variant-numeric: tabular-nums; }
+        #news-panel { display: flex; flex-direction: column; justify-content: center; }
+        #news { font-size: 3vh; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; }
+
+        footer { display: flex; justify-content: space-between; font-size: 1.6vh; color: var(--muted); }
+
+        /* ── SOBREPOSIÇÕES ───────────────────────────────── */
+        .overlay { display: none; position: fixed; inset: 0; background: var(--bg); padding: 6vh 6vw; z-index: 10; }
+        .overlay.show { display: flex; }
+        .kicker { font-size: 2.4vh; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.08em; }
+        .kicker.flix { color: var(--flix); }
+        .overlay .logo { height: 4.2vh; width: auto; align-self: flex-start; }
+
+        #lobby { flex-direction: column; justify-content: center; gap: 4vh; }
+        .lobby-top { display: flex; align-items: center; gap: 5vw; }
+        #lobby h2 { font-size: 8.5vh; line-height: 0.98; margin: 2.4vh 0; }
+        #lobby p { font-size: 2.8vh; color: var(--sub); line-height: 1.4; max-width: 50vw; }
+        #lobby .url { font-size: 4vh; font-weight: 800; margin-top: 3vh; color: var(--accent-ink); }
+        #lobby .players { font-size: 2.8vh; font-weight: 700; margin-top: 1.4vh; color: var(--accent-ink); }
+        #qr { background: #fff; padding: 2vh; border-radius: 20px; border: 1px solid var(--border); }
+        #qr img, #qr canvas { width: 30vh !important; height: 30vh !important; }
+        .room { display: grid; grid-template-columns: 1.7fr 1fr 1fr 1fr 1fr; gap: 1.2vw; }
+        .room-card { padding: 2.4vh 1.4vw; }
+        .room-big { font-size: 6.4vh; font-weight: 900; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+        .profile-bars { display: flex; flex-direction: column; gap: 1.1vh; }
+        .profile-bars .bar-row { display: grid; grid-template-columns: 13vw 1fr 3vw; align-items: center; gap: 0.8vw; font-size: 1.9vh; font-weight: 600; }
+        .profile-bars .bar-row i { display: inline-block; width: 1.2vh; height: 1.2vh; border-radius: 50%; margin-right: 0.5vw; }
+        .profile-bars .track { height: 1.6vh; background: var(--track); border-radius: 99px; overflow: hidden; }
+        .profile-bars .fill { height: 100%; width: 0; border-radius: 99px; transition: width 0.5s ease; }
+        .profile-bars b { text-align: right; font-variant-numeric: tabular-nums; }
+        .callout { font-size: 2.8vh; font-weight: 700; border-radius: 14px; padding: 1.6vh 1.6vw; align-self: flex-start; }
+        .callout.amber { color: var(--amber-ink); background: var(--amber-soft); }
+        .callout.blue { color: var(--accent-ink); background: var(--accent-soft); }
+
+        #news-ov, #vote, #reveal, #final, #decide { flex-direction: column; justify-content: center; gap: 3vh; }
+        #news-ov h2, #vote h2, #reveal h2, #decide h2 { font-size: 7vh; line-height: 1.05; max-width: 84vw; }
+        .question { font-size: 3.6vh; font-weight: 700; color: var(--text); }
+        .vote-context { font-size: 3vh; color: var(--sub); line-height: 1.45; max-width: 80vw; margin-top: 1.6vh; }
+        .wait-line { font-size: 2.6vh; font-weight: 700; color: var(--sub); }
+        .countdown { font-size: 12vh; font-weight: 900; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+        .countdown.soon { color: var(--red); }
+        .count-row { display: flex; align-items: baseline; gap: 2vw; }
+        .vote-meta { font-size: 2.6vh; color: var(--sub); font-weight: 600; }
+
+        .answer { font-size: 9vh; font-weight: 900; letter-spacing: -0.04em; line-height: 1; }
+        .answer.up { color: var(--green-ink); }
+        .answer.down { color: var(--red-ink); }
+        .reveal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6vw; }
+        .reveal-grid .card { padding: 3vh 2vw; }
+        .reveal-grid h3 { font-size: 2.2vh; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; margin-bottom: 1.2vh; }
+        .reveal-grid p { font-size: 3vh; font-weight: 700; line-height: 1.35; letter-spacing: -0.01em; }
+
+        /* A decisão na crise */
+        .dd-row { display: flex; gap: 2.4vw; font-size: 2.6vh; font-weight: 700; }
+        .dd-row span i { display: inline-block; width: 1.3vh; height: 1.3vh; border-radius: 50%; margin-right: 0.5vw; vertical-align: middle; }
+        .dd-row b { color: var(--red-ink); }
+        .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+        .choices .card { padding: 2.6vh 1.8vw; }
+        .choices h3 { font-size: 3.2vh; margin-bottom: 0.8vh; }
+        .choices p { font-size: 2.2vh; color: var(--sub); line-height: 1.4; }
+
+        /* A história entre rondas */
+        #history { flex-direction: column; justify-content: center; gap: 3vh; }
+        #history h2 { font-size: 6.4vh; line-height: 1.05; max-width: 86vw; }
+        .hist-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 2vw; align-items: stretch; min-height: 0; }
+        .hist-list { list-style: none; display: flex; flex-direction: column; gap: 2.2vh; justify-content: center; }
+        .hist-list li { font-size: 3vh; font-weight: 600; line-height: 1.38; padding-left: 2vw; position: relative; letter-spacing: -0.01em; }
+        .hist-list li::before { content: ''; position: absolute; left: 0; top: 0.55em; width: 1.2vh; height: 1.2vh; border-radius: 50%; background: var(--accent); }
+        .hist-chart { padding: 2.4vh 1.6vw; display: flex; flex-direction: column; }
+        .hist-chart .lbl { margin-bottom: 0.6vh; }
+        .hist-box { position: relative; height: 42vh; }
+
+        .final-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6vw; }
+        .final-grid .card { padding: 2.8vh 2vw; }
+        .final-grid .name { font-size: 2.3vh; font-weight: 700; display: flex; align-items: center; gap: 0.6vw; }
+        .final-grid .name i { width: 1.4vh; height: 1.4vh; border-radius: 50%; display: inline-block; }
+        .final-grid .val { font-size: 6vh; font-weight: 900; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+        .final-grid .sub { font-size: 2vh; color: var(--sub); }
+        .final-row { display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.6vw; }
+        .final-row .card { padding: 2.8vh 2vw; }
+        .final-row .big-line { font-size: 3vh; font-weight: 800; letter-spacing: -0.015em; line-height: 1.3; }
+        .final-row .sub { font-size: 2.1vh; color: var(--sub); margin-top: 1vh; line-height: 1.4; }
+        .dec-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; margin-top: 1vh; }
+        .dec-table td { font-size: 2.4vh; padding: 0.8vh 0; border-bottom: 1px solid var(--border); }
+        .dec-table tr:last-child td { border-bottom: none; }
+        .dec-table td:not(:first-child) { text-align: right; font-weight: 800; }
+        .closing { font-size: 3.4vh; font-weight: 800; letter-spacing: -0.015em; }
+
+        #conclusion { flex-direction: column; justify-content: center; gap: 3.4vh; }
+        .concl-title { font-size: 6.6vh; line-height: 1.05; max-width: 80vw; }
+        .concl-sub { font-size: 2.8vh; color: var(--sub); line-height: 1.4; max-width: 70vw; margin-top: 1.4vh; }
+        .concl-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; font-variant-numeric: tabular-nums; }
+        .concl-table th, .concl-table td { padding: 2vh 1.6vw; text-align: right; border-bottom: 1px solid var(--border); }
+        .concl-table tr:last-child td { border-bottom: none; }
+        .concl-table th { font-size: 2.1vh; color: var(--sub); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; vertical-align: bottom; }
+        .concl-table th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 1.7vh; }
+        .concl-table td { font-size: 3.6vh; font-weight: 800; letter-spacing: -0.02em; }
+        .concl-table td:first-child, .concl-table th:first-child { text-align: left; color: var(--text); }
+        .concl-table td.pocket { color: var(--sub); font-weight: 600; }
+        .concl-table tr.hit td { font-size: 2.4vh; font-weight: 700; color: var(--sub); }
+        .concl-note { font-size: 1.8vh; color: var(--muted); line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <header>
+        <img class="logo" src="logo-moneyflix.png" alt="MoneyFlix">
+        <div class="ref">Plano de referência: 1.000€ + 150€ por mês</div>
+        <span id="round-label"></span>
+        <div id="date">Ano 1 · jan</div>
+    </header>
+
+    <main>
+        <section class="card chart-card">
+            <div class="chart-head">
+                <h2>O plano de cada perfil</h2>
+                <div class="legend">
+                    <span><i style="background: var(--c-indice)"></i>Índice</span>
+                    <span><i style="background: var(--c-misto)"></i>Índice + ações escolhidas</span>
+                    <span><i style="background: var(--c-escolhidas)"></i>Ações escolhidas</span>
+                    <span><i style="background: var(--c-pocket)"></i>Do teu bolso</span>
+                </div>
+            </div>
+            <div class="chart-box"><canvas id="chart"></canvas></div>
+        </section>
+
+        <aside>
+            <div class="card panel">
+                <div class="lbl">A sala</div>
+                <div id="sala">—</div>
+            </div>
+            <div class="card panel" id="news-panel">
+                <div class="lbl">Notícia</div>
+                <div id="news">—</div>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        <span>Simulação educativa com valores hipotéticos. Rentabilidades passadas ou simuladas não garantem resultados futuros. Não é recomendação de investimento.</span>
+        <span id="join-url"></span>
+    </footer>
+
+    <!-- ── ENTRADA ─────────────────────────────────────── -->
+    <div class="overlay" id="lobby">
+        <div class="lobby-top">
+            <div style="flex: 1;">
+                <img class="logo" src="logo-moneyflix.png" alt="MoneyFlix">
+                <h2>Que tipo de investidor és?</h2>
+                <p>Lê o código com o telemóvel e responde a 6 perguntas. No fim, recebes o perfil e o plano com que vais jogar.</p>
+                <div class="url" id="lobby-url"></div>
+                <div class="players"><span id="lobby-players">0</span> pessoas já fizeram o check-in</div>
+            </div>
+            <div id="qr"></div>
+        </div>
+        <div class="room">
+            <div class="card room-card">
+                <div class="lbl">Os perfis da sala</div>
+                <div class="profile-bars">
+                    <div class="bar-row"><span><i style="background: var(--c-indice)"></i>Índice</span><div class="track"><div class="fill" id="pb-indice" style="background: var(--c-indice)"></div></div><b id="pn-indice">0</b></div>
+                    <div class="bar-row"><span><i style="background: var(--c-misto)"></i>Índice + ações</span><div class="track"><div class="fill" id="pb-misto" style="background: var(--c-misto)"></div></div><b id="pn-misto">0</b></div>
+                    <div class="bar-row"><span><i style="background: var(--c-escolhidas)"></i>Ações escolhidas</span><div class="track"><div class="fill" id="pb-escolhidas" style="background: var(--c-escolhidas)"></div></div><b id="pn-escolhidas">0</b></div>
+                </div>
+            </div>
+            <div class="card room-card"><div class="lbl">Nunca investiram</div><div class="room-big" id="r-never">—</div></div>
+            <div class="card room-card"><div class="lbl">Vendiam tudo numa queda de 30%</div><div class="room-big" id="r-sell">—</div></div>
+            <div class="card room-card"><div class="lbl">Sem fundo de emergência</div><div class="room-big" id="r-emergency">—</div></div>
+            <div class="card room-card"><div class="lbl">Por mês, em média</div><div class="room-big" id="r-monthly">—</div></div>
+        </div>
+    </div>
+
+    <!-- ── A NOTÍCIA (antes de abrir a votação) ────────── -->
+    <div class="overlay" id="news-ov">
+        <div class="callout blue" id="news-intro" style="display: none;"></div>
+        <div class="callout amber" id="news-decisions" style="display: none;"></div>
+        <div class="kicker" id="news-kicker">Ronda 1</div>
+        <div>
+            <h2 id="news-title">—</h2>
+            <p class="vote-context" id="news-context"></p>
+        </div>
+        <div class="question" id="news-question">—</div>
+        <div class="wait-line">Prepara o telemóvel: a votação vai abrir.</div>
+    </div>
+
+    <!-- ── VOTAÇÃO ─────────────────────────────────────── -->
+    <div class="overlay" id="vote">
+        <div class="kicker" id="vote-kicker">Ronda 1</div>
+        <div>
+            <h2 id="vote-news">—</h2>
+            <p class="vote-context" id="vote-context"></p>
+        </div>
+        <div class="question" id="vote-question">—</div>
+        <div class="count-row"><div class="countdown" id="countdown">25</div><div class="vote-meta" id="vote-meta">0 votos</div></div>
+    </div>
+
+    <!-- ── DECISÃO NA CRISE ────────────────────────────── -->
+    <div class="overlay" id="decide">
+        <div class="kicker flix" id="decide-kicker">A tua carteira</div>
+        <h2 id="decide-title">A carteira caiu. O que fazes?</h2>
+        <div class="dd-row" id="decide-dd"></div>
+        <div class="callout amber" id="decide-callback" style="display: none;"></div>
+        <div class="choices">
+            <div class="card"><h3>Mantenho o plano</h3><p>Continuo a investir todos os meses, como estava previsto.</p></div>
+            <div class="card"><h3>Paro os reforços</h3><p>Durante um ano, o dinheiro de cada mês fica no banco.</p></div>
+            <div class="card"><h3>Vendo tudo</h3><p>Passo tudo para o banco e volto a investir daqui a um ano.</p></div>
+        </div>
+        <div class="count-row"><div class="countdown" id="decide-countdown">30</div><div class="vote-meta" id="decide-meta">0 decisões</div></div>
+    </div>
+
+    <!-- ── REVELAÇÃO ───────────────────────────────────── -->
+    <div class="overlay" id="reveal">
+        <div class="kicker" id="rev-kicker">Ronda 1</div>
+        <div class="answer" id="rev-answer">—</div>
+        <div class="vote-meta" id="rev-meta"></div>
+        <div class="reveal-grid">
+            <div class="card"><h3>O que costuma acontecer</h3><p id="rev-usual">—</p></div>
+            <div class="card"><h3>Porquê</h3><p id="rev-lesson">—</p></div>
+        </div>
+    </div>
+
+    <!-- ── NA HISTÓRIA (entre rondas) ──────────────────── -->
+    <div class="overlay" id="history">
+        <div class="kicker flix" id="hist-kicker">Na história</div>
+        <h2 id="hist-title">—</h2>
+        <div class="hist-grid">
+            <ul class="hist-list" id="hist-list"></ul>
+            <div class="card hist-chart"><div class="lbl" id="hist-name">—</div><div class="hist-box"><canvas id="hist-canvas"></canvas></div></div>
+        </div>
+    </div>
+
+    <!-- ── FIM DO JOGO ─────────────────────────────────── -->
+    <div class="overlay" id="final">
+        <div>
+            <div class="kicker">7 anos depois · 1.000€ + 150€ por mês</div>
+            <h2 style="font-size: 6.4vh; line-height: 1.05;" id="fin-title">Os três planos chegaram aos 10K</h2>
+        </div>
+        <div class="final-grid">
+            <div class="card"><div class="name"><i style="background: var(--c-indice)"></i>Índice</div><div class="val" id="fin-indice">—</div><div class="sub" id="fin-indice-t"></div></div>
+            <div class="card"><div class="name"><i style="background: var(--c-misto)"></i>Índice + ações escolhidas</div><div class="val" id="fin-misto">—</div><div class="sub" id="fin-misto-t"></div></div>
+            <div class="card"><div class="name"><i style="background: var(--c-escolhidas)"></i>Ações escolhidas</div><div class="val" id="fin-escolhidas">—</div><div class="sub" id="fin-escolhidas-t"></div></div>
+        </div>
+        <div class="final-row">
+            <div class="card">
+                <div class="lbl">O que fizeram na crise</div>
+                <div class="big-line" id="fin-decisions">—</div>
+                <table class="dec-table" id="fin-dec-table"></table>
+            </div>
+            <div class="card">
+                <div class="lbl">E as previsões?</div>
+                <div class="big-line" id="fin-extremes">—</div>
+                <div class="sub" id="fin-avg"></div>
+            </div>
+        </div>
+        <div class="closing">O que fez a diferença não foi acertar no mercado: foi o reforço de todos os meses e não desistir na crise.</div>
+    </div>
+
+    <!-- ── CONCLUSÃO ───────────────────────────────────── -->
+    <div class="overlay" id="conclusion">
+        <div>
+            <div class="kicker">O mesmo plano: 1.000€ + 150€ por mês</div>
+            <h2 class="concl-title">E se a média fosse outra?</h2>
+            <p class="concl-sub">O jogo usou a média do mercado. Com outras rentabilidades médias, o mesmo plano chegava a isto, com mais risco pelo caminho.</p>
+        </div>
+        <table class="concl-table">
+            <thead><tr><th></th><th>Do teu bolso</th><th>7% ao ano<small>média do mercado</small></th><th>10% ao ano</th><th>15% ao ano</th></tr></thead>
+            <tbody id="concl-body"></tbody>
+        </table>
+        <p class="concl-note">Cenários hipotéticos com rentabilidades médias constantes. Rentabilidades mais altas implicam mais risco e mais volatilidade, e não são garantidas.</p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => socket.emit('register-screen'));
+        const eur = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '€';
+        const pctAbs = v => Math.abs(v * 100).toFixed(0) + '%';
+        const pctNeg = v => '−' + Math.abs(v * 100).toFixed(0) + '%';
+        const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const show = (id, on) => document.getElementById(id).style.display = on ? '' : 'none';
+
+        const joinUrl = location.host;
+        document.getElementById('lobby-url').innerText = joinUrl;
+        document.getElementById('join-url').innerText = 'Entra em ' + joinUrl;
+        new QRCode(document.getElementById('qr'), { text: location.protocol + '//' + joinUrl, width: 300, height: 300, colorDark: '#1D1D1F', colorLight: '#ffffff' });
+
+        // ── GRÁFICO DO JOGO ─────────────────────────────
+        const MONTHS = 84;
+        let bands = [];
+        // Faixas sombreadas nas crises, por trás das linhas
+        const bandsPlugin = {
+            id: 'bands',
+            beforeDatasetsDraw(c) {
+                const { ctx, chartArea: a, scales: { x } } = c;
+                bands.forEach(b => {
+                    const x0 = x.getPixelForValue(b.from), x1 = x.getPixelForValue(b.to);
+                    ctx.save();
+                    ctx.fillStyle = css('--crise');
+                    ctx.fillRect(x0, a.top, x1 - x0, a.bottom - a.top);
+                    ctx.fillStyle = css('--red-ink');
+                    ctx.font = `700 ${Math.round(window.innerHeight * 0.017)}px Inter, sans-serif`;
+                    ctx.fillText(b.label, x0 + 6, a.top + 18);
+                    ctx.restore();
+                });
+            }
+        };
+        const line = (label, color, extra = {}) => ({ label, data: [], borderColor: color, borderWidth: 4, pointRadius: 0, tension: 0.25, ...extra });
+        Chart.defaults.font.family = 'Inter, sans-serif';
+        Chart.defaults.font.size = 16;
+        Chart.defaults.color = css('--sub');
+        const chart = new Chart(document.getElementById('chart'), {
+            type: 'line',
+            data: {
+                datasets: [
+                    line('Índice', css('--c-indice')),
+                    line('Índice + ações escolhidas', css('--c-misto')),
+                    line('Ações escolhidas', css('--c-escolhidas')),
+                    line('Do teu bolso', css('--c-pocket'), { borderWidth: 3, borderDash: [8, 6], tension: 0, stepped: true }),
+                    line('Objetivo', css('--text'), { borderWidth: 2, borderDash: [3, 5], data: [{ x: 0, y: 10000 }, { x: MONTHS, y: 10000 }] })
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: {
+                        type: 'linear', min: 0, max: MONTHS,
+                        grid: { color: ctx => ctx.tick.value % 12 === 0 ? '#E5E5EA' : 'transparent' },
+                        ticks: { stepSize: 12, callback: v => v === 0 ? 'Início' : 'Ano ' + v / 12 }
+                    },
+                    y: { min: 0, suggestedMax: 12000, position: 'right', grid: { color: '#EEEEF0' }, ticks: { callback: v => (v / 1000) + 'K€' } }
+                }
+            },
+            plugins: [bandsPlugin]
+        });
+
+        socket.on('screen', ({ history }) => {
+            chart.data.datasets[0].data = history.map(h => ({ x: h.month, y: h.indice }));
+            chart.data.datasets[1].data = history.map(h => ({ x: h.month, y: h.misto }));
+            chart.data.datasets[2].data = history.map(h => ({ x: h.month, y: h.escolhidas }));
+            chart.data.datasets[3].data = history.map(h => ({ x: h.month, y: h.pocket }));
+            chart.update();
+        });
+
+        // ── GRÁFICO DA HISTÓRIA (o exemplo real) ────────
+        const histChart = new Chart(document.getElementById('hist-canvas'), {
+            type: 'line',
+            data: { labels: [], datasets: [{ data: [], borderColor: css('--accent'), backgroundColor: 'rgba(0, 113, 227, 0.08)', fill: true, borderWidth: 5, pointRadius: 7, pointBackgroundColor: css('--accent'), tension: 0.2 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: { duration: 900 },
+                layout: { padding: { top: 34, right: 16 } },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 18, weight: '600' } } },
+                    y: { beginAtZero: true, grid: { color: '#EEEEF0' }, ticks: { font: { size: 15 }, callback: v => v.toLocaleString('pt-PT') } }
+                }
+            },
+            plugins: [{
+                // O valor por cima de cada ponto
+                id: 'values',
+                afterDatasetsDraw(c) {
+                    const { ctx } = c;
+                    const meta = c.getDatasetMeta(0);
+                    ctx.save();
+                    ctx.fillStyle = css('--text');
+                    ctx.font = `800 ${Math.round(window.innerHeight * 0.022)}px Inter, sans-serif`;
+                    ctx.textAlign = 'center';
+                    meta.data.forEach((pt, i) => ctx.fillText(String(c.data.datasets[0].data[i]).replace(/\B(?=(\d{3})+(?!\d))/g, '.'), pt.x, pt.y - 16));
+                    ctx.restore();
+                }
+            }]
+        });
+        let histShown = null;
+
+        let state = null, clockOffset = 0;
+        socket.on('state', s => {
+            state = s;
+            clockOffset = s.serverNow - Date.now();
+            const roundNo = s.round + 1;
+            const kicker = `Ronda ${roundNo} de ${s.totalRounds} · Ano ${s.year}, ${s.monthLabel}`;
+            document.getElementById('date').innerText = `Ano ${s.year} · ${s.monthLabel}`;
+            document.getElementById('round-label').innerText = s.round >= 0 && roundNo <= s.totalRounds ? `Ronda ${roundNo} de ${s.totalRounds}` : '';
+            document.getElementById('news').innerText = s.news;
+            document.getElementById('lobby-players').innerText = s.players;
+            bands = s.bands || [];
+
+            // Quem está a jogar e com que perfil (sem pontos nem rankings)
+            const sv = s.survey;
+            document.getElementById('sala').innerHTML = `<div class="sala-big">${s.players}</div><div class="sala-sub">${s.players === 1 ? 'pessoa' : 'pessoas'} a jogar${sv.avgMonthly ? ` · ${sv.avgMonthly}€ por mês, em média` : ''}</div>` +
+                [['indice', 'Índice'], ['misto', 'Índice + ações escolhidas'], ['escolhidas', 'Ações escolhidas']]
+                    .map(([k, label]) => `<div class="sala-row"><i style="background: var(--c-${k})"></i>${label}<b>${sv.profiles[k]}</b></div>`).join('');
+
+            ['lobby', 'news-ov', 'vote', 'decide', 'reveal', 'history', 'final', 'conclusion'].forEach(id => document.getElementById(id).classList.remove('show'));
+            if (s.status === 'LOBBY') { document.getElementById('lobby').classList.add('show'); renderRoom(s.survey); }
+            if (s.status === 'NEWS') renderNews(s, kicker);
+            if (s.status === 'VOTING') renderVote(s, kicker);
+            if (s.status === 'WINDOW') renderWindow(s);
+            if (s.status === 'DECIDE') renderDecide(s);
+            if (s.status === 'REVEAL' && s.result) renderReveal(s);
+            if (s.status === 'HISTORY' && s.historia) renderHistory(s);
+            if (s.status === 'FINISHED') renderFinal(s);
+            if (s.status === 'CONCLUSION' && s.scenarios) renderConclusion(s.scenarios);
+            chart.update('none');
+            tick();
+        });
+
+        // O retrato da sala durante o check-in
+        function renderRoom(sv) {
+            const max = Math.max(1, ...Object.values(sv.profiles));
+            ['indice', 'misto', 'escolhidas'].forEach(k => {
+                document.getElementById('pn-' + k).innerText = sv.profiles[k];
+                document.getElementById('pb-' + k).style.width = (sv.profiles[k] / max * 100) + '%';
+            });
+            const share = n => sv.answered ? Math.round(n / sv.answered * 100) + '%' : '—';
+            document.getElementById('r-never').innerText = share(sv.neverInvested);
+            document.getElementById('r-sell').innerText = share(sv.wouldSell);
+            document.getElementById('r-emergency').innerText = share(sv.noEmergency);
+            document.getElementById('r-monthly').innerText = sv.avgMonthly ? sv.avgMonthly + '€' : '—';
+        }
+
+        function renderNews(s, kicker) {
+            document.getElementById('news-ov').classList.add('show');
+            document.getElementById('news-kicker').innerText = kicker;
+            document.getElementById('news-title').innerText = s.news;
+            document.getElementById('news-context').innerText = s.context || '';
+            document.getElementById('news-question').innerText = s.question || '';
+            const intro = document.getElementById('news-intro');
+            show('news-intro', !!s.intro);
+            intro.innerText = s.intro || '';
+            // Logo a seguir à decisão na crise: o que a sala escolheu
+            const d = s.decisions;
+            show('news-decisions', !!(s.afterDecision && d));
+            if (s.afterDecision && d) document.getElementById('news-decisions').innerText = `Na sala: ${d.MANTENHO} mantêm o plano · ${d.PARO} param os reforços · ${d.VENDO} vendem tudo`;
+        }
+
+        function renderVote(s, kicker) {
+            // Durante a votação só se vê quantos já votaram: a divisão aparece quando o mercado começa a correr
+            document.getElementById('vote').classList.add('show');
+            document.getElementById('vote-kicker').innerText = kicker;
+            document.getElementById('vote-news').innerText = s.news;
+            document.getElementById('vote-question').innerText = s.question;
+            document.getElementById('vote-context').innerText = s.context || '';
+            document.getElementById('vote-meta').innerText = `${s.voted || 0} de ${s.players} já votaram`;
+        }
+
+        function renderWindow(s) {
+            const v = s.votes || { SOBE: 0, DESCE: 0 };
+            const total = v.SOBE + v.DESCE;
+            const upPct = total ? Math.round(v.SOBE / total * 100) : 0;
+            document.getElementById('news').innerText = total
+                ? `${s.news} A sala votou: ${upPct}% sobe, ${100 - upPct}% desce. Vamos ver…`
+                : `${s.news} Vamos ver…`;
+        }
+
+        function renderDecide(s) {
+            document.getElementById('decide').classList.add('show');
+            document.getElementById('decide-kicker').innerText = `A tua carteira · Ano ${s.year}, ${s.monthLabel}`;
+            const r = s.refs;
+            document.getElementById('decide-title').innerText = `As carteiras caíram até ${pctAbs(r.escolhidas.drawdown)} desde o máximo. O que fazes ao teu plano?`;
+            document.getElementById('decide-dd').innerHTML = [['indice', 'Índice'], ['misto', 'Índice + ações escolhidas'], ['escolhidas', 'Ações escolhidas']]
+                .map(([k, label]) => `<span><i style="background: var(--c-${k})"></i>${label} <b>${pctNeg(r[k].drawdown)}</b></span>`).join('');
+            show('decide-callback', !!s.callback);
+            document.getElementById('decide-callback').innerText = s.callback || '';
+            document.getElementById('decide-meta').innerText = `${s.decisions ? s.decisions.answered : 0} de ${s.players} já decidiram`;
+        }
+
+        function renderReveal(s) {
+            const r = s.result;
+            document.getElementById('reveal').classList.add('show');
+            document.getElementById('rev-kicker').innerText = `Ronda ${s.round + 1} de ${s.totalRounds} · ${s.news}`;
+            const a = document.getElementById('rev-answer');
+            a.className = 'answer ' + (r.answer === 'SOBE' ? 'up' : 'down');
+            a.innerText = `${r.answer === 'SOBE' ? '▲ Subiu' : '▼ Desceu'} ${pctAbs(r.marketReturn)} em ${r.horizon === 1 ? '1 mês' : r.horizon + ' meses'}`;
+            const voted = r.votes.SOBE + r.votes.DESCE;
+            document.getElementById('rev-meta').innerHTML = voted
+                ? `<b>${r.correct} de ${voted}</b> acertaram (${Math.round(r.correct / voted * 100)}% da sala)`
+                : 'Ninguém votou nesta ronda';
+            document.getElementById('rev-usual').innerText = r.usual;
+            document.getElementById('rev-lesson').innerText = r.lesson;
+        }
+
+        function renderHistory(s) {
+            const h = s.historia;
+            document.getElementById('history').classList.add('show');
+            document.getElementById('hist-kicker').innerText = `Na história · depois da ronda ${s.round + 1}`;
+            document.getElementById('hist-title').innerText = h.titulo;
+            document.getElementById('hist-list').innerHTML = h.texto.map(t => `<li>${esc(t)}</li>`).join('');
+            document.getElementById('hist-name').innerText = h.serie.nome;
+            // Só redesenha (com animação) quando muda de história; o gráfico nasceu escondido, por isso mede-se agora
+            if (histShown !== h.titulo) {
+                histShown = h.titulo;
+                histChart.resize();
+                histChart.data.labels = h.serie.pontos.map(p => p[0]);
+                histChart.data.datasets[0].data = h.serie.pontos.map(p => p[1]);
+                histChart.update();
+            }
+        }
+
+        function renderFinal(s) {
+            document.getElementById('final').classList.add('show');
+            const r = s.refs;
+            const all = ['indice', 'misto', 'escolhidas'].every(k => r[k].hitMonth);
+            document.getElementById('fin-title').innerText = all ? 'Os três planos chegaram aos 10K' : 'Os planos ao fim de 7 anos';
+            ['indice', 'misto', 'escolhidas'].forEach(k => {
+                document.getElementById('fin-' + k).innerText = eur(r[k].value);
+                document.getElementById('fin-' + k + '-t').innerText = `${r[k].hitMonth ? `10.000€ ao fim de ${duracao(r[k].hitMonth)}` : 'Ainda sem os 10.000€'} · na crise caiu ${pctAbs(r[k].worstDrawdown)}`;
+            });
+            const d = s.decisions;
+            document.getElementById('fin-decisions').innerText = d
+                ? `Na sala, ${d.MANTENHO} mantiveram o plano, ${d.PARO} pararam os reforços e ${d.VENDO} venderam tudo.`
+                : 'A sala não chegou à decisão na crise.';
+            const hit = p => p.hitMonth ? duracao(p.hitMonth) : 'não chegou';
+            document.getElementById('fin-dec-table').innerHTML =
+                `<tr><td style="color: var(--sub);">Com 150€ por mês no Índice</td><td style="color: var(--sub); font-weight: 600;">Chegou aos 10.000€ em</td><td style="color: var(--sub); font-weight: 600;">Ao fim de 7 anos</td></tr>` +
+                [['Manteve', r.indice], ['Parou um ano', r.parou], ['Vendeu e voltou um ano depois', r.vendeu]]
+                    .map(([label, p]) => `<tr><td>${label}</td><td>${hit(p)}</td><td>${eur(p.value)}</td></tr>`).join('');
+            const x = s.extremes;
+            document.getElementById('fin-extremes').innerText = x && x.best.score !== x.worst.score
+                ? `${x.best.name} acertou ${x.best.score} de ${s.totalRounds} e ${x.worst.name} acertou ${x.worst.score}. As previsões não mexeram em nenhum plano.`
+                : 'As previsões não mexeram em nenhum plano.';
+            document.getElementById('fin-avg').innerText = `Média da sala: ${s.avgScore.toFixed(1).replace('.', ',')} de ${s.totalRounds} previsões certas.`;
+        }
+
+        function renderConclusion(sc) {
+            document.getElementById('conclusion').classList.add('show');
+            const rows = sc.years.map(y => `<tr><td>${y} anos</td><td class="pocket">${eur(sc.pocket[y])}</td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`);
+            rows.push(`<tr class="hit"><td>Chega aos 10.000€</td><td class="pocket">${duracao(Math.ceil((10000 - 1000) / 150))}</td>${sc.rates.map(r => `<td>${duracao(r.hitMonth)}</td>`).join('')}</tr>`);
+            document.getElementById('concl-body').innerHTML = rows.join('');
+        }
+
+        // Quanto tempo demorou, em anos e meses («mês 57» ninguém percebe)
+        function duracao(meses) {
+            const a = Math.floor(meses / 12), m = meses % 12;
+            const anos = a ? `${a} ${a === 1 ? 'ano' : 'anos'}` : '', ms = m ? `${m} ${m === 1 ? 'mês' : 'meses'}` : '';
+            return anos && ms ? `${anos} e ${ms}` : (anos || ms);
+        }
+
+        function tick() {
+            if (!state) return;
+            const ends = state.status === 'VOTING' ? state.voteEndsAt : state.status === 'DECIDE' ? state.decideEndsAt : null;
+            if (!ends) return;
+            const left = Math.max(0, Math.ceil((ends - (Date.now() + clockOffset)) / 1000));
+            const el = document.getElementById(state.status === 'VOTING' ? 'countdown' : 'decide-countdown');
+            el.innerText = left;
+            el.classList.toggle('soon', left <= 5);
+        }
+        setInterval(tick, 250);
+    </script>
+</body>
+</html>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MoneyFlix</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="jogo.css">
+    <style>
+        body { min-height: 100dvh; display: flex; flex-direction: column; }
+        .wrap { width: 100%; max-width: 480px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+        /* ── ENTRADA ───────────────────────────────────── */
+        #join h1 { font-size: 2.3rem; line-height: 1.02; margin: 18px 0 8px; }
+        #join p.lead { color: var(--sub); font-size: 1rem; line-height: 1.5; margin-bottom: 8px; }
+        .field-label { font-size: 0.8rem; font-weight: 600; color: var(--sub); margin: 10px 0 6px; display: block; }
+        input[type=text] {
+            width: 100%; padding: 14px 16px; font: inherit; font-size: 1rem;
+            border: 1px solid var(--border); border-radius: 12px; background: var(--card); color: var(--text);
+        }
+        input[type=text]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+        .profiles { display: flex; flex-direction: column; gap: 8px; }
+        .profile-opt {
+            display: flex; gap: 12px; align-items: center; text-align: left;
+            padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 14px; background: var(--card);
+            cursor: pointer; font: inherit; color: var(--text);
+        }
+        .profile-opt .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .profile-opt b { display: block; font-size: 1rem; }
+        .profile-opt span { font-size: 0.82rem; color: var(--sub); }
+        .profile-opt.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+        /* ── CHECK-IN ──────────────────────────────────── */
+        /* Conteúdo centrado na vertical; em ecrãs pequenos, se não couber, começa em cima (as margens automáticas passam a 0) */
+        #join > :first-child, #result > :first-child, #step-label { margin-top: auto; }
+        #join > :last-child, #result > :last-child, #back-btn { margin-bottom: auto; }
+        #join h1 { margin-top: 10px; }
+        .steps { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 8px; }
+        .steps i { height: 5px; border-radius: 99px; background: var(--track); }
+        .steps i.on { background: var(--accent); }
+        .step-label { font-size: 0.78rem; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 8px; }
+        .q-title { font-size: 1.75rem; line-height: 1.15; margin: 4px 0 8px; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .option {
+            text-align: left; padding: 18px 16px; border-radius: 14px; border: 1.5px solid var(--border);
+            background: var(--card); font: inherit; font-size: 1.02rem; font-weight: 600; color: var(--text); cursor: pointer;
+            -webkit-tap-highlight-color: transparent; transition: transform 0.08s;
+        }
+        .option:active { transform: scale(0.98); }
+        .option.selected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+        .option small { display: block; font-weight: 500; color: var(--sub); font-size: 0.85rem; margin-top: 2px; }
+        .link-btn { background: none; border: none; font: inherit; color: var(--sub); font-size: 0.9rem; padding: 10px; cursor: pointer; align-self: center; }
+        .res-profile { font-size: 2.4rem; line-height: 1.05; }
+        .res-plan { font-size: 0.95rem; font-weight: 700; color: var(--accent-ink); background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; }
+        .note { background: var(--amber-soft); color: var(--amber-ink); border-radius: 12px; padding: 12px 14px; font-size: 0.92rem; font-weight: 600; line-height: 1.45; }
+
+        /* ── JOGO ──────────────────────────────────────── */
+        #game { display: none; }
+        .top { display: flex; align-items: center; gap: 8px; }
+        .top .who { flex: 1; font-size: 0.85rem; color: var(--sub); }
+        .top .who b { color: var(--text); }
+
+        .plan { padding: 14px 16px; }
+        .plan-head { display: flex; justify-content: space-between; align-items: baseline; }
+        .plan-label { font-size: 0.72rem; font-weight: 600; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; }
+        .date { font-size: 0.8rem; font-weight: 700; }
+        #value { font-size: 2.2rem; font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
+        #value.up { animation: flashUp 0.7s ease; }
+        #value.down { animation: flashDown 0.7s ease; }
+        @keyframes flashUp { 0% { color: var(--green); transform: scale(1.04); } 100% { color: var(--text); transform: scale(1); } }
+        @keyframes flashDown { 0% { color: var(--red); transform: scale(0.97); } 100% { color: var(--text); transform: scale(1); } }
+        #value { transform-origin: left center; }
+        .value-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .badge { font-size: 0.78rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+        .badge.pos { background: var(--green-soft); color: var(--green-ink); }
+        .badge.neg { background: var(--red-soft); color: var(--red-ink); }
+        .badge:empty { display: none; }
+        .spark { display: block; width: 100%; height: 70px; margin: 2px 0 4px; overflow: visible; }
+        .spark-legend { display: flex; gap: 12px; font-size: 0.7rem; color: var(--sub); margin-bottom: 10px; }
+        .spark-legend span:last-child { margin-left: auto; }
+        .spark-legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+        .spark-legend .l-pocket { background: var(--muted); }
+        .progress { height: 10px; background: var(--track); border-radius: 99px; overflow: hidden; }
+        .progress > div { height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+        .progress-row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.75rem; color: var(--sub); margin-top: 6px; }
+        .progress-row .neg { color: var(--red-ink); font-weight: 700; }
+        /* Enquanto se lê, vota ou decide, o plano encolhe para os botões caberem sem scroll */
+        body.compact .spark, body.compact .spark-legend { display: none; }
+        body.compact #value { font-size: 1.7rem; margin-bottom: 6px; }
+        body.compact .plan { padding: 10px 14px; }
+
+        .round { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        #round-body { display: flex; flex-direction: column; gap: 10px; }
+        .round-tag { font-size: 0.72rem; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: 0.06em; display: flex; justify-content: space-between; align-items: center; }
+        #timer { font-variant-numeric: tabular-nums; color: var(--text); font-size: 1.1rem; font-weight: 900; letter-spacing: -0.01em; }
+        #timer.soon { color: var(--red); }
+        .timebar { height: 4px; border-radius: 99px; background: var(--track); overflow: hidden; margin-top: -4px; }
+        .timebar > div { height: 100%; background: var(--accent); width: 100%; transition: width 0.25s linear; }
+        #news { font-size: 1.25rem; font-weight: 800; line-height: 1.3; letter-spacing: -0.015em; }
+        .context { font-size: 0.95rem; color: var(--sub); line-height: 1.5; }
+        .context:empty { display: none; }
+        .intro { background: var(--accent-soft); color: var(--accent-ink); border-radius: 12px; padding: 10px 12px; font-size: 0.88rem; font-weight: 600; line-height: 1.4; }
+        .hint { font-size: 0.85rem; color: var(--sub); text-align: center; }
+        /* Os botões ficam colados ao fundo do ecrã enquanto a ronda está à vista */
+        .vote-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; position: sticky; bottom: 0; padding: 10px 0 4px; background: var(--card); box-shadow: 0 -16px 16px -4px var(--card); }
+        .vote-btn {
+            height: 88px; border-radius: 16px; border: 2px solid var(--border); background: var(--card);
+            font: inherit; font-size: 1.3rem; font-weight: 900; cursor: pointer; color: var(--text);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+            -webkit-tap-highlight-color: transparent; transition: transform 0.08s;
+        }
+        .vote-btn:active { transform: scale(0.97); }
+        .vote-btn .arrow { font-size: 1.6rem; line-height: 1; }
+        .vote-btn.up .arrow { color: var(--green); }
+        .vote-btn.down .arrow { color: var(--red); }
+        .vote-btn.up.chosen { background: var(--green); border-color: var(--green); color: #fff; }
+        .vote-btn.down.chosen { background: var(--red); border-color: var(--red); color: #fff; }
+        .vote-btn.chosen .arrow { color: #fff; }
+        .vote-btn:disabled { cursor: default; }
+        .vote-btn:disabled:not(.chosen) { color: var(--muted); background: var(--bg); }
+        .vote-btn:disabled:not(.chosen) .arrow { opacity: 0.4; }
+        /* A pergunta vai colada aos botões, para nunca ficar tapada */
+        .vote-q { grid-column: 1 / -1; font-size: 0.95rem; font-weight: 800; line-height: 1.3; }
+
+        .verdict { border-radius: 12px; padding: 14px; font-weight: 700; }
+        .verdict.hit { background: var(--green-soft); color: var(--green-ink); }
+        .verdict.miss { background: var(--amber-soft); color: var(--amber-ink); }
+        .verdict.none { background: var(--track); color: var(--sub); }
+        .verdict .big { font-size: 1.3rem; font-weight: 900; display: block; margin-bottom: 4px; }
+        .verdict .why { font-weight: 500; color: var(--text); line-height: 1.45; font-size: 0.92rem; }
+        .waiting { color: var(--sub); font-size: 0.95rem; line-height: 1.5; }
+
+        /* A decisão na crise */
+        .decide-head { font-size: 1.55rem; font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; color: var(--red-ink); }
+        .decide-sub { font-size: 0.95rem; color: var(--sub); line-height: 1.45; }
+        .decide-opts { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+        .decide-opts .option { padding: 14px 16px; }
+        .decided { background: var(--accent-soft); color: var(--accent-ink); border-radius: 12px; padding: 10px 12px; font-size: 0.9rem; font-weight: 700; }
+
+        /* A história entre rondas */
+        .hist-kicker { font-size: 0.72rem; font-weight: 700; color: var(--flix); text-transform: uppercase; letter-spacing: 0.06em; }
+        .hist-title { font-size: 1.3rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1.25; }
+        .hist-list { display: flex; flex-direction: column; gap: 10px; list-style: none; }
+        .hist-list li { font-size: 0.95rem; line-height: 1.5; padding-left: 14px; position: relative; }
+        .hist-list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+        /* ── FINAL ─────────────────────────────────────── */
+        #final { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 40; overflow: auto; }
+        #final .wrap { justify-content: center; text-align: center; }
+        #final .brand { justify-content: center; }
+        #final h2 { font-size: 1.8rem; line-height: 1.12; }
+        #final .big { font-size: 3rem; font-weight: 900; letter-spacing: -0.04em; }
+        .compare { text-align: left; padding: 4px 16px; }
+        .compare-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        .compare-row:last-child { border-bottom: none; }
+        .compare-row b { font-variant-numeric: tabular-nums; text-align: right; }
+        .kept { text-align: left; background: var(--amber-soft); color: var(--amber-ink); border-radius: 14px; padding: 14px 16px; font-weight: 700; line-height: 1.45; }
+        .kept b { color: var(--text); }
+        .lesson { color: var(--text); font-weight: 700; line-height: 1.45; }
+        .concl { text-align: left; padding: 16px; }
+        .concl-head { font-size: 1.15rem; font-weight: 900; letter-spacing: -0.02em; line-height: 1.2; }
+        .concl-sub { font-size: 0.85rem; color: var(--sub); margin: 4px 0 10px; line-height: 1.4; }
+        .concl-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+        .concl-table th, .concl-table td { padding: 8px 4px; text-align: right; border-bottom: 1px solid var(--border); }
+        .concl-table th { font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: 0.04em; vertical-align: bottom; }
+        .concl-table th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 500; }
+        .concl-table td { font-weight: 800; }
+        .concl-table td:first-child, .concl-table th:first-child { text-align: left; }
+        .concl-table td:first-child small { display: block; font-weight: 500; color: var(--sub); font-size: 0.72rem; }
+        .concl-note { font-size: 0.7rem; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <!-- ── CHECK-IN: NOME ────────────────────────────────── -->
+    <div class="wrap" id="join">
+        <div class="brand"><img src="logo-moneyflix.png" alt="MoneyFlix"></div>
+        <h1>Que tipo de investidor és?</h1>
+        <p class="lead">6 perguntas rápidas antes de começarmos. Demora um minuto e dá-te o perfil e o plano com que vais jogar.</p>
+
+        <label class="field-label" for="name">O teu nome</label>
+        <input type="text" id="name" maxlength="20" placeholder="Ex.: Ana" autocomplete="off">
+
+        <button class="btn btn-primary" id="start-btn" style="margin-top: 14px;" disabled>Começar</button>
+    </div>
+
+    <!-- ── CHECK-IN: PERGUNTAS ───────────────────────────── -->
+    <div class="wrap" id="survey" style="display: none;">
+        <div class="steps" id="steps"></div>
+        <div class="step-label" id="step-label">Pergunta 1 de 6</div>
+        <h2 class="q-title" id="q-title">—</h2>
+        <div class="options" id="options"></div>
+        <button class="link-btn" id="back-btn">← Voltar</button>
+    </div>
+
+    <!-- ── CHECK-IN: PERFIL SUGERIDO ─────────────────────── -->
+    <div class="wrap" id="result" style="display: none;">
+        <div class="step-label">O teu perfil sugerido</div>
+        <h1 class="res-profile" id="res-profile">—</h1>
+        <p class="lead" id="res-why" style="color: var(--sub); line-height: 1.5;"></p>
+        <div class="res-plan" id="res-plan"></div>
+        <div class="note" id="res-note" style="display: none;"></div>
+
+        <span class="field-label">Podes mudar de perfil se preferires</span>
+        <div class="profiles">
+            <button class="profile-opt" data-profile="indice"><i class="dot" style="background: var(--c-indice)"></i><div><b>Índice</b><span>100% num ETF de índice (ex.: S&amp;P 500)</span></div></button>
+            <button class="profile-opt" data-profile="misto"><i class="dot" style="background: var(--c-misto)"></i><div><b>Índice + ações escolhidas</b><span>70% ETF de índice · 30% ações escolhidas</span></div></button>
+            <button class="profile-opt" data-profile="escolhidas"><i class="dot" style="background: var(--c-escolhidas)"></i><div><b>Ações escolhidas</b><span>35% ETF de índice · 65% ações escolhidas</span></div></button>
+        </div>
+
+        <button class="btn btn-primary" id="join-btn" style="margin-top: 14px;">Confirmar e entrar</button>
+        <button class="link-btn" id="redo-btn">Refazer as perguntas</button>
+    </div>
+
+    <!-- ── JOGO ──────────────────────────────────────────── -->
+    <div class="wrap" id="game">
+        <div class="top">
+            <div class="who"><b id="me-name">—</b> · <span id="me-profile">—</span></div>
+        </div>
+
+        <div class="card plan">
+            <div class="plan-head"><span class="plan-label" id="plan-label">O teu plano</span><span class="date" id="date">Ano 1 · jan</span></div>
+            <div class="value-row"><div id="value">1.000€</div><span class="badge" id="delta"></span><span class="badge neg" id="drawdown"></span></div>
+            <svg id="spark" class="spark" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="spark-legend"><span><i id="l-plan"></i>O teu plano</span><span><i class="l-pocket"></i>Do teu bolso</span><span>7 anos</span></div>
+            <div class="progress"><div id="bar"></div></div>
+            <div class="progress-row"><span id="pct">10% dos 10.000€</span><span id="split">1.000€ do teu bolso</span></div>
+        </div>
+
+        <div class="card round" id="round">
+            <div class="round-tag"><span id="round-tag">À espera</span><span id="timer"></span></div>
+            <div class="timebar" id="timebar" style="display: none;"><div id="timebar-fill"></div></div>
+            <div id="round-body"></div>
+            <div class="vote-btns" id="vote-btns">
+                <div class="vote-q" id="vote-q"></div>
+                <button class="vote-btn up" id="btn-up" onclick="vote('SOBE')"><span class="arrow">▲</span>Sobe</button>
+                <button class="vote-btn down" id="btn-down" onclick="vote('DESCE')"><span class="arrow">▼</span>Desce</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FINAL ─────────────────────────────────────────── -->
+    <div id="final">
+        <div class="wrap">
+            <div class="brand"><img src="logo-moneyflix.png" alt="MoneyFlix"></div>
+            <h2 id="final-title">—</h2>
+            <div class="big" id="final-value">—</div>
+            <p id="final-sub" style="color: var(--sub); line-height: 1.5;"></p>
+            <div id="final-proj" class="note" style="display: none; text-align: left;"></div>
+            <div class="card compare">
+                <div class="compare-row"><span>Do teu bolso</span><b id="final-pocket">—</b></div>
+                <div class="compare-row"><span>Do mercado</span><b id="final-market">—</b></div>
+                <div class="compare-row"><span>Na crise</span><b id="final-decision">—</b></div>
+                <div class="compare-row"><span>Previsões certas</span><b id="final-score">—</b></div>
+            </div>
+            <div id="final-kept" class="kept" style="display: none;"></div>
+            <p class="lesson">As tuas previsões não mexeram no plano. O que fez a diferença foi o reforço de todos os meses e não desistir na crise.</p>
+            <div id="concl" class="card concl" style="display: none;">
+                <div class="concl-head">E se a média fosse outra?</div>
+                <p class="concl-sub">O mesmo plano de 1.000€ + 150€ por mês, com rentabilidades médias diferentes.</p>
+                <table class="concl-table"><thead><tr><th></th><th>7%<small>média</small></th><th>10%</th><th>15%</th></tr></thead><tbody id="concl-body"></tbody></table>
+                <p class="concl-note">Cenários hipotéticos. Rentabilidades mais altas implicam mais risco e não são garantidas.</p>
+            </div>
+            <button class="btn btn-secondary" onclick="finalClosed = true; document.getElementById('final').style.display='none'">Fechar</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        // Ponto dos milhares sempre (o pt-PT não agrupa números de 4 dígitos)
+        const group = n => String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        const eur = v => (Math.round(v) < 0 ? '−' : '') + group(v) + '€';
+        const signedEur = v => (Math.round(v) < 0 ? '−' : '+') + group(v) + '€';
+        const pct = v => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(0) + '%';
+        const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const COLOR = { indice: '--c-indice', misto: '--c-misto', escolhidas: '--c-escolhidas' };
+        const SHORT = { indice: 'Índice', misto: 'Índice + ações', escolhidas: 'Ações escolhidas' };
+        const CHOICE = { MANTENHO: 'mantenho o plano', PARO: 'paro os reforços durante um ano', VENDO: 'vendo tudo e volto daqui a um ano' };
+
+        // Identidade do jogador guardada no telemóvel, para sobreviver a quedas de ligação
+        // Para testar vários jogadores no mesmo browser: /?p=2, /?p=3… (cada um guarda a sua identidade)
+        const slot = (new URLSearchParams(location.search).get('p') || '').replace(/[^\w-]/g, '').slice(0, 10);
+        const k = key => slot ? `${key}:${slot}` : key;
+        function load(key) { try { return localStorage.getItem(k(key)); } catch (e) { return null; } }
+        function save(key, v) { try { localStorage.setItem(k(key), v); } catch (e) {} }
+        let playerId = load('10k-player');
+        if (!playerId) { playerId = Math.random().toString(36).slice(2) + Date.now().toString(36); save('10k-player', playerId); }
+        let profile = load('10k-profile');
+        let joinedGame = load('10k-game');
+        let state = null, me = null, finalClosed = false, clockOffset = 0, lastValue = null, lastLen = 0;
+
+        // ── CHECK-IN ─────────────────────────────────────
+        // horizon e drop dão pontos (0 a 2) para o risco; interest decide quanto vai para ações escolhidas;
+        // monthly é o reforço do plano; emergency e experience servem para conhecer a sala
+        const QUESTIONS = [
+            { key: 'horizon', title: 'Quando vais precisar do dinheiro que investires?', options: [
+                { v: 'LT3', label: 'Daqui a menos de 3 anos', pts: 0 },
+                { v: '3A7', label: 'Daqui a 3 a 7 anos', pts: 1 },
+                { v: 'GT7', label: 'Daqui a mais de 7 anos', pts: 2 }] },
+            { key: 'drop', title: 'A tua carteira de 1.000€ cai para 700€ num ano. O que fazes?', options: [
+                { v: 'VENDO', label: 'Vendo tudo', hint: 'Não quero perder mais', pts: 0 },
+                { v: 'ESPERO', label: 'Espero', hint: 'Não mexo e espero que recupere', pts: 1 },
+                { v: 'REFORCO', label: 'Reforço', hint: 'Aproveito para comprar mais barato', pts: 2 }] },
+            { key: 'interest', title: 'Gostas de acompanhar empresas?', options: [
+                { v: 'SIMPLES', label: 'Não, quero algo simples', hint: 'Investir e não ter de pensar muito nisso' },
+                { v: 'AJUDA', label: 'Às vezes, com ajuda', hint: 'Se alguém me explicar o que escolher e porquê' },
+                { v: 'GOSTO', label: 'Sim, gosto de analisar', hint: 'Ler resultados, seguir notícias das empresas' }] },
+            { key: 'monthly', title: 'Quanto conseguias investir por mês?', options: [
+                { v: '50', label: '50€' },
+                { v: '100', label: '100€' },
+                { v: '150', label: '150€' },
+                { v: '300', label: '300€ ou mais' }] },
+            { key: 'emergency', title: 'Tens poupança para 3 a 6 meses de despesas?', options: [
+                { v: 'SIM', label: 'Sim' },
+                { v: 'MAIS_MENOS', label: 'Mais ou menos' },
+                { v: 'NAO', label: 'Não' }] },
+            { key: 'experience', title: 'Já investiste?', options: [
+                { v: 'NUNCA', label: 'Nunca' },
+                { v: 'EXPERIMENTEI', label: 'Já experimentei' },
+                { v: 'REGULAR', label: 'Invisto regularmente' }] }
+        ];
+        const PROFILE_TEXT = {
+            indice:     { label: 'Índice', why: 'Queres algo simples, ou vais precisar do dinheiro mais cedo. Um ETF de índice dá-te centenas de empresas de uma vez, sem teres de escolher nenhuma.' },
+            misto:      { label: 'Índice + ações escolhidas', why: 'Tens tempo pela frente e queres aprender a escolher empresas, com uma base estável. A maior parte fica no índice; uma parte vai para ações escolhidas com critério.' },
+            escolhidas: { label: 'Ações escolhidas', why: 'Tens muitos anos pela frente, aguentas quedas maiores e gostas de acompanhar empresas. A maior parte vai para ações escolhidas, com o índice como base: mais potencial e mais oscilação.' }
+        };
+        let answers = {};
+        try { answers = JSON.parse(load('10k-answers') || '{}') || {}; } catch (e) { answers = {}; }
+        let step = 0;
+
+        function showScreen(id) {
+            ['join', 'survey', 'result', 'game'].forEach(s => document.getElementById(s).style.display = s === id ? 'flex' : 'none');
+            window.scrollTo(0, 0);
+        }
+
+        const nameEl = document.getElementById('name');
+        nameEl.value = load('10k-name') || '';
+        const startBtn = document.getElementById('start-btn');
+        nameEl.oninput = () => startBtn.disabled = !nameEl.value.trim();
+        startBtn.disabled = !nameEl.value.trim();
+        startBtn.onclick = () => { save('10k-name', nameEl.value.trim()); step = 0; renderStep(); showScreen('survey'); };
+
+        function renderStep() {
+            const q = QUESTIONS[step];
+            document.getElementById('steps').innerHTML = QUESTIONS.map((_, i) => `<i class="${i <= step ? 'on' : ''}"></i>`).join('');
+            document.getElementById('step-label').innerText = `Pergunta ${step + 1} de ${QUESTIONS.length}`;
+            document.getElementById('q-title').innerText = q.title;
+            const box = document.getElementById('options');
+            box.innerHTML = '';
+            q.options.forEach(o => {
+                const b = document.createElement('button');
+                b.className = 'option' + (answers[q.key] === o.v ? ' selected' : '');
+                b.innerHTML = `${escapeHtml(o.label)}${o.hint ? `<small>${escapeHtml(o.hint)}</small>` : ''}`;
+                b.onclick = () => {
+                    answers[q.key] = o.v;
+                    save('10k-answers', JSON.stringify(answers));
+                    if (step < QUESTIONS.length - 1) { step++; renderStep(); } else showResult();
+                };
+                box.appendChild(b);
+            });
+        }
+        document.getElementById('back-btn').onclick = () => { if (step > 0) { step--; renderStep(); } else showScreen('join'); };
+
+        function suggestProfile(a) {
+            // Quem precisa do dinheiro em menos de 3 anos, ou quer algo simples, fica no índice
+            if (a.horizon === 'LT3' || a.interest === 'SIMPLES') return 'indice';
+            const pts = ['horizon', 'drop'].reduce((sum, key) => sum + (QUESTIONS.find(q => q.key === key).options.find(o => o.v === a[key]) || { pts: 0 }).pts, 0);
+            if (a.interest === 'GOSTO' && pts >= 3) return 'escolhidas';
+            return pts >= 2 ? 'misto' : 'indice';
+        }
+
+        function showResult() {
+            const suggested = suggestProfile(answers);
+            profile = suggested;
+            document.getElementById('res-profile').innerText = PROFILE_TEXT[suggested].label;
+            document.getElementById('res-why').innerText = PROFILE_TEXT[suggested].why;
+            document.getElementById('res-plan').innerText = `O teu plano no jogo: 1.000€ para começar e ${answers.monthly || 150}€ todos os meses.`;
+            const note = document.getElementById('res-note');
+            const notes = [];
+            if (answers.horizon === 'LT3') notes.push('Dinheiro de que precisas em menos de 3 anos não deve estar em ações: uma queda pode apanhar-te sem tempo para recuperar.');
+            if (answers.emergency === 'NAO') notes.push('Antes de investir, constrói um fundo de emergência de 3 a 6 meses de despesas.');
+            if (answers.emergency === 'MAIS_MENOS') notes.push('Completa o teu fundo de emergência em paralelo com o plano.');
+            note.style.display = notes.length ? 'block' : 'none';
+            note.innerText = notes.join(' ');
+            selectProfile(suggested);
+            showScreen('result');
+        }
+
+        function selectProfile(key) {
+            profile = key;
+            document.querySelectorAll('.profile-opt').forEach(x => x.classList.toggle('selected', x.dataset.profile === key));
+        }
+        document.querySelectorAll('.profile-opt').forEach(b => b.onclick = () => selectProfile(b.dataset.profile));
+        document.getElementById('redo-btn').onclick = () => { step = 0; renderStep(); showScreen('survey'); };
+        document.getElementById('join-btn').onclick = () => { save('10k-profile', profile); join(); };
+
+        function join() { socket.emit('join', { playerId, name: load('10k-name') || nameEl.value.trim(), profile, monthly: answers.monthly, answers }); }
+
+        // Sempre que a ligação volta (telemóvel bloqueado, Wi-Fi que falha, servidor reiniciado), volta a identificar-se
+        let hasJoinedHere = false;
+        socket.on('connect', () => { if (hasJoinedHere && profile) join(); });
+
+        socket.on('joined', ({ gameId }) => {
+            hasJoinedHere = true;
+            joinedGame = gameId; save('10k-game', gameId);
+            showScreen('game');
+        });
+
+        socket.on('state', s => {
+            const isNewGame = state && state.gameId !== s.gameId;
+            state = s;
+            clockOffset = s.serverNow - Date.now();
+            // Já tinha entrado neste jogo: volta a entrar sozinho (ex.: depois de o telemóvel bloquear)
+            if (s.gameId === joinedGame && profile && !me) join();
+            if (isNewGame && me) { me = null; finalClosed = false; document.getElementById('final').style.display = 'none'; join(); }
+            render();
+        });
+
+        socket.on('me', m => { me = m; render(); });
+
+        function vote(choice) {
+            if (!state || state.status !== 'VOTING') return;
+            socket.emit('vote', { choice, playerId });
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function decide(choice) {
+            if (!state || state.status !== 'DECIDE') return;
+            socket.emit('decide', { choice, playerId });
+            if (navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function render() {
+            if (!state || !me) return;
+            const s = state, m = me;
+            document.getElementById('me-name').innerText = m.name;
+            document.getElementById('me-profile').innerText = `${SHORT[m.profile]} · ${m.monthly}€/mês`;
+            document.body.classList.toggle('compact', ['NEWS', 'VOTING', 'DECIDE'].includes(s.status));
+
+            // O plano
+            document.getElementById('date').innerText = `Ano ${s.year} · ${s.monthLabel}`;
+            const valueEl = document.getElementById('value');
+            valueEl.innerText = eur(m.value);
+            // Pisca verde quando o plano sobe e vermelho quando desce (só quando o mercado avança um mês)
+            if (lastValue !== null && m.spark.length !== lastLen) {
+                valueEl.classList.remove('up', 'down');
+                void valueEl.offsetWidth;
+                if (Math.round(m.value) !== Math.round(lastValue)) valueEl.classList.add(m.value - lastPocketDelta(m) > lastValue ? 'up' : 'down');
+            }
+            lastValue = m.value; lastLen = m.spark.length;
+            // Variação do mercado no último mês, sem o reforço (explica a cor do piscar)
+            const deltaEl = document.getElementById('delta');
+            const n = m.spark.length;
+            if (n >= 2 && m.spark[n - 2] > 0) {
+                const r = (m.spark[n - 1] - lastPocketDelta(m)) / m.spark[n - 2] - 1;
+                deltaEl.className = 'badge ' + (r >= 0 ? 'pos' : 'neg');
+                deltaEl.innerText = `${r >= 0 ? '▲' : '▼'} ${Math.abs(r * 100).toFixed(1).replace('.', ',')}% este mês`;
+            } else deltaEl.innerText = '';
+            // Quanto a carteira caiu desde o máximo: é isto que se sente numa crise
+            document.getElementById('drawdown').innerText = m.drawdown <= -0.05 ? `${pct(m.drawdown)} desde o máximo` : '';
+            drawSpark(m);
+            const p = Math.min(m.value / s.goal * 100, 100);
+            document.getElementById('bar').style.width = p + '%';
+            document.getElementById('pct').innerText = m.hitMonth ? `10.000€ ao fim de ${duracao(m.hitMonth)}` : `${p.toFixed(0)}% dos 10.000€`;
+            const split = document.getElementById('split');
+            const below = m.value < m.pocket - 1;
+            split.className = below ? 'neg' : '';
+            split.innerText = below ? `${eur(m.pocket - m.value)} abaixo do que puseste` : `${eur(m.pocket)} do teu bolso`;
+            document.getElementById('plan-label').innerText = m.cash > 1 ? `O teu plano · ${eur(m.cash)} no banco` : 'O teu plano';
+
+            // A ronda
+            const roundNo = s.round + 1;
+            const tag = document.getElementById('round-tag');
+            const body = document.getElementById('round-body');
+            const btns = document.getElementById('vote-btns');
+            const up = document.getElementById('btn-up'), down = document.getElementById('btn-down');
+            up.classList.toggle('chosen', m.vote === 'SOBE');
+            down.classList.toggle('chosen', m.vote === 'DESCE');
+            up.disabled = down.disabled = s.status !== 'VOTING';
+            btns.style.display = 'none';
+            const head = (cls, text) => `<div class="${cls}">${escapeHtml(text)}</div>`;
+            const newsBlock = () => `${s.intro ? head('intro', s.intro) : ''}<div id="news">${escapeHtml(s.news)}</div>${s.context ? head('context', s.context) : ''}`;
+            document.getElementById('vote-q').innerText = s.question || '';
+
+            if (s.status === 'LOBBY') {
+                tag.innerText = 'À espera';
+                body.innerHTML = `<div id="news">O jogo vai começar em breve.</div><div class="waiting">Em cada ronda o apresentador lê uma notícia e abre a votação. Tens ${s.firstVoteSeconds} segundos na primeira ronda e ${s.voteSeconds} nas outras.</div>`;
+            } else if (s.status === 'FAST') {
+                tag.innerText = roundNo <= s.totalRounds && s.round >= 0 ? `A caminho da ronda ${roundNo}` : 'O tempo passa';
+                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div>`;
+            } else if (s.status === 'DECIDE') {
+                tag.innerText = 'A tua carteira';
+                const chosen = m.decision;
+                const opt = (v, label, hint) => `<button class="option${chosen === v ? ' selected' : ''}" onclick="decide('${v}')">${label}<small>${hint}</small></button>`;
+                body.innerHTML = `<div class="decide-head">${pct(m.drawdown)} desde o máximo</div>
+                    <div class="decide-sub">${m.value < m.pocket ? `Puseste ${eur(m.pocket)} e a carteira vale ${eur(m.value)}.` : `A carteira vale ${eur(m.value)}, e caiu muito nos últimos meses.`} O que fazes ao teu plano?</div>
+                    <div class="decide-opts">
+                        ${opt('MANTENHO', 'Mantenho o plano', `Continuo a investir ${m.monthly}€ todos os meses`)}
+                        ${opt('PARO', 'Paro os reforços', `Durante um ano, os ${m.monthly}€ ficam no banco`)}
+                        ${opt('VENDO', 'Vendo tudo', 'Passo tudo para o banco e volto daqui a um ano')}
+                    </div>`;
+            } else if (s.status === 'NEWS') {
+                tag.innerText = `Ronda ${roundNo} de ${s.totalRounds}`;
+                body.innerHTML = `${s.afterDecision && m.decision ? `<div class="decided">Escolheste: ${CHOICE[m.decision]}.</div>` : ''}${newsBlock()}<div class="hint">O apresentador vai abrir a votação.</div>`;
+                btns.style.display = 'grid';
+            } else if (s.status === 'VOTING') {
+                tag.innerText = `Ronda ${roundNo} de ${s.totalRounds}`;
+                body.innerHTML = newsBlock();
+                btns.style.display = 'grid';
+            } else if (s.status === 'WINDOW') {
+                tag.innerText = `Ronda ${roundNo} de ${s.totalRounds}`;
+                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div><div class="verdict none">${m.vote ? `Votaste <b>${m.vote === 'SOBE' ? 'Sobe' : 'Desce'}</b>.` : 'Não votaste nesta ronda.'} Vamos ver o que acontece…</div>`;
+            } else if (s.status === 'REVEAL' && s.result) {
+                const r = s.result;
+                tag.innerText = `Ronda ${roundNo} de ${s.totalRounds}`;
+                const moved = `O mercado ${r.answer === 'SOBE' ? 'subiu' : 'desceu'} ${pct(r.marketReturn).replace(/^[+−]/, '')} em ${r.horizon === 1 ? '1 mês' : r.horizon + ' meses'}.`;
+                const cls = m.lastHit === true ? 'hit' : (m.vote ? 'miss' : 'none');
+                const verdictHead = m.lastHit === true ? 'Acertaste!' : (m.vote ? 'Desta vez não' : 'Não votaste');
+                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div><div class="verdict ${cls}"><span class="big">${verdictHead}</span>${moved}<div class="why" style="margin-top: 8px;">${escapeHtml(r.usual)}</div></div>`;
+            } else if (s.status === 'HISTORY' && s.historia) {
+                const h = s.historia;
+                tag.innerText = `Depois da ronda ${roundNo}`;
+                body.innerHTML = `<div class="hist-kicker">Na história</div><div class="hist-title">${escapeHtml(h.titulo)}</div><ul class="hist-list">${h.texto.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`;
+            } else if (s.status === 'FINISHED' || s.status === 'CONCLUSION') {
+                tag.innerText = 'Fim do jogo';
+                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div>`;
+                showFinal();
+            }
+            tick();
+        }
+
+        // O que o mercado fez no último mês, sem contar o reforço que entrou (para a cor do piscar)
+        function lastPocketDelta(m) {
+            const n = m.sparkPocket.length;
+            return n >= 2 ? m.sparkPocket[n - 1] - m.sparkPocket[n - 2] : 0;
+        }
+
+        // Mini-gráfico do plano: 7 anos no eixo horizontal, a linha cresce mês a mês
+        function drawSpark(m) {
+            const W = 300, H = 70, MONTHS = 84;
+            const max = Math.max(11000, ...m.spark) * 1.05;
+            const X = i => (i / MONTHS) * W;
+            const Y = v => H - (v / max) * H;
+            const pts = m.spark.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+            const pocket = m.sparkPocket.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+            const last = m.spark.length - 1;
+            const area = `0,${H} ${pts} ${X(last).toFixed(1)},${H}`;
+            const goalY = Y(10000).toFixed(1);
+            const color = css(COLOR[m.profile]);
+            document.getElementById('l-plan').style.background = color;
+            document.getElementById('spark').innerHTML = `
+                <line x1="0" x2="${W}" y1="${goalY}" y2="${goalY}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>
+                <text x="${W}" y="${Number(goalY) - 4}" text-anchor="end" font-size="9" fill="var(--sub)">10K</text>
+                <polygon points="${area}" fill="${color}" fill-opacity="0.1"/>
+                <polyline points="${pocket}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>
+                <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+                <circle cx="${X(last).toFixed(1)}" cy="${Y(m.spark[last]).toFixed(1)}" r="3.5" fill="${color}"/>`;
+        }
+
+        // Contagem decrescente da votação ou da decisão, acertada pelo relógio do servidor
+        function tick() {
+            const el = document.getElementById('timer');
+            const bar = document.getElementById('timebar');
+            const ends = state && (state.status === 'VOTING' ? state.voteEndsAt : state.status === 'DECIDE' ? state.decideEndsAt : null);
+            if (!ends) { el.innerText = ''; bar.style.display = 'none'; return; }
+            const total = state.status === 'DECIDE' ? state.decideSeconds : (state.round === 0 ? state.firstVoteSeconds : state.voteSeconds);
+            const left = Math.max(0, (ends - (Date.now() + clockOffset)) / 1000);
+            el.innerText = Math.ceil(left) + ' s';
+            el.classList.toggle('soon', left <= 5);
+            bar.style.display = 'block';
+            document.getElementById('timebar-fill').style.width = Math.min(100, left / total * 100) + '%';
+        }
+        setInterval(tick, 250);
+
+        function showFinal() {
+            const m = me, s = state;
+            document.getElementById('final-title').innerText = m.hitMonth ? `O teu plano chegou aos 10.000€ ao fim de ${duracao(m.hitMonth)}` : 'O teu plano ao fim de 7 anos';
+            document.getElementById('final-value').innerText = eur(m.value);
+            document.getElementById('final-sub').innerText = `${m.profileLabel} · ${m.monthly}€ por mês · 7 anos`;
+            const proj = document.getElementById('final-proj');
+            proj.style.display = m.projectedMonth ? 'block' : 'none';
+            if (m.projectedMonth) proj.innerText = `Com ${m.monthly}€ por mês, chegavas aos 10.000€ ao fim de cerca de ${Math.round(m.projectedMonth / 12)} anos, a uma média de 7% ao ano. Cada euro a mais por mês aproxima a meta.`;
+            document.getElementById('final-pocket').innerText = eur(m.pocket);
+            document.getElementById('final-market').innerText = signedEur(m.market);
+            document.getElementById('final-decision').innerText = m.decisionLabel || '—';
+            document.getElementById('final-score').innerText = `${m.score} de ${s.totalRounds}`;
+            // Quem parou ou vendeu vê o que teria se tivesse mantido
+            const kept = document.getElementById('final-kept');
+            kept.style.display = m.kept ? 'block' : 'none';
+            if (m.kept) kept.innerHTML = `Se tivesses mantido o plano na crise, terias <b>${eur(m.kept.value)}</b> (${signedEur(m.kept.value - m.value)})${m.kept.hitMonth ? ` e chegavas aos 10.000€ ao fim de ${duracao(m.kept.hitMonth)}` : ''}.`;
+            // A conclusão aparece quando o apresentador a abre no admin
+            const concl = document.getElementById('concl');
+            if (s.status === 'CONCLUSION' && s.scenarios) {
+                const sc = s.scenarios;
+                document.getElementById('concl-body').innerHTML = sc.years.map(y =>
+                    `<tr><td>${y} anos<small>${eur(sc.pocket[y])} do bolso</small></td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`).join('');
+                if (concl.style.display === 'none') { finalClosed = false; concl.style.display = 'block'; }
+            } else concl.style.display = 'none';
+            if (!finalClosed) document.getElementById('final').style.display = 'block';
+        }
+
+        // Quanto tempo demorou, em anos e meses («mês 57» ninguém percebe)
+        function duracao(meses) {
+            const a = Math.floor(meses / 12), m = meses % 12;
+            const anos = a ? `${a} ${a === 1 ? 'ano' : 'anos'}` : '', ms = m ? `${m} ${m === 1 ? 'mês' : 'meses'}` : '';
+            return anos && ms ? `${anos} e ${ms}` : (anos || ms);
+        }
+
+        function escapeHtml(t) { return String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    </script>
+</body>
+</html>
