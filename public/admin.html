@@ -42,6 +42,10 @@
         .script li.done { opacity: 0.5; }
         table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
         th { text-align: left; font-size: 0.72rem; color: var(--sub); text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+        .ligacao { padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 0.95rem; }
+        .ligacao.ok { background: var(--green-soft); color: var(--green-ink); }
+        .ligacao.erro { background: var(--red-soft); color: var(--red-ink); }
+        .ligacao button { margin-left: 8px; font: inherit; font-size: 0.85rem; padding: 4px 10px; border-radius: 8px; border: 1px solid currentColor; background: #fff; color: inherit; cursor: pointer; }
         td { padding: 7px 8px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
     </style>
 </head>
@@ -53,6 +57,7 @@
             <span class="pill pill-wait" id="status-pill">—</span>
             <span class="links"><a href="ecra.html" target="_blank">Abrir ecrã grande</a><a href="./" target="_blank">Abrir telemóvel</a></span>
         </header>
+        <div id="ligacao" class="ligacao erro">● A ligar ao jogo…</div>
 
         <div class="grid">
             <div class="card">
@@ -104,13 +109,39 @@
         const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         let state = null, rounds = [];
 
-        // A chave de admin só é entregue a quem passou o login desta página
-        socket.on('connect', async () => {
-            const { key } = await (await fetch('admin-key')).json();
-            socket.emit('register-admin', key);
-        });
+        // A chave de admin só é entregue a quem passou o login desta página.
+        // Se o login falhar ou o servidor reiniciar, o admin mostra-o em vez de falhar em silêncio.
+        let isAdmin = false;
+        function setLigacao(ok, msg) {
+            isAdmin = ok;
+            const el = document.getElementById('ligacao');
+            el.className = 'ligacao ' + (ok ? 'ok' : 'erro');
+            el.innerHTML = ok ? '● Ligado como admin' : '● Sem controlo do jogo: ' + esc(msg) + ' <button onclick="registar()">Tentar de novo</button> <button onclick="location.reload()">Recarregar</button>';
+        }
+        async function registar() {
+            try {
+                const url = new URL('admin-key', location.origin + location.pathname.replace(/[^/]*$/, ''));
+                url.username = ''; url.password = '';
+                const r = await fetch(url.href, { credentials: 'same-origin', cache: 'no-store' });
+                const tipo = r.headers.get('content-type') || '';
+                if (r.status === 401 || r.status === 403) return setLigacao(false, 'login recusado (abre o endereço sem nada antes e escreve admin + password)');
+                if (!r.ok || !tipo.includes('json')) return setLigacao(false, 'o servidor não respondeu com a chave (estado ' + r.status + '; pode estar a acordar)');
+                const { key } = await r.json();
+                socket.timeout(5000).emit('register-admin', key, (err, resp) => {
+                    if (err) return setLigacao(false, 'o servidor não confirmou (sem resposta)');
+                    if (!resp || !resp.ok) return setLigacao(false, 'chave recusada (o servidor reiniciou?)');
+                    setLigacao(true);
+                });
+            } catch (e) { setLigacao(false, 'erro de rede (' + e.message + ')'); }
+        }
+        socket.on('connect', registar);
+        socket.on('disconnect', () => setLigacao(false, 'ligação perdida, a voltar a ligar…'));
+        socket.on('admin-erro', m => setLigacao(false, m || 'comando recusado'));
 
-        function cmd(command) { socket.emit('admin', { command }); }
+        function cmd(command) {
+            if (!isAdmin) { registar(); alert('O admin não está ligado ao jogo. Vê o aviso vermelho no topo e recarrega a página.'); return; }
+            socket.emit('admin', { command });
+        }
 
         // Reiniciar apaga as respostas da sessão: avisa se ainda não se exportou o CSV
         let exported = false;
@@ -130,7 +161,7 @@
             const seconds = s.round === 0 ? s.firstVoteSeconds : s.voteSeconds;
             return {
                 LOBBY: 'As pessoas entram pelo QR code no ecrã grande. Quando estiverem prontas, começa a ronda 1.',
-                FAST: 'O mercado avança até à data da próxima notícia.',
+                FAST: s.waitNews ? 'O mercado parou antes da notícia. Comenta o gráfico e o plano de cada um; depois mostra a notícia.' : 'O mercado avança até à data da próxima notícia.',
                 DECIDE: `A sala decide o que faz ao plano. Fecha sozinha ao fim de ${s.decideSeconds} segundos.`,
                 NEWS: 'Lê a notícia e o contexto em voz alta. Depois abre a votação.',
                 VOTING: `A votação fecha sozinha ao fim de ${seconds} segundos.`,
@@ -146,6 +177,7 @@
         function nextLabel(s) {
             const roundNo = s.round + 1;
             if (s.status === 'LOBBY') return '▶ Começar: ronda 1';
+            if (s.status === 'FAST' && s.waitNews) return `▶ Mostrar a notícia da ronda ${roundNo}`;
             if (s.status === 'NEWS') return '🗳 Abrir a votação';
             if (s.status === 'VOTING') return '⏹ Fechar a votação já';
             if (s.status === 'DECIDE') return '⏹ Fechar a decisão';
@@ -170,7 +202,7 @@
             document.getElementById('status-help').innerText = help(s);
 
             const next = document.getElementById('btn-next');
-            next.disabled = !['LOBBY', 'NEWS', 'VOTING', 'DECIDE', 'REVEAL', 'HISTORY'].includes(s.status);
+            next.disabled = !(['LOBBY', 'NEWS', 'VOTING', 'DECIDE', 'REVEAL', 'HISTORY'].includes(s.status) || (s.status === 'FAST' && s.waitNews));
             next.innerText = nextLabel(s);
             const concl = document.getElementById('btn-concl');
             concl.disabled = !(s.status === 'FINISHED' || s.status === 'CONCLUSION');

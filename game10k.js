@@ -110,6 +110,7 @@ const ROUNDS = [
     },
     {
         at: 27, horizon: 6, answer: 'DESCE',
+        pausaAntes: true,   // o mercado para à chegada: o apresentador explica antes de mostrar a notícia
         news: 'A economia entra em recessão e um grande banco entra em falência.',
         context: 'Os bancos emprestaram demasiado a quem não conseguia pagar. Um dos maiores bancos do mundo declara falência, o crédito seca e as empresas começam a despedir. A economia entra oficialmente em recessão.',
         usual: 'Nas recessões com crise financeira, a bolsa costuma cair muito: em média, cerca de metade do valor, numa descida que pode durar mais de um ano.',
@@ -173,6 +174,7 @@ const ROUNDS = [
     },
     {
         at: 78, horizon: 1, answer: 'DESCE',
+        pausaAntes: true,
         news: 'Empresas apresentam lucros recorde, mas abaixo do que os analistas esperavam.',
         context: 'As empresas ganharam mais dinheiro do que nunca. Mas os analistas esperavam lucros ainda maiores, e o preço das ações já contava com isso.',
         usual: 'Resultados abaixo das expectativas costumam fazer o preço cair, mesmo com lucros recorde.',
@@ -376,8 +378,20 @@ module.exports = function setupGame10k(io, opts = {}) {
 
     // --- Fluxo: um só botão "Seguinte" no admin avança para o passo que vem a seguir ---
     // ronda: FAST → (DECIDE) → NEWS → VOTING → WINDOW → REVEAL → HISTORY → próxima ronda
+    // Chegada a uma ronda: nalgumas o mercado fica parado no gráfico até o admin carregar (tempo para explicar)
+    function chegada(i) {
+        if (ROUNDS[i].pausaAntes && !game.waitNews) {
+            game.waitNews = true;
+            game.news = 'O tempo passou. Vamos ver como está o teu plano.';
+            return broadcast();
+        }
+        game.waitNews = false;
+        return ROUNDS[i].decisao && game.decidedAt === null ? openDecision() : showNews();
+    }
+
     function next() {
         const s = game.status;
+        if (s === 'FAST' && game.waitNews) { game.waitNews = false; return ROUNDS[game.round].decisao && game.decidedAt === null ? openDecision() : showNews(); }
         if (s === 'LOBBY' || s === 'HISTORY') return goToRound(game.round + 1);
         if (s === 'REVEAL') return showHistory();
         if (s === 'NEWS') return openVote();
@@ -396,7 +410,8 @@ module.exports = function setupGame10k(io, opts = {}) {
         game.round = i;
         game.status = 'FAST';
         game.news = 'O tempo passa. O teu plano continua: um reforço todos os meses.';
-        runTo(ROUNDS[i].at, FAST_MS, () => (ROUNDS[i].decisao && game.decidedAt === null ? openDecision() : showNews()));
+        game.waitNews = false;
+        runTo(ROUNDS[i].at, FAST_MS, () => chegada(i));
         broadcast();
     }
 
@@ -480,7 +495,7 @@ module.exports = function setupGame10k(io, opts = {}) {
     function finish() {
         stop();
         game.status = 'FINISHED';
-        game.news = 'Fim do jogo. Olha para o teu telemóvel.';
+        game.news = 'Fim do jogo.';
         broadcast();
     }
 
@@ -554,6 +569,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             gameId: game.id,
             status: s,
             paused: game.paused,
+            waitNews: !!game.waitNews,               // mercado parado à chegada da ronda, à espera do admin
             sound,
             month: game.month,
             year: d.year,
@@ -706,15 +722,17 @@ module.exports = function setupGame10k(io, opts = {}) {
             socket.emit('screen', { history: game.history });
         });
 
-        socket.on('register-admin', key => {
-            if (adminKey && key !== adminKey) return;
+        socket.on('register-admin', (key, ack) => {
+            const responder = typeof ack === 'function' ? ack : () => {};
+            if (adminKey && key !== adminKey) return responder({ ok: false });
             socket.data.isAdmin = true;
             socket.join('admin');
+            responder({ ok: true });
             broadcast();
         });
 
         socket.on('admin', ({ command } = {}) => {
-            if (!socket.data.isAdmin) return;
+            if (!socket.data.isAdmin) return socket.emit('admin-erro', 'comando recusado: o admin não está registado (recarrega a página)');
             if (command === 'NEXT' || command === 'NEXT_ROUND') next();
             if (command === 'CLOSE_VOTE') closeVote();
             if (command === 'SOUND_ON') sound = true;
@@ -821,8 +839,8 @@ module.exports = function setupGame10k(io, opts = {}) {
         const s = game.status, agora = Date.now();
         if (s === 'FAST') {
             const i = game.round;
-            const fim = i >= ROUNDS.length ? finish : () => (ROUNDS[i].decisao && game.decidedAt === null ? openDecision() : showNews());
-            runTo(game.target, FAST_MS, fim);
+            if (game.waitNews) { /* parado à espera do admin: não volta a correr */ }
+            else runTo(game.target, FAST_MS, i >= ROUNDS.length ? finish : () => chegada(i));
         } else if (s === 'WINDOW') runTo(game.target, WINDOW_MS, reveal);
         else if (s === 'VOTING') timer = setTimeout(closeVote, Math.max(0, (game.voteEndsAt || agora) - agora));
         else if (s === 'DECIDE') timer = setTimeout(closeDecision, Math.max(0, (game.decideEndsAt || agora) - agora));

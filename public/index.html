@@ -489,7 +489,7 @@
                 body.innerHTML = `<div id="news">O jogo vai começar em breve.</div><div class="waiting">Em cada ronda o apresentador lê uma notícia e abre a votação. Tens ${s.firstVoteSeconds} segundos na primeira ronda e ${s.voteSeconds} nas outras.</div>`;
             } else if (s.status === 'FAST') {
                 tag.innerText = roundNo <= s.totalRounds && s.round >= 0 ? `A caminho da ronda ${roundNo}` : 'O tempo passa';
-                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div>`;
+                body.innerHTML = `<div id="news">${escapeHtml(s.news)}</div>${s.waitNews ? '<div class="hint">O mercado parou aqui. O apresentador vai mostrar a notícia.</div>' : ''}`;
             } else if (s.status === 'DECIDE') {
                 tag.innerText = 'A tua carteira';
                 const chosen = m.decision;
