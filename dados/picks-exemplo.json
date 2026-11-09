@@ -1,0 +1,27 @@
+{
+  "_nota": "Ficheiro de EXEMPLO da fase do portfólio, só usado enquanto não existe o catálogo verdadeiro (tour-lisboa/dados/picks-catalogo.json). Preços e «desde a pick» de moneyflix.com/discover a 22/10/2026 (PICKS_MONEYFLIX_2026-10-22.md); descrições e tipos escritos à pressa para testar, por confirmar.",
+  "atualizado": "2026-10-22",
+  "setores": [
+    { "id": "tecnologia", "nome": "Tecnologia", "emoji": "💻", "descricao": "Chips, software e serviços digitais que usamos todos os dias." },
+    { "id": "energia", "nome": "Energia", "emoji": "⚡", "descricao": "Petróleo, gás e eletricidade: a energia que faz andar a economia." },
+    { "id": "financeiro", "nome": "Financeiro", "emoji": "🏦", "descricao": "Bancos, seguradoras e bolsas: guardam, emprestam e protegem dinheiro." }
+  ],
+  "empresas": [
+    { "ticker": "GOOGL", "nome": "Alphabet", "setor": "tecnologia", "descricao": "A dona do Google, do YouTube e do Android. Ganha sobretudo com publicidade.", "conhecida": true, "tipo": "crescimento", "preco": 334.76, "moeda": "USD", "data_pick": "2025-03-08", "retorno_desde_pick": 1.0182, "ativa": true, "nota_apresentador": "Toda a gente usa: bom exemplo de empresa que se conhece sem saber que se conhece." },
+    { "ticker": "AMZN", "nome": "Amazon", "setor": "tecnologia", "descricao": "A loja online e a maior empresa de serviços na nuvem do mundo (AWS).", "conhecida": true, "tipo": "crescimento", "preco": 262.37, "moeda": "USD", "data_pick": "2025-03-08", "retorno_desde_pick": 1.0299, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "MU", "nome": "Micron Technology", "setor": "tecnologia", "descricao": "Faz as memórias de computadores, telemóveis e centros de dados de inteligência artificial.", "conhecida": false, "tipo": "ciclica", "preco": 913.67, "moeda": "USD", "data_pick": "2025-10-17", "retorno_desde_pick": 3.5146, "ativa": true, "nota_apresentador": "Ação cara por unidade: boa para o exemplo de juntar meses." },
+    { "ticker": "CLS", "nome": "Celestica", "setor": "tecnologia", "descricao": "Fabrica equipamento para centros de dados por encomenda das grandes tecnológicas.", "conhecida": false, "tipo": "crescimento", "preco": 304.61, "moeda": "USD", "data_pick": "2023-11-20", "retorno_desde_pick": 9.775, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "APH", "nome": "Amphenol", "setor": "tecnologia", "descricao": "Faz os conectores e cabos que ligam tudo, dos carros aos centros de dados.", "conhecida": false, "tipo": "ciclica", "preco": 79.20, "moeda": "USD", "data_pick": "2025-06-05", "retorno_desde_pick": -0.1414, "ativa": true, "nota_apresentador": "" },
+
+    { "ticker": "CVX", "nome": "Chevron", "setor": "energia", "descricao": "Uma das maiores petrolíferas do mundo: extrai, refina e vende combustíveis.", "conhecida": true, "tipo": "ciclica", "preco": 226.78, "moeda": "USD", "data_pick": "2025-06-26", "retorno_desde_pick": 0.5818, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "EQNR", "nome": "Equinor", "setor": "energia", "descricao": "A energética do Estado norueguês: petróleo, gás e eólicas no mar.", "conhecida": false, "tipo": "ciclica", "preco": 45.98, "moeda": "USD", "data_pick": "2025-05-15", "retorno_desde_pick": 0.9675, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "GEV", "nome": "GE Vernova", "setor": "energia", "descricao": "Faz turbinas e equipamento para centrais elétricas e para a rede elétrica.", "conhecida": false, "tipo": "crescimento", "preco": 925.92, "moeda": "USD", "data_pick": "2025-03-08", "retorno_desde_pick": 2.4277, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "PR", "nome": "Permian Resources", "setor": "energia", "descricao": "Extrai petróleo e gás no Texas, na maior bacia petrolífera dos EUA.", "conhecida": false, "tipo": "ciclica", "preco": 24.84, "moeda": "USD", "data_pick": "2025-01-04", "retorno_desde_pick": 0.7274, "ativa": true, "nota_apresentador": "" },
+
+    { "ticker": "JPM", "nome": "JPMorgan Chase", "setor": "financeiro", "descricao": "O maior banco dos EUA: contas, crédito e banca de investimento.", "conhecida": true, "tipo": "ciclica", "preco": 335.19, "moeda": "USD", "data_pick": "2025-05-22", "retorno_desde_pick": 0.2865, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "AXP", "nome": "American Express", "setor": "financeiro", "descricao": "Cartões de crédito: ganha uma comissão em cada compra feita com eles.", "conhecida": true, "tipo": "ciclica", "preco": 323.75, "moeda": "USD", "data_pick": "2025-05-01", "retorno_desde_pick": 0.2102, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "ALL", "nome": "Allstate", "setor": "financeiro", "descricao": "Seguradora americana de carros e casas.", "conhecida": false, "tipo": "defensiva", "preco": 251.04, "moeda": "USD", "data_pick": "2026-10-16", "retorno_desde_pick": 0.0344, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "CME", "nome": "CME Group", "setor": "financeiro", "descricao": "Gere a maior bolsa de futuros do mundo e ganha uma comissão em cada negócio.", "conhecida": false, "tipo": "defensiva", "preco": 295.79, "moeda": "USD", "data_pick": "2026-10-16", "retorno_desde_pick": 0.0188, "ativa": true, "nota_apresentador": "" },
+    { "ticker": "BAC", "nome": "Bank of America", "setor": "financeiro", "descricao": "Um dos maiores bancos dos EUA, com dezenas de milhões de clientes.", "conhecida": true, "tipo": "ciclica", "preco": 50.86, "moeda": "USD", "data_pick": "2025-12-22", "retorno_desde_pick": -0.0793, "ativa": true, "nota_apresentador": "" }
+  ]
+}

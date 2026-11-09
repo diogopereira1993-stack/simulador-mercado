@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+.claude/
+*.log
+# Exportações da sessão (têm emails e dados pessoais: nunca no repositório)
+*.csv
+export*.json
+jogo-moneyflix_*
+estado/

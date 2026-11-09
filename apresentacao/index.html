@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="pt-PT"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoneyFlix Tour · Lisboa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* Linguagem do Moneyflix Hub (cartões brancos, sombra suave, ícones de linha em mosaicos coloridos)
+   + da app (números grandes, pílulas verde/vermelho, tabelas com cabeçalho pequeno em maiúsculas). */
+:root {
+  --bg: #F5F5F7; --card: #FFFFFF; --text: #1D1D1F; --sub: #6E6E73; --muted: #A1A1A6; --line: #E8E8ED;
+  --accent: var(--accent); --accent-2: var(--accent-2);
+  --up: #15803D; --up-soft: #E6F6EC; --up-strong: #14532D;
+  --down: #C62A2F; --down-soft: #FDECEC;
+  --orange: var(--serie-b); --orange-soft: #FEF3E2;
+  --indigo: #5E5CE6;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
+  --shadow-up: 0 2px 4px rgba(0,0,0,.05), 0 24px 60px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  --display: 'Inter Tight', 'Inter', -apple-system, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #0B0B0C; overflow: hidden; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+#palco { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; }
+.slide { position: absolute; inset: 0; background: var(--bg); padding: 150px 128px 128px; display: none; flex-direction: column; overflow: hidden; }
+.slide.ativo { display: flex; }
+
+/* barra de topo, como a navbar de vidro do Hub */
+.topo { position: absolute; top: 0; left: 0; right: 0; height: 96px; display: flex; align-items: center; justify-content: space-between;
+        padding: 0 128px; border-bottom: 1px solid rgba(0,0,0,.06); background: rgba(245,245,247,.8); }
+.topo img { height: 30px; }
+.topo .dir { display: flex; align-items: center; gap: 16px; }
+.chip { font-size: 19px; font-weight: 600; padding: 8px 16px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); }
+.chip.cinza { background: rgba(0,0,0,.05); color: var(--sub); }
+.pag { font-size: 19px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+
+.rodape { position: absolute; left: 128px; right: 128px; bottom: 40px; font-size: 16px; line-height: 1.5; color: var(--muted); }
+.rodape b { color: var(--sub); font-weight: 600; }
+
+.kicker { font-size: 24px; font-weight: 600; color: var(--sub); margin-bottom: 16px; }
+.kicker em { font-style: normal; color:var(--accent-ink); }
+h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -.035em; }
+h1 { font-size: 112px; line-height: .98; }
+h2 { font-size: 68px; line-height: 1.04; max-width: 1560px; }
+.lead { font-size: 32px; line-height: 1.45; color: var(--sub); max-width: 1300px; }
+.lead b { color: var(--text); font-weight: 600; }
+
+.card { background: var(--card); border-radius: 28px; box-shadow: var(--shadow); padding: 40px 44px; position: relative; }
+.grid { display: grid; gap: 28px; }
+.g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+.mt-s { margin-top: 36px; } .mt { margin-top: 56px; }
+
+/* mosaico de ícone, como os cartões do Hub */
+.tile { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tile svg { width: 36px; height: 36px; }
+.tile.s { width: 56px; height: 56px; border-radius: 16px; } .tile.s svg { width: 28px; height: 28px; }
+.ttl { font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
+.desc { font-size: 22px; line-height: 1.45; color: var(--sub); margin-top: 8px; }
+
+.num { font-family: var(--display); font-weight: 800; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.n-xl { font-size: 132px; } .n-l { font-size: 96px; } .n-m { font-size: 64px; } .n-s { font-size: 44px; }
+.azul { color:var(--accent-ink); } .verde { color: var(--up); } .vermelho { color: var(--down); } .laranja { color: var(--serie-b); } .cinza { color: var(--muted); }
+
+/* pílulas de retorno, como na app */
+.pil { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-variant-numeric: tabular-nums; border-radius: 999px; padding: 6px 14px; font-size: 22px; white-space: nowrap; }
+.pil.up { background: var(--up-soft); color: var(--up); } .pil.down { background: var(--down-soft); color: var(--down); }
+.pil.neu { background: rgba(0,0,0,.05); color: var(--sub); }
+.pil.up.forte { background: var(--up-strong); color: #fff; } .pil.down.forte { background: var(--down); color: #fff; }
+.pil .tri { font-size: .7em; }
+
+/* tabelas, como «Ativos» na app */
+table.t { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+table.t th { font-size: 17px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: right; padding: 0 0 18px; }
+table.t td { font-size: 28px; text-align: right; padding: 15px 0; border-top: 1px solid var(--line); }
+table.t th:first-child, table.t td:first-child { text-align: left; }
+table.t td .s { display: block; font-size: 18px; color: var(--muted); margin-top: 4px; font-weight: 500; }
+table.t tr.vazio td { color: var(--muted); }
+
+/* logótipos das empresas */
+.logo { width: 40px; height: 40px; border-radius: 12px; object-fit: contain; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.06); flex-shrink: 0; }
+.logo.l { width: 64px; height: 64px; border-radius: 16px; }
+.emp { display: inline-flex; align-items: center; gap: 12px; font-weight: 600; }
+
+/* colunas */
+.cols { display: flex; align-items: flex-end; gap: 48px; height: 470px; border-bottom: 2px solid var(--line); }
+.col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.col .bar { width: 100%; max-width: 200px; border-radius: 14px 14px 4px 4px; }
+.col .v { font-family: var(--display); font-size: 44px; font-weight: 800; letter-spacing: -.03em; margin-bottom: 14px; font-variant-numeric: tabular-nums; }
+.colleg { display: flex; gap: 48px; margin-top: 18px; }
+.colleg div { flex: 1; text-align: center; font-size: 22px; font-weight: 600; }
+.colleg small { display: block; font-size: 18px; color: var(--muted); font-weight: 500; margin-top: 4px; }
+
+/* capa e secção */
+.capa { justify-content: center; }
+.secao { justify-content: center; background: #1C1C1E; color: #F5F5F7; }
+.secao .topo { background: transparent; border-color: rgba(255,255,255,.08); }
+.secao .lead { color: #A1A1A6; }
+.secao h1 { font-size: 150px; }
+.pilha { position: absolute; right: 128px; top: 250px; width: 620px; height: 620px; }
+.pilha .card { position: absolute; width: 470px; padding: 32px 36px; box-shadow: var(--shadow-up); }
+
+/* notificações (o ruído) */
+.notif { display: flex; gap: 20px; padding: 26px 28px; border-radius: 26px; background: rgba(255,255,255,.92); box-shadow: var(--shadow); }
+.notif .meta { font-size: 17px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.notif .tt { font-size: 25px; font-weight: 700; margin-top: 6px; letter-spacing: -.01em; }
+.notif .bd { font-size: 21px; color: var(--sub); margin-top: 4px; line-height: 1.4; }
+
+/* pontos */
+#strip { position: relative; height: 470px; margin-top: 24px; }
+.ponto { position: absolute; width: 24px; height: 24px; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 0 2px var(--bg); }
+.ponto.ex { background: var(--bg) !important; box-shadow: inset 0 0 0 3px var(--sub), 0 0 0 2px var(--bg); }
+.eixo { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--line); }
+.tick { position: absolute; bottom: -38px; transform: translateX(-50%); font-size: 18px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.linhav { position: absolute; top: 0; bottom: 0; border-left: 2px dashed var(--text); }
+.linhav span { position: absolute; top: 110px; left: 10px; font-size: 19px; font-weight: 700; white-space: nowrap; background: var(--bg); padding: 2px 6px; }
+.nota-strip { position: absolute; top: 0; font-size: 18px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); line-height: 1.7; }
+.nota-strip div { text-transform: none; letter-spacing: 0; display: flex; gap: 10px; margin-top: 6px; }
+.leg { display: flex; gap: 32px; font-size: 20px; color: var(--sub); margin-top: 58px; align-items: center; }
+.leg i { display: inline-block; width: 16px; height: 16px; border-radius: 50%; vertical-align: -1px; margin-right: 10px; }
+
+/* linhas de dados dentro de cartões */
+.lin { display: flex; justify-content: space-between; align-items: center; font-size: 21px; color: var(--sub); padding: 12px 0; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.lin b { color: var(--text); font-weight: 600; }
+
+/* barra de alocação */
+.aloc { display: flex; gap: 4px; height: 18px; margin-top: 28px; }
+.aloc span { border-radius: 6px; }
+.aloc-leg { display: flex; justify-content: space-between; font-size: 20px; color: var(--sub); margin-top: 12px; font-variant-numeric: tabular-nums; }
+
+/* camadas */
+.camada { display: flex; align-items: center; gap: 26px; padding: 22px 30px; border-radius: 22px; background: var(--card); box-shadow: var(--shadow); }
+.camada .ttl { font-size: 28px; } .camada .k { margin-left: auto; font-size: 21px; color: var(--sub); text-align: right; }
+.camada.base { background: linear-gradient(145deg, var(--accent), var(--accent-2)); color: var(--on-accent); }
+.camada.base .k { color: var(--on-accent); }
+
+#nav { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; opacity: 0; transition: opacity .3s; }
+body:hover #nav { opacity: .6; }
+#nav i { width: 8px; height: 8px; border-radius: 50%; background: #555; cursor: pointer; }
+#nav i.on { background: #fff; }
+@media print {
+  html, body { background: #fff; overflow: visible; height: auto; }
+  #palco { position: static; transform: none !important; width: auto; height: auto; }
+  .slide { display: flex !important; position: relative; width: 1920px; height: 1080px; page-break-after: always; }
+  .card, .notif, .camada, .pilha .card { box-shadow: none !important; border: 1px solid #E5E5EA; }
+  #nav { display: none; }
+  @page { size: 1920px 1080px; margin: 0; }
+}
+
+.ab{--bg:#F5F5F7;--card:#fff;--ink:#1d1d1f;--muted:#6e6e73;--soft:#86868b;--line:#e5e5ea;--gold:var(--accent);--gold-soft:var(--accent-soft);--red:#C62A2F;--red-soft:#FDECEC}
+.ab .abs{position:absolute;inset:0;padding:80px 110px 80px;display:none;flex-direction:column}
+.ab .abs.on{display:flex}
+.ab .kicker{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:.04em;margin-bottom:20px;text-transform:uppercase;display:inline-block;align-self:flex-start;border-bottom:4px solid var(--gold);padding-bottom:4px}
+.ab .kicker.muted{border-bottom-color:var(--line);color:var(--muted)}
+.ab h1{font-size:84px;line-height:1.05;font-weight:800;letter-spacing:-.025em}
+.ab h2{font-size:54px;line-height:1.12;font-weight:800;letter-spacing:-.02em;max-width:1380px}
+.ab .hl{text-decoration:underline;text-decoration-color:var(--gold);text-decoration-thickness:4px;text-underline-offset:9px}
+.ab p.lead{font-size:34px;line-height:1.35;color:var(--muted);margin-top:28px;max-width:1250px}
+.ab .src{position:absolute;left:110px;right:200px;bottom:42px;font-size:18px;color:var(--soft);line-height:1.3}
+.ab .num{position:absolute;right:56px;bottom:40px;font-size:18px;color:var(--soft)}
+.ab .logo{position:absolute;right:110px;top:70px;height:30px}
+.ab .row{display:flex;gap:32px}
+.ab .card{background:var(--card);border-radius:20px;padding:34px 38px;border:1px solid var(--line)}
+.ab .card.gold{border:2px solid var(--gold);background:#fff}
+.ab .card h3{font-size:32px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em;line-height:1.2}
+.ab .card p{font-size:25px;line-height:1.4;color:var(--muted)}
+.ab .card p b{color:var(--ink)}
+.ab .big{font-size:100px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.ab .big-card{flex:1;padding:50px}
+.ab .big-card h2{font-size:52px;margin:10px 0 18px}
+.ab .red{color:var(--red)}
+.ab .muted{color:var(--muted)}
+.ab .center{justify-content:center}
+.ab .hands{display:flex;gap:32px;margin-top:60px}
+.ab .hands .card{flex:1;text-align:center;padding:60px 30px}
+.ab .hands .emoji{font-size:90px;margin-bottom:24px}
+.ab .hands h3{font-size:38px}
+.ab .takeaway{margin-top:30px;font-size:29px;line-height:1.4;color:var(--muted);background:#fff;border:1px solid var(--line);border-left:6px solid var(--gold);border-radius:14px;padding:22px 30px}
+.ab .takeaway b{color:var(--ink)}
+.ab .step-n{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:46px;padding:0 14px;border-radius:23px;background:var(--gold);color:#fff;font-weight:800;font-size:24px;margin-bottom:14px}
+.ab .chartbox{margin-top:16px}
+.ab .chartbox svg{width:100%;height:auto;display:block}
+.ab .chartbox.tall svg{max-height:440px}
+.ab .chart-note{font-size:21px;color:var(--soft);margin-top:4px;text-align:center}
+.ab svg .grid{stroke:#e5e5ea;stroke-width:1.5}
+.ab svg .ax{font:500 22px Inter,sans-serif;fill:#86868b}
+.ab svg .ct{font:700 24px Inter,sans-serif;fill:#1d1d1f}
+.ab svg .lab{font:700 26px Inter,sans-serif;fill:#1d1d1f}
+.ab svg .lab.red{fill:#C62A2F}
+.ab svg .bl{font:700 21px Inter,sans-serif;fill:#1d1d1f}
+.ab .bars{display:flex;align-items:flex-end;gap:70px;height:400px;margin-top:30px;padding-left:20px;justify-content:center}
+.ab .bar-group{display:flex;flex-direction:column;align-items:center;gap:16px}
+.ab .bar-pair{display:flex;align-items:flex-end;gap:14px;height:360px}
+.ab .bar{width:110px;border-radius:12px 12px 4px 4px;position:relative}
+.ab .bar span{position:absolute;top:-40px;left:50%;transform:translateX(-50%);font-size:23px;font-weight:700;white-space:nowrap}
+.ab .bar.put{background:#d2d2d7}
+.ab .bar.got{background:var(--gold)}
+.ab .bar-label{font-size:26px;font-weight:600}
+.ab .bars.sm .bar{width:62px}
+.ab .bars.sm .bar span{font-size:19px}
+.ab .card{min-width:0}
+.ab .legend{display:flex;gap:30px;font-size:22px;color:var(--muted);margin-top:8px;justify-content:center}
+.ab .legend i{display:inline-block;width:18px;height:18px;border-radius:5px;margin-right:8px;vertical-align:-2px}
+.ab ol.steps{list-style:none;counter-reset:s;margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.ab ol.steps.three{grid-template-columns:1fr 1fr 1fr}
+.ab ol.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:30px 34px 30px 104px;position:relative;font-size:26px;line-height:1.35;color:var(--muted)}
+.ab ol.steps li b{display:block;color:var(--ink);font-size:31px;margin-bottom:6px;line-height:1.2}
+.ab ol.steps li::before{content:counter(s);position:absolute;left:32px;top:28px;width:50px;height:50px;border-radius:50%;background:var(--gold);color:#fff;font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center}
+.ab .flow{display:flex;align-items:center;gap:10px;margin:18px 0 20px}
+.ab .fbox{flex:1;background:var(--bg);border-radius:14px;padding:18px 10px;text-align:center;font-weight:600;font-size:22px;line-height:1.25}
+.ab .fbox.gold{background:var(--gold);color:#fff}
+.ab .farrow{font-size:32px;color:var(--soft)}
+.ab .dca{display:flex;align-items:flex-end;gap:14px;height:170px;margin:44px 0 0}
+.ab .dca-col{flex:1;text-align:center}
+.ab .dca-price{background:#d2d2d7;border-radius:8px 8px 3px 3px;position:relative;margin:0 auto;width:100%}
+.ab .dca-price span{position:absolute;top:-30px;left:0;right:0;font-weight:700;font-size:20px}
+.ab .dca-units{background:var(--gold);color:#fff;font-weight:800;font-size:22px;border-radius:8px;padding:6px 0;margin-top:8px}
+.ab .dca-legend{display:flex;justify-content:space-between;font-size:18px;color:var(--soft);margin:8px 0 12px}
+.ab .mini{margin-top:18px;background:var(--bg);border-radius:12px;padding:14px 18px;font-size:23px;line-height:1.3}
+.ab .dots{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0;min-height:70px;align-items:center}
+.ab .dots .d{display:inline-block;width:22px;height:22px;border-radius:50%;background:#d2d2d7}
+.ab .dots .d.bad{background:var(--red)}
+.ab .dots.one .d{width:70px;height:70px}
+.ab .crisis-row{display:flex;gap:20px;margin-top:14px}
+.ab .crisis-row div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;flex-direction:column;gap:2px}
+.ab .crisis-row b{font-size:22px}
+.ab .crisis-row span{font-size:38px;font-weight:800}
+.ab .crisis-row em{font-style:normal;font-size:21px;color:var(--muted)}
+/* ajustes à linguagem única */
+.ab{--gold:var(--accent);--gold-soft:var(--accent-soft)}
+.ab .abs{position:absolute;inset:0;display:flex;flex-direction:column;padding:96px 110px 70px}
+.ab .abs.center{justify-content:center}
+.ab .logo,.ab .num{display:none}
+.ab h1,.ab h2,.ab .big{font-family:var(--display);letter-spacing:-.035em}
+.ab .kicker{font-size:21px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--sub);border-bottom:0;padding:0;margin-bottom:14px}
+.ab .kicker.muted{color:var(--muted)}
+.ab .card{border:0;box-shadow:var(--shadow);border-radius:24px}
+.ab .card.gold{border:0;box-shadow:var(--shadow),inset 0 0 0 2px var(--accent)}
+.ab .takeaway{border:0;box-shadow:var(--shadow);border-left:6px solid var(--accent)}
+.ab ol.steps li{border:0;box-shadow:var(--shadow)}
+.ab .crisis-row div{border:0;box-shadow:var(--shadow)}
+.ab .step-n,.ab ol.steps li::before,.ab .fbox.gold,.ab .dca-units{color:var(--on-accent)}
+.ab .hl{text-decoration-color:var(--accent)}
+.ab .src{left:110px;bottom:30px}
+.ab .tile{margin:0 auto 24px}
+.ab .tile[data-ico=carrinho]{margin:0}
+.ab .tile[data-ico=carrinho] svg{width:130px;height:130px}
+.ab .card .big{font-size:88px}
+
+
+/* ---- revisão 9 nov: composição, letra para projetar, ícones num só estilo ---- */
+.slide { justify-content: center; padding-top: 140px; padding-bottom: 120px; }
+.ab .abs { justify-content: center; padding-top: 70px; padding-bottom: 60px; }
+.desc { font-size: 27px; } .ttl { font-size: 34px; } .lead { font-size: 36px; }
+.card { padding: 46px 50px; }
+.lin { font-size: 25px; padding: 14px 0; }
+table.t td { font-size: 32px; } table.t th { font-size: 20px; } table.t td .s { font-size: 21px; }
+.pil { font-size: 25px; }
+.leg { font-size: 24px; } .tick { font-size: 22px; } .nota-strip { font-size: 21px; } .linhav span { font-size: 22px; }
+.notif .tt { font-size: 30px; } .notif .bd { font-size: 25px; } .notif .meta { font-size: 19px; }
+.aloc { height: 22px; } .aloc-leg { font-size: 23px; }
+.colleg div { font-size: 26px; } .colleg small { font-size: 21px; }
+.camada { padding: 28px 36px; } .camada .k { font-size: 25px; } .camada .ttl { font-size: 32px; }
+#camadas { max-width: none !important; }
+.chip { font-size: 21px; }
+.tile { width: 88px; height: 88px; border-radius: 24px; } .tile svg { width: 44px; height: 44px; }
+.tile.s { width: 64px; height: 64px; border-radius: 18px; } .tile.s svg { width: 32px; height: 32px; }
+.tile { background: var(--accent-soft) !important; color: var(--accent-ink) !important; border: 0 !important; }
+.camada.base .tile { background: rgba(255,255,255,.35) !important; color: var(--on-accent) !important; }
+.secao .card { color: var(--text); }
+.slide.capa.secao[data-sec="Parte 2"] h1 { font-size: 92px; max-width: 900px; }
+.ponto { width: 30px; height: 30px; }
+.secao .ab .abs, .secao .ab { color: #F5F5F7; }
+.secao .ab .card { color: var(--text); }
+/* abertura: letra maior nos cartões (escala 1,2) */
+.ab .card p { font-size: 27px; } .ab .card h3 { font-size: 34px; } .ab .takeaway { font-size: 30px; }
+.ab ol.steps li { font-size: 27px; } .ab ol.steps li b { font-size: 32px; }
+.ab .hands { margin-top: 70px; } .ab .hands .card { padding: 80px 30px; }
+.ab .hands h3 { font-size: 52px; } .ab .hands p { font-size: 32px; }
+.ab .hands .tile { width: 140px; height: 140px; border-radius: 36px; margin-bottom: 34px; } .ab .hands .tile svg { width: 72px; height: 72px; }
+
+.qr { border:3px dashed #D2D2D7; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:700; color:var(--muted) }
+.qr.ok { border:0 }
+:root{--accent:#FBC605;--accent-ink:#8A6A00;--accent-soft:#FFF6D6;--accent-tint:rgba(251,198,5,.14);--on-accent:#1D1D1F;--accent-2:#F2B800;--serie-a:#E5B000;--serie-b:#1D1D1F;--serie-b-tint:rgba(29,29,31,.06)}
+.azul,.kicker em,.secao .eyebrow{color:var(--accent-ink)!important}
+.chip{background:var(--accent-soft);color:var(--accent-ink)}
+.laranja{color:var(--serie-b)}
+.ab .card.gold{box-shadow:var(--shadow),inset 0 0 0 2px var(--accent)}
+.ab svg .lab.red{fill:var(--down)}
+</style></head>
+<body><div id="palco">
+
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs center">
+<div class="kicker">MoneyFlix Tour · Lisboa</div>
+<h1>O que nunca nos ensinaram,<br><span class="hl">em 25 minutos.</span></h1>
+<p class="lead">Para quem nunca investiu, parou, ou quer rever o essencial.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">Quem está na sala?</div>
+<h2>Levanta a mão se…</h2>
+<div class="hands">
+<div class="card"><div class="tile" data-ico="pessoa" style="background:var(--accent-tint);color:var(--accent-ink)"></div><h3>Nunca investi</h3><p>nem um euro</p></div>
+<div class="card"><div class="tile" data-ico="pausa" style="background:var(--serie-b-tint);color:var(--serie-b)"></div><h3>Já experimentei</h3><p>e parei</p></div>
+<div class="card"><div class="tile" data-ico="grafico" style="background:#15803D14;color:#15803D"></div><h3>Invisto</h3><p>todos os meses</p></div></div></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">A manhã</div>
+<h2>O que vamos ver agora</h2>
+<ol class="steps three">
+<li><b>O dinheiro parado perde valor</b>Inflação e poder de compra</li>
+<li><b>Como arranjar dinheiro para investir</b>Pagar-se primeiro e fundo de emergência</li>
+<li><b>Juros compostos</b>Porque o tempo conta mais do que o valor</li>
+<li><b>O que se compra</b>Ações, ETFs e índices</li>
+<li><b>O risco</b>As quedas, e o que fazer com elas</li>
+<li><b>Erros comuns e um plano</b>E depois: o jogo</li>
+</ol></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs center"><div class="kicker">Uma regra antes de tudo</div>
+<h1>Isto é educação.<br><span class="muted">Não é aconselhamento.</span></h1>
+<p class="lead">Explicamos como as coisas funcionam. Cada um decide por si.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">1 · O dinheiro parado</div>
+<h2>Em 10 anos, 1.000 € passaram a comprar o que hoje compram <span class="hl">~800 €</span></h2>
+<div class="chartbox"><svg viewBox="0 0 1380 400" width="1380" height="400"><text x="80" y="20" class="ct">Quanto compram 1.000 € de 2015</text><line x1="80" x2="640" y1="305.8" y2="305.8" class="grid"/><text x="68" y="312.8" class="ax" text-anchor="end">800</text><line x1="80" x2="640" y1="185.0" y2="185.0" class="grid"/><text x="68" y="192.0" class="ax" text-anchor="end">900</text><line x1="80" x2="640" y1="64.2" y2="64.2" class="grid"/><text x="68" y="71.2" class="ax" text-anchor="end">1000</text><polygon points="80.0,64.2 80.0,64.2 136.0,71.9 192.0,90.2 248.0,103.9 304.0,107.4 360.0,105.9 416.0,116.8 472.0,203.5 528.0,256.9 584.0,283.3 640.0,304.5 640.0,64.2" fill="#FDECEC"/><polyline points="80.0,64.2 136.0,71.9 192.0,90.2 248.0,103.9 304.0,107.4 360.0,105.9 416.0,116.8 472.0,203.5 528.0,256.9 584.0,283.3 640.0,304.5" fill="none" stroke="#C62A2F" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="80.0" cy="64.2" r="8" fill="#C62A2F"/><text x="80.0" y="368" class="ax" text-anchor="middle">2015</text><circle cx="360.0" cy="105.9" r="8" fill="#C62A2F"/><text x="360.0" y="368" class="ax" text-anchor="middle">2020</text><circle cx="640.0" cy="304.5" r="8" fill="#C62A2F"/><text x="640.0" y="368" class="ax" text-anchor="middle">2025</text><text x="632.0" y="350.5" class="lab red" text-anchor="end">≈ 800 €</text><text x="780" y="20" class="ct">Inflação anual em Portugal (%)</text><line x1="780" x2="1340" y1="330" y2="330" class="grid"/><rect x="788.0" y="310.3" width="40.0" height="19.7" rx="5" style="fill:var(--accent)"/><text x="808.0" y="300.3" class="bl" text-anchor="middle">0.6</text><text x="808.0" y="362" class="ax" text-anchor="middle">16</text><rect x="844.0" y="282.2" width="40.0" height="47.8" rx="5" style="fill:var(--accent)"/><text x="864.0" y="272.2" class="bl" text-anchor="middle">1.6</text><text x="864.0" y="362" class="ax" text-anchor="middle">17</text><rect x="900.0" y="293.8" width="40.0" height="36.2" rx="5" style="fill:var(--accent)"/><text x="920.0" y="283.8" class="bl" text-anchor="middle">1.2</text><text x="920.0" y="362" class="ax" text-anchor="middle">18</text><rect x="956.0" y="320.8" width="40.0" height="9.2" rx="5" style="fill:var(--accent)"/><text x="976.0" y="310.8" class="bl" text-anchor="middle">0.3</text><text x="976.0" y="362" class="ax" text-anchor="middle">19</text><rect x="1012.0" y="328.5" width="40.0" height="1.5" rx="5" style="fill:var(--accent)"/><text x="1032.0" y="318.5" class="bl" text-anchor="middle">-0.1</text><text x="1032.0" y="362" class="ax" text-anchor="middle">20</text><rect x="1068.0" y="301.1" width="40.0" height="28.9" rx="5" style="fill:var(--accent)"/><text x="1088.0" y="291.1" class="bl" text-anchor="middle">0.9</text><text x="1088.0" y="362" class="ax" text-anchor="middle">21</text><rect x="1124.0" y="80.0" width="40.0" height="250.0" rx="5" fill="#C62A2F"/><text x="1144.0" y="70.0" class="bl" text-anchor="middle">8.1</text><text x="1144.0" y="362" class="ax" text-anchor="middle">22</text><rect x="1180.0" y="167.7" width="40.0" height="162.3" rx="5" fill="#C62A2F"/><text x="1200.0" y="157.7" class="bl" text-anchor="middle">5.3</text><text x="1200.0" y="362" class="ax" text-anchor="middle">23</text><rect x="1236.0" y="247.9" width="40.0" height="82.1" rx="5" style="fill:var(--accent)"/><text x="1256.0" y="237.9" class="bl" text-anchor="middle">2.7</text><text x="1256.0" y="362" class="ax" text-anchor="middle">24</text><rect x="1292.0" y="262.4" width="40.0" height="67.6" rx="5" style="fill:var(--accent)"/><text x="1312.0" y="252.4" class="bl" text-anchor="middle">2.2</text><text x="1312.0" y="362" class="ax" text-anchor="middle">25</text></svg></div>
+<div class="takeaway">O valor nominal não mudou. <b>O que ele compra, sim.</b> A inflação é a velocidade a que os preços sobem; o objetivo na Europa são 2 % ao ano.</div>
+<p class="src">Fonte: Eurostat, índice de preços (IHPC) de Portugal, média anual 2015–2025.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">A diferença</div>
+<div class="row" style="gap:40px;margin-top:40px">
+<div class="card big-card"><div class="kicker muted">Poupar</div><h2>é guardar.</h2><p>Indispensável: é o ponto de partida. Mas o dinheiro parado compra cada ano um pouco menos.</p></div>
+<div class="card big-card gold"><div class="kicker">Investir</div><h2>é pôr o dinheiro a crescer mais depressa do que a inflação.</h2><p>Em troca de aceitar que o valor sobe e desce pelo caminho.</p></div></div></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">2 · Como arranjar dinheiro para investir</div>
+<h2>Paga-te primeiro, todos os meses</h2>
+<div class="row" style="margin-top:44px;gap:36px">
+<div class="card" style="flex:1"><h3>No dia em que o salário entra</h3>
+<div class="flow"><div class="fbox">Salário</div><div class="farrow">→</div><div class="fbox gold">1.º: a tua fatia<br>para investir</div><div class="farrow">→</div><div class="fbox">O que sobra<br>para o mês</div></div>
+<p>Não é o que sobra no fim do mês: <b>sai logo, como uma conta a pagar.</b> Assim não depende de força de vontade.</p></div>
+<div class="card" style="flex:1.15"><h3>Investir o mesmo valor, todos os meses</h3>
+<div class="dca"><div class="dca-col"><div class="dca-price" style="height:110px"><span>10 €</span></div><div class="dca-units">10.0</div></div><div class="dca-col"><div class="dca-price" style="height:88px"><span>8 €</span></div><div class="dca-units">12.5</div></div><div class="dca-col"><div class="dca-price" style="height:55px"><span>5 €</span></div><div class="dca-units">20.0</div></div><div class="dca-col"><div class="dca-price" style="height:88px"><span>8 €</span></div><div class="dca-units">12.5</div></div><div class="dca-col"><div class="dca-price" style="height:110px"><span>10 €</span></div><div class="dca-units">10.0</div></div><div class="dca-col"><div class="dca-price" style="height:132px"><span>12 €</span></div><div class="dca-units">8.3</div></div></div>
+<div class="dca-legend"><span>Preço de cada unidade</span><span>Unidades compradas com 100 €</span></div>
+<p>Quando o preço desce, os mesmos 100 € compram <b>mais</b>; quando sobe, compram menos. Paga-se em média <b>8.18 €</b> por unidade, abaixo da média dos preços (8.83 €). É o <b>investimento regular</b> (<i>dollar cost average</i>).</p></div></div>
+<p class="src">Exemplo com preços inventados, só para ilustrar o mecanismo.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">2 · Dois montes que crescem em paralelo</div>
+<h2>Fundo de emergência e investimento: um mês de cada vez</h2>
+<div class="row" style="margin-top:40px;gap:36px">
+<div class="card" style="flex:.75"><h3>Fundo de emergência</h3><p>Dinheiro à mão para imprevistos: evita vender investimentos no pior momento.</p><div class="mini"><b>Arranca com 1.500 €</b> e cresce todos os meses.</div></div>
+<div class="card" style="flex:.75"><h3>Investimento</h3><p>Dinheiro que fica quieto muitos anos, a crescer com o tempo.</p><div class="mini"><b>Reforço mensal</b>, no dia do salário.</div></div>
+<div class="card" style="flex:1.5"><div class="bars sm" style="gap:40px;padding-left:0;height:360px"><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:158px"><span>2 100 €</span></div><div class="bar got" style="height:93px"><span>1 234 €</span></div></div><div class="bar-label">1 ano</div></div><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:202px"><span>2 700 €</span></div><div class="bar got" style="height:191px"><span>2 543 €</span></div></div><div class="bar-label">2 anos</div></div><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:248px"><span>3 300 €</span></div><div class="bar got" style="height:295px"><span>3 934 €</span></div></div><div class="bar-label">3 anos</div></div></div><div class="legend"><span><i style="background:#d2d2d7"></i>Fundo de emergência</span><span><i style="background:var(--accent)"></i>Investimento</span></div></div></div>
+<p class="src">Exemplo: fundo com 1.500 € + 50 €/mês; investimento com 100 €/mês a 6 % ao ano (taxa fixa, só para ilustrar). O dinheiro de que vais precisar nos próximos 3 anos não vai para a bolsa.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">3 · Juros compostos</div>
+<h2>O juro também rende juros</h2>
+<div class="row" style="margin-top:50px;gap:30px">
+<div class="card" style="flex:1"><div class="step-n">Ano 1</div><div class="big">100 €</div><p>rende 6 % → ganhas <b>6 €</b></p></div>
+<div class="card" style="flex:1"><div class="step-n">Ano 2</div><div class="big">106 €</div><p>rende 6 % → ganhas <b>6,36 €</b>: o juro do ano 1 também rendeu</p></div>
+<div class="card" style="flex:1"><div class="step-n">Ano 10</div><div class="big">179 €</div><p>sem acrescentar nada: <b>+79 %</b> em vez de +60 %</p></div></div>
+<div class="takeaway">Como uma bola de neve: cada volta apanha mais neve do que a anterior, porque a bola já é maior. Funciona com o dinheiro e com os hábitos: <b>quantias pequenas, com regularidade, durante muito tempo.</b></div>
+<p class="src">Exemplo com 6 % ao ano, taxa fixa. Não é uma previsão de rentabilidade.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">3 · Juros compostos</div>
+<h2>100 € por mês: o que puseste e o que tens</h2>
+<div class="bars"><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:39px"><span>12 000 €</span></div><div class="bar got" style="height:54px"><span>16 388 €</span></div></div><div class="bar-label">10 anos</div></div><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:79px"><span>24 000 €</span></div><div class="bar got" style="height:152px"><span>46 204 €</span></div></div><div class="bar-label">20 anos</div></div><div class="bar-group"><div class="bar-pair"><div class="bar put" style="height:118px"><span>36 000 €</span></div><div class="bar got" style="height:330px"><span>100 452 €</span></div></div><div class="bar-label">30 anos</div></div></div>
+<div class="legend"><span><i style="background:#d2d2d7"></i>Total que puseste</span><span><i style="background:var(--accent)"></i>O que tens, com 6 % ao ano</span></div>
+<div class="takeaway">Nos últimos anos, quem cresce já não és tu: é o dinheiro que lá está. <b>É por isso que o tempo conta mais do que o valor.</b></div>
+<p class="src">Exemplo: 100 €/mês, 6 % ao ano, taxa fixa. Não é uma promessa de rentabilidade.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">3 · O tempo</div>
+<h2>Começar 10 anos mais cedo duplica o resultado</h2>
+<div class="row" style="margin-top:50px;gap:40px">
+<div class="card" style="flex:1;text-align:center"><p>100 €/mês durante</p><h3 style="font-size:46px;margin:8px 0">30 anos</h3><div class="big">100 452 €</div><p style="margin-top:14px">36.000 € postos por ti</p></div>
+<div class="card gold" style="flex:1;text-align:center"><p>100 €/mês durante</p><h3 style="font-size:46px;margin:8px 0">40 anos</h3><div class="big">199 149 €</div><p style="margin-top:14px">48.000 € postos por ti</p></div></div>
+<div class="takeaway">Mais 10 anos custam mais 12.000 €, e <b>acrescentam quase 100.000 €</b>. O juro composto não está num produto: é um hábito, deixar o que o dinheiro rende a trabalhar.</div>
+<p class="src">Exemplo: 6 % ao ano, taxa fixa.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">4 · O que se compra</div>
+<h2>Uma ação é um pedacinho de uma empresa</h2>
+<div class="row" style="margin-top:50px;gap:30px">
+<div class="card" style="flex:1"><div class="step-n">1</div><h3>A empresa precisa de dinheiro</h3><p>Para crescer: contratar, vender mais, abrir mercados.</p></div>
+<div class="card" style="flex:1"><div class="step-n">2</div><h3>Divide-se em pedacinhos</h3><p>E vende-se esses pedacinhos a quem quiser ser dono de uma parte.</p></div>
+<div class="card gold" style="flex:1"><div class="step-n">3</div><h3>Quem compra é dono</h3><p>Quantas mais ações tens, maior é a tua parte. Se a empresa ganha, ganhas; se perde, perdes.</p></div></div>
+<div class="takeaway">Investir não é apostar no preço: é ser <b>dono</b> de empresas que vendem coisas reais.</div></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">4 · O que se compra</div>
+<h2>Escolher ações uma a uma: o caminho mais difícil</h2>
+<div class="row" style="margin-top:50px;gap:36px">
+<div class="card" style="flex:1"><h3>Tudo numa empresa</h3><div class="dots one"><i class="d bad"></i></div><div class="big red">−99 %</div><p>Se essa empresa correr mal, o teu dinheiro vai com ela.</p></div>
+<div class="card gold" style="flex:1"><h3>500 empresas</h3><div class="dots many"><i class="d bad"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i></div><div class="big">−0,2 %</div><p>Uma empresa a −99 % pesa 1/500 da carteira. Quase não se nota.</p></div></div>
+<div class="takeaway">É a ideia da <b>diversificação</b>: não pôr os ovos todos no mesmo cesto.</div>
+<p class="src">Exemplo com 500 empresas de peso igual: 99 % ÷ 500 ≈ 0,2 %.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs center"><div class="kicker">4 · O que se compra</div>
+<div class="row" style="align-items:center;gap:70px;margin-top:30px">
+<div class="tile" data-ico="carrinho" style="width:260px;height:260px;border-radius:64px;background:var(--accent-tint);color:var(--accent-ink)"></div>
+<div><h1>Um ETF é um<br>carrinho de supermercado</h1>
+<p class="lead">O carrinho é o ETF. As ações são os produtos lá dentro. Compras o carrinho e levas tudo de uma vez.</p>
+<p class="lead" style="margin-top:14px;font-size:28px">Há carrinhos pequenos e grandes; só de um tipo de produto ou com um bocadinho de tudo.</p></div></div></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">4 · O que se compra</div>
+<h2>O índice S&amp;P 500: as 500 maiores empresas americanas, «o mercado»</h2>
+<div class="row" style="margin-top:44px;gap:30px">
+<div class="card" style="flex:1"><h3>Maiores, não melhores</h3><p>O índice escolhe as maiores, não as que vão ser as melhores.</p></div>
+<div class="card" style="flex:1"><h3>Selecionador natural</h3><p>Uma empresa cresce e entra. Se encolher, sai e entra outra. Ninguém tem de decidir.</p></div>
+<div class="card gold" style="flex:1"><h3>É «a média»</h3><p>Perto de <b>10 % ao ano</b> em 100 anos, com dividendos, e com anos muito maus pelo meio.</p></div></div>
+<div class="takeaway">Um <b>ETF</b> segue um índice: é a forma de comprar «o mercado» de uma vez. Não se compra o índice; compra-se o carrinho que o segue.</div>
+<p class="src">As rentabilidades passadas não garantem rentabilidades futuras.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">4 · Como começar</div>
+<h2>Há três maneiras, e nenhuma é «a certa»</h2>
+<div class="row" style="margin-top:44px;gap:30px">
+<div class="card" style="flex:1"><div class="step-n">A</div><h3>Índice</h3><p>O carrinho inteiro. Simples: não tens de escolher nada.</p></div>
+<div class="card" style="flex:1"><div class="step-n">B</div><h3>Índice + ações escolhidas</h3><p>O carrinho como base e algumas empresas à tua escolha.</p></div>
+<div class="card" style="flex:1"><div class="step-n">C</div><h3>Ações escolhidas</h3><p>Mais potencial, mais oscilação e mais trabalho.</p></div></div>
+<div class="takeaway">Depende de três coisas: <b>quanto tempo tens</b>, <b>quanto aguentas ver cair</b> e <b>quanto gostas de acompanhar empresas</b>. Quase toda a gente que tenta fazer melhor do que o índice não consegue: é por isso que ele é o ponto de comparação.</div></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">5 · O risco</div>
+<h2>O mercado sobe aos solavancos. E voltou sempre.</h2>
+<div class="chartbox tall"><svg viewBox="0 0 1380 470" width="1380" height="470"><line x1="115.6" x2="115.6" y1="70" y2="400" class="grid"/><text x="115.6" y="434" class="ax" text-anchor="middle">2000</text><line x1="345.9" x2="345.9" y1="70" y2="400" class="grid"/><text x="345.9" y="434" class="ax" text-anchor="middle">2005</text><line x1="576.1" x2="576.1" y1="70" y2="400" class="grid"/><text x="576.1" y="434" class="ax" text-anchor="middle">2010</text><line x1="806.3" x2="806.3" y1="70" y2="400" class="grid"/><text x="806.3" y="434" class="ax" text-anchor="middle">2015</text><line x1="1036.5" x2="1036.5" y1="70" y2="400" class="grid"/><text x="1036.5" y="434" class="ax" text-anchor="middle">2020</text><line x1="1266.8" x2="1266.8" y1="70" y2="400" class="grid"/><text x="1266.8" y="434" class="ax" text-anchor="middle">2025</text><rect x="126.1" y="50" width="330.7" height="350" fill="#FDECEC"/><rect x="473.4" y="50" width="251.7" height="350" fill="#FDECEC"/><rect x="1042.7" y="50" width="22.8" height="350" fill="#FDECEC"/><rect x="1128.9" y="50" width="94.0" height="350" fill="#FDECEC"/><polyline points="70.0,353.6 70.5,348.0 71.3,355.5 72.1,352.7 72.9,351.8 73.7,349.5 74.4,351.7 74.9,353.3 75.8,352.2 76.6,351.5 77.3,353.6 78.1,347.4 78.8,344.2 79.3,345.2 80.1,346.2 80.8,346.7 81.7,342.0 82.5,339.5 83.2,346.3 83.7,338.7 84.5,340.2 85.3,339.7 86.0,338.8 86.8,340.6 87.3,341.6 88.0,347.2 88.9,345.1 89.7,343.0 90.4,344.9 91.2,339.6 91.7,343.3 92.4,336.1 93.3,334.6 94.1,334.2 94.8,336.5 95.6,339.7 96.1,341.8 96.9,343.5 97.6,344.9 98.4,340.1 99.1,338.3 99.6,339.6 100.4,342.9 101.3,339.7 102.0,343.0 102.8,344.2 103.5,347.0 104.0,347.1 104.8,343.1 105.5,346.7 106.3,349.6 107.1,345.8 107.6,338.0 108.3,338.0 109.1,336.9 109.8,331.9 110.6,331.8 111.5,333.2 112.0,330.5 112.7,333.1 113.5,332.6 114.2,330.5 115.1,328.0 115.9,328.2 116.4,329.7 117.1,328.8 118.0,329.2 118.8,333.6 119.5,333.0 120.3,331.4 120.8,335.4 121.6,335.3 122.4,339.1 123.2,336.2 124.0,338.8 124.7,335.8 125.2,327.3 126.0,321.0 126.7,322.9 127.5,324.2 128.2,323.3 128.7,338.7 129.5,330.4 130.4,327.2 131.1,332.4 131.9,332.7 132.7,328.5 133.2,333.3 133.9,336.0 134.8,328.9 135.6,326.6 136.3,326.8 137.1,325.1 137.6,329.6 138.3,329.6 139.2,328.1 140.0,324.4 140.7,324.3 141.5,327.3 142.0,331.9 142.7,328.5 143.5,326.4 144.2,325.3 145.0,323.8 145.5,323.1 146.3,322.0 147.1,323.5 147.9,325.2 148.7,327.8 149.4,329.9 149.9,330.2 150.7,330.2 151.4,337.8 152.2,339.4 152.9,334.5 153.5,336.2 154.2,331.0 155.0,333.0 155.7,335.8 156.5,340.3 157.4,339.6 157.9,343.3 158.6,340.2 159.4,338.3 160.1,344.4 161.0,343.3 161.9,347.0 162.7,345.6 163.2,343.0 164.0,340.3 164.8,338.6 165.6,337.7 166.3,339.2 167.1,341.6 167.6,344.9 168.5,351.4 169.2,352.0 170.0,349.5 170.7,357.3 171.5,360.7 172.0,364.7 172.7,363.7 173.5,369.6 174.3,361.0 175.1,358.1 175.9,354.0 176.4,350.6 177.1,351.1 177.9,350.3 178.7,351.0 179.4,343.6 179.9,347.6 180.8,349.7 181.6,347.7 182.3,351.9 183.1,355.5 183.8,354.7 184.3,354.0 185.2,358.2 186.0,356.0 186.7,356.1 187.5,360.6 188.2,356.5 188.7,355.3 189.5,359.1 190.3,359.8 191.0,362.4 191.8,359.6 192.3,365.5 193.2,372.0 194.7,381.9 195.4,382.4 196.2,378.6 196.7,374.0 197.4,370.4 198.2,373.2 199.0,372.1 199.7,373.0 200.2,371.8 201.0,367.5 201.7,364.5 202.5,364.3 203.4,363.5 204.1,366.0 204.6,362.3 205.4,367.4 206.1,363.4 207.0,363.5 207.9,362.8 208.7,362.0 209.4,364.9 209.9,366.3 210.8,365.6 211.6,366.0 212.3,372.3 213.1,369.0 214.0,372.3 214.7,368.8 215.2,365.8 216.0,362.4 216.7,362.9 217.5,360.8 218.2,365.8 219.1,363.8 219.6,367.0 220.4,369.5 221.1,366.5 221.9,369.9 222.7,374.8 223.2,373.7 223.9,373.7 224.7,371.2 225.4,372.8 226.3,373.5 227.1,378.3 227.6,380.2 228.3,382.8 229.1,381.3 229.8,387.9 230.6,389.0 231.5,387.7 232.0,396.5 232.7,403.1 233.5,409.7 234.3,399.5 235.0,411.3 235.5,398.6 236.3,395.1 237.0,392.0 237.8,394.3 238.7,403.7 239.4,399.5 239.9,401.7 240.7,409.7 241.4,410.4 242.2,408.9 243.0,420.4 243.5,411.1 244.2,403.5 245.0,400.6 245.7,403.0 246.5,398.6 247.0,400.9 247.7,399.3 248.5,397.7 249.3,397.8 250.1,396.6 250.9,401.3 251.4,401.8 252.2,402.6 253.0,401.7 253.9,398.5 254.7,398.4 255.4,394.8 256.3,402.1 257.1,409.0 257.6,407.5 258.3,410.6 259.1,414.1 260.0,409.4 260.7,410.6 261.5,411.2 262.0,412.3 262.7,411.8 263.5,404.4 264.3,404.3 265.0,408.9 265.5,403.6 266.3,404.8 267.0,403.4 267.9,396.9 268.7,397.1 269.4,395.7 269.9,394.6 270.7,392.4 271.4,396.2 272.3,391.4 273.1,388.6 273.8,387.9 274.3,386.0 275.1,385.1 275.9,388.0 276.6,386.9 277.5,383.1 278.2,383.7 278.8,385.3 279.5,387.0 280.3,386.1 281.0,389.5 281.8,387.2 282.3,385.7 283.0,383.8 283.8,384.7 284.7,380.4 285.4,380.8 286.2,382.1 286.7,378.9 287.5,383.8 288.2,381.6 289.0,378.5 289.7,377.6 290.2,378.5 291.0,379.3 291.7,377.2 292.5,376.5 293.2,377.4 293.8,376.9 294.5,379.3 295.3,375.8 296.1,374.9 296.9,375.5 297.7,374.4 298.2,371.6 299.0,370.6 299.9,368.9 300.7,365.8 301.4,365.9 302.3,363.7 303.1,364.2 303.8,365.3 304.3,364.3 305.1,363.1 306.0,363.8 306.7,364.2 307.5,363.5 308.3,363.8 308.8,367.3 309.5,367.0 310.3,371.2 311.0,366.4 311.8,363.3 312.7,364.0 313.2,365.4 313.9,364.7 314.7,367.0 315.4,367.4 316.2,371.8 316.7,370.6 317.5,371.5 318.2,368.0 319.1,366.7 319.8,364.4 320.7,365.7 321.5,366.0 322.0,365.4 322.7,366.2 323.6,368.8 324.4,368.5 325.1,368.9 325.9,372.2 326.4,369.8 327.2,372.7 327.9,373.4 328.7,372.5 329.4,370.6 329.9,369.0 330.7,367.6 331.6,367.6 332.3,367.3 333.1,366.1 333.8,369.6 334.3,365.8 335.1,365.9 335.9,368.2 336.6,369.6 337.4,370.7 337.9,366.0 338.6,361.9 339.4,361.7 340.1,360.1 340.9,359.9 341.8,359.7 342.3,358.1 343.0,358.4 343.8,356.3 344.6,356.4 345.4,355.4 346.2,356.8 346.7,358.8 347.5,359.9 348.3,360.1 349.1,360.3 349.9,358.4 350.6,356.8 351.1,356.4 351.9,356.9 352.7,357.0 353.5,355.8 354.3,354.6 355.0,356.2 355.5,358.3 356.3,360.6 357.2,359.5 357.9,359.0 358.7,358.6 359.4,363.9 359.9,363.1 360.7,364.3 361.4,360.1 362.2,361.3 363.0,361.4 363.5,358.4 364.2,357.3 365.1,356.5 365.9,357.7 366.6,356.5 367.4,355.0 367.9,358.1 368.6,358.1 369.5,357.3 370.3,354.2 371.0,353.4 371.8,353.5 372.3,352.8 373.0,352.6 373.8,353.5 374.6,354.6 375.3,354.4 375.8,356.4 376.6,354.4 377.5,353.1 378.2,353.7 379.0,354.4 379.7,355.1 380.2,353.5 381.0,358.1 381.7,359.8 382.5,359.8 383.3,357.1 383.8,357.2 384.5,354.6 385.3,354.5 386.0,353.5 386.8,350.4 387.7,350.0 388.2,349.1 388.9,350.2 389.7,348.2 390.4,349.8 391.3,350.2 392.2,348.7 393.0,346.2 393.5,346.5 394.3,349.6 395.1,348.1 395.9,347.1 396.6,350.4 397.4,349.4 397.9,346.6 398.8,346.3 399.5,346.3 400.3,347.6 401.0,345.4 401.8,344.5 402.3,344.7 403.0,345.0 403.8,343.8 404.6,346.6 405.4,344.2 406.2,344.1 406.7,343.9 407.5,343.7 408.2,342.5 409.0,346.0 409.7,349.5 410.2,347.4 411.1,346.4 411.9,350.0 412.6,353.3 413.4,352.1 414.1,350.9 414.6,348.5 415.5,349.1 416.3,351.9 417.0,349.8 417.8,348.7 418.6,347.8 419.1,347.5 419.8,348.4 420.6,345.6 421.3,345.2 422.1,344.9 422.6,343.8 423.5,345.2 424.2,343.2 425.0,342.2 425.7,341.0 426.5,341.5 427.0,339.5 427.8,338.0 428.5,337.7 429.3,336.4 430.0,336.4 430.5,337.9 431.3,336.3 432.0,334.4 432.8,333.7 433.7,335.4 434.4,333.0 434.9,333.0 435.7,331.3 436.5,331.5 437.3,331.2 438.3,332.1 439.1,332.4 440.0,330.8 440.7,331.1 441.5,331.8 442.0,328.9 442.8,328.9 443.5,328.2 444.4,328.0 445.2,334.1 445.9,336.8 446.4,333.7 447.2,334.8 447.9,330.3 448.7,331.0 449.4,331.4 450.3,329.3 450.8,328.5 451.6,326.6 452.3,324.2 453.1,325.1 453.8,322.8 454.4,323.1 455.1,322.4 455.9,321.5 456.7,320.7 457.5,320.7 458.3,322.8 458.8,320.5 459.5,321.5 460.3,323.1 461.0,321.2 461.9,322.7 462.7,318.9 463.2,320.3 463.9,325.4 464.7,327.1 465.4,326.0 466.2,328.5 466.7,329.2 467.5,327.5 468.2,327.4 469.1,326.5 469.9,326.6 470.6,326.0 471.1,321.2 471.9,320.6 472.6,319.8 473.4,317.4 474.1,318.9 474.6,323.6 475.4,322.3 476.2,318.9 476.9,321.7 477.7,329.9 478.2,327.9 479.1,329.7 479.8,326.8 480.6,325.2 481.3,325.9 482.1,329.2 482.6,325.3 483.5,325.9 484.4,332.8 485.1,331.9 485.9,336.9 486.8,340.7 487.5,338.1 488.3,336.1 488.8,341.5 489.5,339.6 490.4,340.3 491.2,336.2 491.9,342.0 492.7,348.2 493.2,346.4 493.9,341.7 494.8,342.1 495.6,337.5 496.3,337.7 497.1,341.9 497.6,335.0 498.3,335.2 499.1,335.6 499.9,332.1 500.6,333.6 501.1,331.3 501.9,334.6 502.8,334.2 503.5,336.5 504.3,338.5 505.0,338.3 505.5,343.0 506.3,347.0 507.0,349.6 507.9,351.6 508.7,355.2 509.4,349.7 509.9,350.0 510.7,348.9 511.5,346.3 512.2,346.3 513.0,347.6 513.5,346.0 514.2,345.0 515.1,352.5 515.9,353.1 516.6,355.3 517.4,356.2 517.9,355.4 518.6,368.1 519.4,386.5 520.2,384.6 520.9,386.5 521.4,403.9 522.2,391.3 522.9,391.5 523.7,400.2 524.4,408.4 524.9,417.6 525.8,400.6 526.6,409.4 527.3,400.1 528.1,397.8 528.9,404.8 529.7,405.2 530.6,395.5 531.1,401.6 531.9,409.6 532.8,412.5 533.5,404.4 534.3,410.6 535.0,405.1 535.5,412.7 536.4,423.3 537.2,426.7 537.9,434.8 538.7,433.4 539.4,426.5 539.9,423.6 540.7,411.6 541.5,415.5 542.2,414.7 543.1,410.0 543.9,411.7 544.4,405.7 545.1,404.6 545.9,396.8 546.6,398.6 547.4,398.4 547.9,402.2 548.8,396.9 549.5,393.1 550.3,393.6 551.0,398.0 551.8,401.2 552.3,396.9 553.1,400.6 553.9,402.9 554.7,394.7 555.5,391.2 556.2,386.9 556.7,386.1 557.5,384.7 558.2,383.4 559.0,385.8 559.7,380.5 560.2,380.0 561.0,383.8 561.9,377.8 562.6,374.3 563.4,373.9 564.2,375.1 564.7,380.5 565.4,374.8 566.2,371.1 566.9,371.2 567.7,374.6 568.2,379.0 568.9,374.6 569.7,370.2 570.5,368.6 571.2,369.2 572.1,370.6 572.6,369.2 573.4,369.7 574.1,368.8 574.9,367.6 575.7,366.5 576.6,365.2 577.4,363.8 577.9,365.2 578.8,371.2 579.5,372.1 580.3,370.4 581.0,374.1 581.9,370.7 582.7,368.9 583.2,369.4 583.9,366.9 584.7,364.0 585.5,362.2 586.2,361.4 586.7,361.3 587.5,359.8 588.4,358.7 589.1,355.7 589.9,356.1 590.6,355.5 591.1,358.7 591.9,366.3 592.6,360.6 593.4,367.2 594.2,373.7 594.7,371.5 595.5,374.9 596.3,371.8 597.1,368.1 597.8,370.7 598.6,373.5 599.1,380.9 600.0,373.1 600.7,370.5 601.5,374.2 602.2,368.2 603.0,366.6 603.5,367.1 604.2,372.3 605.0,370.8 605.7,376.7 606.5,377.1 607.0,369.4 607.9,368.7 608.6,366.7 609.4,365.4 610.2,363.7 610.9,365.1 611.4,361.4 612.2,360.3 612.9,359.8 613.7,358.8 614.4,359.0 615.0,353.8 615.7,355.4 616.5,359.7 617.2,359.5 618.1,359.5 618.9,354.2 619.4,352.1 620.1,351.8 620.9,349.9 621.8,349.8 622.5,348.5 623.3,348.6 623.8,345.9 624.7,347.0 625.4,345.1 626.2,344.6 626.9,342.3 627.7,341.4 628.2,340.2 629.1,342.8 629.8,341.6 630.6,342.8 631.3,347.2 632.1,345.3 632.6,343.5 633.4,342.1 634.1,341.0 634.9,343.5 635.6,344.5 636.5,341.1 637.0,337.9 637.8,341.1 638.5,340.3 639.3,341.8 640.0,343.1 640.5,341.5 641.4,345.1 642.2,346.3 642.9,349.1 643.7,345.6 644.4,347.4 645.0,340.6 645.8,340.1 646.6,344.1 647.3,342.1 648.1,341.5 648.9,346.6 649.4,357.1 650.1,360.5 650.9,357.8 651.6,361.8 652.4,355.8 652.9,360.3 653.8,362.8 654.5,355.9 655.3,361.2 656.0,360.1 656.8,370.1 657.3,362.7 658.1,356.6 658.8,355.8 659.6,353.5 660.3,350.5 660.8,350.6 661.6,352.2 662.3,352.5 663.1,358.5 664.0,357.6 664.7,350.1 665.2,350.3 666.0,355.1 666.8,351.7 667.6,351.0 668.5,347.7 669.3,346.0 670.2,345.8 670.9,343.3 671.4,343.2 672.2,342.2 672.9,339.4 673.7,339.4 674.6,338.1 675.3,337.5 675.8,337.3 676.6,337.7 677.4,334.6 678.1,333.4 678.9,332.3 679.4,333.1 680.1,334.2 681.0,335.3 681.8,335.6 682.5,337.0 683.3,334.2 683.8,337.3 684.5,338.6 685.3,342.3 686.0,343.2 686.9,341.4 687.7,347.6 688.2,342.2 688.9,341.8 689.7,338.8 690.5,342.8 691.2,337.7 692.1,339.2 692.6,338.7 693.4,336.5 694.1,340.8 694.9,336.2 695.6,334.6 696.1,333.4 696.9,332.4 697.6,332.6 698.4,333.0 699.3,333.5 700.0,330.9 700.5,327.2 701.3,327.7 702.1,330.5 702.8,329.2 703.6,328.2 704.1,331.0 704.8,328.0 705.6,333.1 706.6,331.1 707.4,334.6 708.1,336.8 708.9,335.4 709.7,333.3 710.3,332.3 711.0,332.5 711.8,331.0 712.5,329.1 713.3,331.2 714.2,331.2 715.0,327.5 715.5,326.5 716.3,325.6 717.2,324.2 717.9,323.5 718.7,322.6 719.5,322.0 720.0,321.7 720.8,322.2 721.6,322.3 722.4,319.6 723.1,318.6 723.9,318.6 724.4,318.1 725.1,317.0 726.0,317.8 726.8,315.2 727.5,316.5 728.3,317.6 728.8,315.7 729.5,314.3 730.3,311.0 731.1,309.4 731.8,308.0 732.3,309.5 733.2,311.2 734.0,312.0 734.7,312.9 735.5,309.3 736.2,316.6 736.7,313.5 737.6,311.1 738.4,307.2 739.1,306.7 739.9,305.7 740.6,306.3 741.1,304.2 741.9,305.2 742.6,306.3 743.4,309.3 744.2,308.9 744.7,311.0 745.5,309.0 746.3,306.5 747.1,302.8 747.8,305.2 748.6,306.6 749.1,305.8 749.8,305.7 750.6,303.1 751.3,300.3 752.1,299.7 752.6,299.7 753.4,300.9 754.1,298.0 754.9,297.5 755.6,296.3 756.5,296.4 757.0,296.1 757.8,298.5 758.5,295.6 759.3,293.7 760.2,292.5 761.1,293.4 761.8,294.9 762.3,293.3 763.2,297.3 764.0,297.0 764.7,300.5 765.5,294.8 766.3,293.1 767.1,292.6 767.6,291.6 768.4,290.2 769.1,290.9 769.9,290.6 770.6,291.8 771.1,291.8 771.9,289.3 772.7,290.6 773.4,293.0 774.3,290.0 775.0,290.8 775.6,289.9 776.3,290.3 777.1,289.3 777.8,290.6 778.7,287.5 779.5,286.4 780.0,284.6 780.7,286.1 781.5,284.0 782.2,284.5 783.0,283.7 783.9,282.4 784.4,283.2 785.1,283.9 785.9,281.7 786.6,283.0 787.4,285.4 787.9,285.9 788.7,284.1 789.4,281.7 790.2,280.7 791.1,280.6 791.8,280.6 792.3,281.8 793.1,279.9 793.8,280.9 794.6,282.8 795.3,283.4 795.8,287.9 796.6,291.4 797.4,286.3 798.1,281.9 798.9,279.4 799.4,278.4 800.1,277.8 800.9,277.1 801.6,275.8 802.5,275.8 803.3,276.3 803.8,280.6 804.5,276.2 805.3,274.7 806.2,276.4 807.1,278.8 807.8,279.0 808.7,279.1 809.5,276.5 810.0,281.1 810.7,276.1 811.5,275.7 812.4,273.5 813.1,272.4 813.9,272.2 814.4,275.5 815.1,275.9 815.9,273.5 816.6,274.1 817.4,274.4 818.3,274.8 818.8,273.3 819.5,273.1 820.3,272.9 821.1,272.4 821.8,272.4 822.3,272.3 823.1,272.0 823.8,271.6 824.7,271.8 825.5,272.8 826.2,274.9 826.7,273.9 827.5,271.9 828.2,272.8 829.0,276.1 829.9,274.8 830.6,273.5 831.1,271.6 831.9,273.3 832.7,272.8 833.4,273.9 834.2,273.2 834.7,274.1 835.4,278.1 836.2,285.2 836.9,287.3 837.8,283.0 838.6,284.3 839.1,283.9 839.8,285.9 840.6,286.8 841.4,282.2 842.1,279.4 842.6,278.3 843.4,276.9 844.1,274.1 844.9,272.8 845.6,275.0 846.1,279.0 846.9,274.8 847.7,274.2 848.5,274.9 849.3,276.1 850.1,279.1 850.6,280.3 851.3,276.3 852.2,277.5 853.1,285.1 853.8,289.2 854.7,291.6 855.5,288.1 856.2,285.3 856.7,290.0 857.5,294.1 858.4,287.0 859.1,286.1 859.9,282.4 860.6,280.6 861.1,279.1 861.9,277.7 862.7,278.0 863.5,276.0 864.3,277.4 865.1,277.6 865.6,274.8 866.3,274.1 867.1,273.8 867.8,276.1 868.6,276.4 869.1,277.3 869.8,277.8 870.6,274.1 871.5,273.5 872.2,272.6 873.0,274.9 873.5,275.5 874.3,272.5 875.0,275.5 875.9,273.5 876.6,269.8 877.4,268.8 877.9,268.2 878.7,268.6 879.4,269.0 880.2,267.7 880.9,267.2 881.4,267.6 882.2,268.4 883.0,268.5 883.8,267.4 884.6,271.5 885.3,270.7 885.9,268.9 886.6,269.9 887.4,269.3 888.1,270.9 888.9,271.6 889.4,270.6 890.1,271.1 890.9,273.6 891.7,270.7 892.4,269.0 892.9,267.7 893.8,265.6 894.5,267.1 895.3,263.7 896.1,261.7 896.8,262.3 897.3,262.2 898.2,263.9 899.1,261.4 899.8,261.8 900.7,262.2 901.5,260.0 902.2,261.2 903.0,260.3 903.5,258.8 904.3,256.8 905.1,255.8 905.9,253.8 906.7,255.5 907.4,255.2 907.9,254.9 908.7,256.9 909.4,255.9 910.2,256.0 910.9,256.2 911.8,256.7 912.3,256.7 913.1,254.2 913.8,254.2 914.6,253.7 915.3,253.4 915.9,254.6 916.6,252.6 917.5,251.6 918.2,251.5 919.0,251.0 919.8,250.2 920.3,251.1 921.0,252.3 921.9,252.9 922.7,250.8 923.4,249.8 924.2,249.2 924.7,249.1 925.4,249.1 926.2,249.0 926.9,249.5 927.7,251.8 928.2,250.9 929.0,249.1 929.8,249.5 930.6,247.5 931.4,247.0 932.1,247.6 932.6,246.3 933.4,244.3 934.1,244.1 934.9,243.9 935.6,243.6 936.1,242.6 936.9,242.7 937.7,241.9 938.4,242.8 939.2,242.6 940.1,241.5 940.6,239.1 941.3,239.4 942.1,238.0 942.8,236.9 943.7,237.0 944.6,236.1 945.4,233.3 945.9,231.2 946.7,229.9 947.5,228.4 948.3,229.2 949.0,236.2 949.8,238.4 950.3,234.1 951.2,233.3 951.9,237.2 952.7,234.4 953.4,232.3 954.2,235.2 954.7,242.2 955.4,239.2 956.3,238.0 957.1,239.1 957.8,235.6 958.6,237.6 959.1,237.6 959.8,239.9 960.6,236.0 961.4,235.3 962.1,234.1 962.6,234.7 963.5,234.0 964.3,232.1 965.0,231.8 965.8,232.5 966.5,235.0 967.0,234.9 967.9,232.6 968.7,230.6 969.4,229.7 970.2,229.4 970.9,230.3 971.4,228.3 972.2,227.7 973.0,229.5 973.7,227.2 974.5,225.4 975.0,225.2 975.9,226.7 976.6,225.0 977.4,224.8 978.1,224.4 978.9,224.0 979.4,226.0 980.1,234.4 980.9,230.0 981.7,233.7 982.4,239.2 982.9,234.6 983.7,230.1 984.4,235.8 985.2,239.2 986.1,236.9 986.8,231.0 987.7,239.4 988.2,241.6 989.0,249.4 989.9,248.1 990.7,250.6 991.5,242.4 992.2,241.0 993.1,239.7 993.9,239.1 994.4,235.6 995.1,235.6 995.9,233.0 996.8,231.3 997.5,230.8 998.3,230.9 998.8,233.6 999.6,230.0 1000.3,229.2 1001.1,229.5 1001.8,226.9 1002.3,225.6 1003.1,225.8 1003.8,225.2 1004.7,223.8 1005.5,222.9 1006.2,223.6 1006.7,226.2 1007.5,226.5 1008.3,227.5 1009.1,231.4 1009.9,230.3 1010.6,225.9 1011.2,225.9 1011.9,222.5 1012.7,224.5 1013.4,221.5 1014.3,221.2 1015.1,219.5 1015.6,221.3 1016.3,220.0 1017.1,221.2 1017.8,226.2 1018.6,226.1 1019.1,225.8 1019.9,224.1 1020.6,225.9 1021.5,223.3 1022.2,221.2 1023.0,220.3 1023.5,220.6 1024.3,221.3 1025.0,225.9 1025.8,225.6 1026.5,221.9 1027.0,220.9 1027.8,219.7 1028.6,217.9 1029.3,216.5 1030.1,215.9 1030.6,214.3 1031.3,215.1 1032.1,212.7 1033.0,214.7 1033.7,213.7 1034.5,210.9 1035.0,209.6 1035.9,208.7 1036.7,208.9 1037.5,207.1 1038.3,206.4 1039.1,205.0 1039.9,207.0 1040.7,208.3 1041.2,204.7 1041.9,202.6 1042.8,202.7 1043.6,214.5 1044.3,220.0 1045.1,233.4 1045.6,235.3 1046.3,252.9 1047.1,248.9 1047.8,242.4 1048.6,237.9 1049.5,232.5 1050.0,226.6 1050.7,230.6 1051.5,223.2 1052.2,226.9 1053.0,223.7 1053.5,227.1 1054.3,222.8 1055.1,218.7 1055.9,214.2 1056.7,210.2 1057.4,216.9 1057.9,215.4 1058.7,216.1 1059.4,214.5 1060.3,212.0 1061.1,210.7 1061.8,208.1 1062.3,209.8 1063.1,208.4 1063.8,204.7 1064.6,204.4 1065.4,202.3 1065.9,201.6 1066.6,197.8 1067.4,193.7 1068.3,201.5 1069.0,201.4 1069.8,206.8 1070.3,206.0 1071.0,202.3 1071.8,200.6 1072.5,196.6 1073.3,200.3 1073.8,198.6 1074.6,205.5 1075.3,199.6 1076.1,195.2 1076.8,191.8 1077.3,194.7 1078.2,191.4 1079.0,190.2 1079.7,190.0 1080.5,189.1 1081.2,189.1 1082.1,187.4 1083.0,188.8 1083.5,183.9 1084.3,185.0 1085.2,182.8 1085.9,186.8 1086.7,183.8 1087.4,180.4 1087.9,179.7 1088.8,180.7 1089.6,183.7 1090.3,184.1 1091.1,181.9 1091.8,178.4 1092.3,180.5 1093.1,180.6 1093.8,178.2 1094.7,174.3 1095.5,172.0 1096.2,171.2 1096.7,170.6 1097.5,169.5 1098.3,171.1 1099.0,171.6 1099.8,171.2 1100.3,171.5 1101.0,169.9 1101.9,170.2 1102.7,169.2 1103.4,168.3 1104.2,169.0 1104.7,167.1 1105.4,165.7 1106.3,165.7 1107.1,163.9 1107.8,165.6 1108.6,162.2 1109.1,163.1 1109.9,162.0 1110.6,161.5 1111.4,161.4 1112.1,160.3 1112.6,159.3 1113.4,158.4 1114.3,159.8 1115.0,160.3 1115.8,164.5 1116.5,161.5 1117.0,164.4 1117.8,163.0 1118.6,164.2 1119.3,159.0 1120.1,157.4 1120.6,156.2 1121.3,153.8 1122.1,154.8 1122.8,153.1 1123.6,153.7 1124.5,154.6 1125.0,158.4 1125.7,154.2 1126.5,152.8 1127.3,154.7 1128.1,150.4 1128.9,150.1 1129.4,153.9 1130.2,154.4 1131.0,160.2 1131.8,164.7 1132.5,158.1 1133.3,160.2 1133.8,162.3 1134.6,163.6 1135.4,166.8 1136.2,163.4 1137.0,171.0 1137.7,170.9 1138.2,160.9 1139.0,159.0 1139.7,156.3 1140.5,158.8 1141.2,162.6 1142.1,163.3 1142.6,167.4 1143.4,166.8 1144.1,166.4 1144.9,177.2 1145.7,176.9 1146.2,180.9 1146.9,175.1 1147.8,170.8 1148.6,173.0 1149.3,187.4 1150.2,186.3 1151.0,181.0 1151.5,183.9 1152.3,181.0 1153.1,185.3 1153.9,178.7 1154.6,180.2 1155.4,172.8 1155.9,171.9 1156.6,169.7 1157.4,167.3 1158.1,172.5 1158.9,176.1 1159.4,180.1 1160.3,174.7 1161.0,180.9 1161.8,185.3 1162.6,191.0 1163.3,189.7 1163.8,191.3 1164.6,190.1 1165.3,189.1 1166.1,182.6 1166.8,182.1 1167.3,186.0 1168.1,178.9 1168.9,178.8 1169.6,177.1 1170.5,178.8 1171.2,177.3 1171.8,179.7 1172.5,181.2 1173.3,181.8 1174.1,185.5 1175.0,182.8 1175.8,180.3 1176.7,177.6 1177.4,176.5 1177.9,174.6 1178.7,170.6 1179.4,172.9 1180.2,172.2 1181.1,177.3 1181.8,177.9 1182.3,175.5 1183.1,180.3 1183.9,181.3 1184.6,177.1 1185.4,178.1 1185.9,173.2 1186.6,173.3 1187.5,171.9 1188.3,171.6 1189.0,174.6 1189.8,171.1 1190.3,172.2 1191.0,172.4 1191.8,171.4 1192.6,171.9 1193.4,169.7 1194.2,167.3 1194.7,166.5 1195.5,162.1 1196.3,163.6 1197.1,163.8 1198.0,161.4 1198.7,161.7 1199.5,158.9 1200.0,158.4 1200.7,158.4 1201.5,159.2 1202.3,159.6 1203.0,160.0 1203.5,164.0 1204.3,163.8 1205.0,159.1 1205.9,160.8 1206.7,160.9 1207.4,161.2 1207.9,165.7 1208.7,166.4 1209.4,167.7 1210.2,164.4 1211.0,163.9 1211.5,169.1 1212.2,172.2 1213.0,168.6 1213.7,163.7 1214.5,162.6 1215.0,159.2 1215.9,157.7 1216.6,157.4 1217.4,158.0 1218.1,154.9 1218.9,151.8 1219.4,151.4 1220.3,150.9 1221.2,153.2 1221.9,150.6 1222.8,150.6 1223.6,147.9 1224.3,146.1 1225.1,145.6 1225.6,143.1 1226.3,143.0 1227.2,141.3 1228.0,141.8 1228.7,141.6 1229.5,140.4 1230.0,140.4 1230.7,136.8 1231.5,136.6 1232.4,137.7 1233.1,137.7 1233.9,142.1 1234.4,144.9 1235.2,142.4 1235.9,143.3 1236.7,138.4 1237.4,137.4 1237.9,135.1 1238.7,136.1 1239.6,137.0 1240.3,133.7 1241.1,133.1 1241.8,130.4 1242.7,131.1 1243.2,130.7 1244.1,127.8 1244.9,127.4 1245.6,127.3 1246.4,128.1 1247.1,130.6 1247.6,133.9 1248.4,134.6 1249.2,130.9 1249.9,127.0 1250.7,126.5 1251.2,125.7 1252.1,132.2 1252.8,127.1 1253.6,126.5 1254.3,123.5 1255.1,122.7 1255.6,123.0 1256.3,122.2 1257.1,120.6 1257.9,120.4 1258.6,121.1 1259.1,123.6 1259.9,117.3 1260.6,117.0 1261.4,118.7 1262.1,117.0 1263.0,115.5 1263.5,114.4 1264.3,115.4 1265.0,119.9 1265.8,115.7 1266.7,119.6 1267.6,118.9 1268.4,120.6 1269.3,115.4 1270.1,116.3 1270.6,115.6 1271.3,114.6 1272.1,115.4 1273.0,113.1 1273.7,117.8 1274.5,120.4 1275.0,122.5 1275.8,129.1 1276.5,125.0 1277.3,122.3 1278.0,126.6 1278.5,141.7 1279.3,136.1 1280.0,135.9 1280.9,133.1 1281.7,128.0 1282.4,125.6 1282.9,125.4 1283.7,118.7 1284.4,120.6 1285.3,119.5 1286.1,117.4 1286.8,116.5 1287.3,117.2 1288.2,117.5 1289.0,113.2 1289.7,111.1 1290.6,110.2 1291.4,110.7 1292.1,109.2 1292.6,107.3 1293.4,108.4 1294.2,108.3 1294.9,106.0 1295.7,105.9 1296.2,105.5 1296.9,104.7 1297.8,104.7 1298.6,104.0 1299.3,102.3 1300.1,100.3 1300.6,101.4 1301.3,99.8 1302.1,99.0 1302.9,101.4 1303.6,99.4 1304.1,98.1 1304.9,97.5 1305.6,98.0 1306.4,96.9 1307.1,100.8 1307.6,102.4 1308.5,96.9 1309.3,96.7 1310.0,96.1 1310.8,98.0 1311.6,96.2 1312.4,95.7 1313.3,95.7 1313.8,94.4 1314.6,94.8 1315.5,95.5 1316.2,94.1 1317.0,95.4 1317.7,94.4 1318.2,97.2 1319.1,95.6 1319.9,95.6 1320.6,96.4 1321.4,98.4 1322.1,100.2 1322.6,104.6 1323.4,105.2 1324.2,103.0 1325.0,98.3 1325.8,94.3 1326.6,91.3 1327.1,90.2 1327.8,89.2 1328.6,86.0 1329.3,85.3 1330.1,85.3 1330.6,83.9 1331.5,81.7 1332.2,81.7 1333.0,88.0 1333.7,83.1 1334.6,86.0 1335.4,84.5 1336.3,82.6 1336.8,81.8 1337.5,82.7 1338.3,83.3 1339.0,84.8 1339.8,81.3 1340.3,78.3 1341.0,77.5 1341.8,79.2 1342.6,79.8 1343.3,79.7 1343.8,79.0 1344.7,80.2 1345.5,80.6 1346.2,79.3 1347.0,80.0 1347.7,78.0 1348.2,77.2 1349.0,78.5 1349.7,78.3 1350.0,80.9" fill="none" stroke="#1d1d1f" stroke-width="3.5" stroke-linejoin="round"/><circle cx="243.2" cy="422.0" r="7" fill="#C62A2F"/><circle cx="538.6" cy="442.6" r="7" fill="#C62A2F"/><circle cx="1046.8" cy="264.0" r="7" fill="#C62A2F"/><circle cx="1164.4" cy="193.9" r="7" fill="#C62A2F"/></svg></div>
+<div class="crisis-row">
+<div><b>2000–02</b><span class="red">−49 %</span><em>recuperou em 7 anos</em></div>
+<div><b>2007–09</b><span class="red">−57 %</span><em>recuperou em 5,5 anos</em></div>
+<div><b>2020</b><span class="red">−34 %</span><em>recuperou em 6 meses</em></div>
+<div><b>2022</b><span class="red">−25 %</span><em>recuperou em 2 anos</em></div></div>
+<p class="src">S&amp;P 500 (escala logarítmica), 1999–2026. Queda do máximo ao mínimo e tempo até regressar ao máximo anterior; só preço, sem dividendos.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">5 · O risco</div>
+<h2>A queda só é perda se venderes</h2>
+<div class="row" style="margin-top:20px;gap:30px;align-items:flex-start">
+<div class="chartbox" style="flex:1.7"><svg viewBox="0 0 1000 430" width="1000" height="430"><line x1="90" x2="900" y1="308.7" y2="308.7" class="grid"/><text x="78" y="315.7" class="ax" text-anchor="end">700</text><line x1="90" x2="900" y1="226.0" y2="226.0" class="grid"/><text x="78" y="233.0" class="ax" text-anchor="end">900</text><line x1="90" x2="900" y1="143.3" y2="143.3" class="grid"/><text x="78" y="150.3" class="ax" text-anchor="end">1100</text><line x1="90" x2="900" y1="60.7" y2="60.7" class="grid"/><text x="78" y="67.7" class="ax" text-anchor="end">1300</text><text x="90.0" y="386" class="ax" text-anchor="start">fev 2020</text><text x="496.1" y="386" class="ax" text-anchor="middle">fev 2021</text><text x="900.0" y="386" class="ax" text-anchor="end">fev 2022</text><polyline points="90.0,184.7 91.1,186.2 92.2,190.6 95.5,204.2 96.7,216.2 97.8,217.6 98.9,234.4 100.0,237.4 103.3,220.8 104.4,231.4 105.5,215.9 106.6,228.9 107.8,235.2 111.1,262.7 112.2,246.2 113.3,263.4 114.4,295.2 115.5,267.1 118.8,306.7 120.0,289.3 121.1,305.3 122.2,303.9 123.3,316.6 126.6,324.9 127.7,299.3 128.8,295.8 129.9,277.0 131.1,287.8 134.4,277.4 135.5,282.5 136.6,296.4 137.7,289.6 138.8,294.2 142.2,272.9 143.3,273.4 144.4,262.3 145.5,257.5 149.9,260.9 151.0,250.6 152.1,258.2 153.2,256.3 154.4,247.1 157.7,253.4 158.8,264.0 159.9,256.3 161.0,256.5 162.1,251.7 165.5,246.6 166.6,248.5 167.7,239.2 168.8,242.5 169.9,252.5 173.2,251.0 174.3,247.9 175.4,250.3 176.5,246.3 177.7,240.4 181.0,240.3 182.1,247.7 183.2,253.8 184.3,249.8 185.4,248.4 188.8,237.4 189.9,241.2 191.0,235.3 192.1,238.1 193.2,237.2 197.6,232.8 198.7,227.4 199.8,228.2 201.0,226.4 204.3,225.0 205.4,221.9 206.5,216.8 207.6,218.1 208.7,208.1 212.1,203.4 213.2,206.5 214.3,208.6 215.4,231.5 216.5,226.8 219.8,223.7 220.9,216.6 222.0,217.9 223.2,217.7 224.3,219.9 227.6,217.4 228.7,215.8 229.8,225.7 230.9,221.6 232.0,230.7 235.4,225.3 236.5,219.6 237.6,217.7 238.7,215.9 243.1,209.9 244.2,214.1 245.3,211.1 246.5,213.2 247.6,209.2 250.9,212.9 252.0,207.7 253.1,204.1 254.2,205.5 255.3,204.4 258.7,201.1 259.8,200.4 260.9,198.1 262.0,203.0 263.1,205.5 266.4,202.6 267.5,205.1 268.6,200.3 269.8,201.7 270.9,198.7 274.2,195.8 275.3,194.4 276.4,191.8 277.5,189.2 278.6,188.9 282.0,187.8 283.1,191.1 284.2,185.4 285.3,186.2 286.4,186.3 289.7,185.2 290.8,184.2 291.9,186.0 293.1,184.7 294.2,183.3 297.5,179.2 298.6,177.7 299.7,173.4 300.8,172.7 301.9,169.8 305.3,170.7 306.4,167.5 307.5,160.9 308.6,176.3 309.7,179.7 314.1,191.3 315.2,183.1 316.4,190.4 317.5,190.2 320.8,185.0 321.9,182.8 323.0,184.7 324.1,188.2 325.2,192.8 328.6,197.5 329.7,193.3 330.8,202.9 331.9,201.7 333.0,195.4 336.3,188.9 337.4,190.9 338.5,187.5 339.7,185.3 340.8,189.3 344.1,181.9 345.2,187.7 346.3,180.6 347.4,177.3 348.5,173.6 351.9,166.6 353.0,169.3 354.1,172.2 355.2,172.8 356.3,172.7 359.6,179.7 360.7,177.7 361.8,178.6 363.0,176.4 364.1,175.0 367.4,182.9 368.5,184.1 369.6,198.7 370.7,193.9 371.8,198.8 375.2,193.9 376.3,186.7 377.4,177.7 378.5,169.5 379.6,169.6 382.9,164.6 384.0,165.2 385.2,161.9 386.3,166.3 387.4,160.4 390.7,155.3 391.8,157.4 392.9,162.5 394.0,160.8 395.1,163.7 398.5,161.3 399.6,154.2 400.7,154.9 402.9,153.9 406.2,155.9 407.3,150.9 408.5,150.1 409.6,150.4 410.7,146.5 414.0,147.3 415.1,146.1 416.2,149.7 417.3,150.3 418.4,150.8 421.8,152.8 422.9,147.0 424.0,146.2 425.1,143.6 426.2,145.2 429.5,147.0 430.6,147.9 431.8,147.6 432.9,146.0 437.3,142.0 438.4,143.1 439.5,142.4 440.6,139.5 445.1,146.3 446.2,143.1 447.3,140.5 448.4,133.7 449.5,131.1 452.8,134.2 453.9,134.0 455.1,132.9 456.2,134.7 457.3,138.0 461.7,134.3 462.8,127.8 463.9,127.7 465.0,129.1 468.4,127.4 469.5,128.1 470.6,140.2 471.7,135.7 472.8,144.6 476.1,137.3 477.2,130.9 478.4,130.5 479.5,125.4 480.6,123.6 483.9,120.0 485.0,120.6 486.1,120.7 487.2,119.9 488.3,117.7 492.8,118.0 493.9,118.1 495.0,120.2 496.1,121.1 499.4,124.8 500.5,124.2 501.7,118.8 502.8,130.6 503.9,132.8 507.2,121.7 508.3,125.6 509.4,131.7 510.5,138.0 511.6,129.0 515.0,131.5 516.1,124.9 517.2,122.1 518.3,117.1 519.4,116.7 522.7,113.5 523.8,114.3 525.0,112.9 526.1,120.1 527.2,120.3 530.5,117.0 531.6,120.7 532.7,123.3 533.8,120.8 534.9,112.8 538.3,113.3 539.4,114.8 540.5,113.0 541.6,107.3 546.0,100.2 547.2,100.7 548.3,100.0 549.4,97.9 550.5,94.0 553.8,94.1 554.9,92.5 556.0,94.5 557.1,88.9 558.2,87.1 561.6,89.8 562.7,93.3 563.8,88.6 564.9,93.3 566.0,87.7 569.3,86.8 570.5,86.9 571.6,87.4 572.7,83.9 573.8,87.6 577.1,86.2 578.2,89.6 579.3,89.3 580.4,85.1 581.5,81.3 584.9,86.7 586.0,91.2 587.1,102.0 588.2,96.0 589.3,88.5 592.6,89.8 593.8,94.1 594.9,95.6 596.0,90.3 597.1,90.7 600.4,85.7 601.5,86.8 602.6,85.8 603.7,85.2 604.8,84.8 609.3,85.1 610.4,84.3 611.5,86.2 612.6,81.7 615.9,82.1 617.1,82.0 618.2,82.9 619.3,80.5 620.4,79.5 623.7,78.6 624.8,79.6 625.9,82.4 627.0,82.7 628.2,89.4 631.5,82.3 632.6,79.7 633.7,80.2 634.8,77.2 635.9,75.5 639.2,74.3 640.4,74.1 641.5,73.4 642.6,70.7 643.7,66.7 648.1,67.8 649.2,66.0 650.3,70.6 651.5,64.6 654.8,62.8 655.9,64.7 657.0,64.0 658.1,65.8 659.2,69.8 662.5,78.2 663.7,70.3 664.8,66.0 665.9,64.9 667.0,59.5 670.3,58.2 671.4,60.7 672.5,60.8 673.6,58.6 674.8,61.5 678.1,62.5 679.2,58.1 680.3,60.6 681.4,57.4 682.5,56.5 685.8,57.0 687.0,56.4 688.1,55.7 689.2,53.5 690.3,52.6 693.6,51.2 694.7,55.0 695.8,60.9 696.9,60.2 698.1,55.8 701.4,51.2 702.5,50.4 703.6,49.2 704.7,52.4 705.8,47.6 709.2,45.2 710.3,45.9 711.4,45.8 712.5,44.2 713.6,44.4 718.0,46.3 719.1,47.0 720.2,49.5 721.4,53.8 724.7,52.5 725.8,55.7 726.9,51.1 728.0,51.9 729.1,56.9 732.5,66.1 733.6,66.5 734.7,61.4 735.8,54.9 736.9,54.1 740.2,55.6 741.3,66.7 742.4,65.9 743.5,72.2 744.7,66.2 748.0,73.1 749.1,67.5 750.2,65.4 751.3,60.9 752.4,62.0 755.8,65.6 756.9,66.9 758.0,65.3 759.1,56.2 760.2,52.2 763.5,50.4 764.6,46.3 765.7,44.3 766.8,42.6 768.0,43.2 771.3,40.6 772.4,39.6 773.5,42.4 774.6,36.9 775.7,35.8 779.1,34.8 780.2,32.8 781.3,29.1 782.4,26.7 783.5,24.6 786.8,24.1 787.9,26.1 789.0,30.8 790.2,30.5 791.3,26.4 794.6,26.4 795.7,24.2 796.8,25.7 797.9,23.7 799.0,24.5 802.4,26.4 803.5,25.4 804.6,24.1 806.8,37.2 810.1,29.8 811.2,40.5 812.3,47.1 813.5,39.3 814.6,44.0 817.9,37.5 819.0,25.9 820.1,24.1 821.2,28.3 822.3,22.8 825.7,28.1 826.8,32.3 827.9,23.1 829.0,28.1 830.1,34.0 833.4,40.4 834.5,30.5 835.6,24.7 836.8,21.1 841.2,13.2 842.3,13.8 843.4,12.9 844.5,14.7 845.6,16.2 849.0,12.5 850.1,12.9 851.2,24.2 852.3,24.8 853.4,27.1 856.7,27.9 857.8,22.7 858.9,21.1 860.1,29.3 861.2,28.8 865.6,39.3 866.7,44.7 867.8,50.8 868.9,61.2 872.3,59.7 873.4,66.2 874.5,67.0 875.6,69.9 876.7,57.0 880.0,46.8 881.1,43.0 882.2,37.8 883.4,51.5 884.5,48.6 887.8,50.7 888.9,46.1 890.0,38.1 891.1,48.2 892.2,58.6 895.6,60.7 896.7,52.2 897.8,51.8 898.9,63.3 900.0,67.2" fill="none" style="stroke:var(--serie-a)" stroke-width="6" stroke-linejoin="round"/><polyline points="90.0,184.7 91.1,186.2 92.2,190.6 95.5,204.2 96.7,216.2 97.8,217.6 98.9,234.4 100.0,237.4 103.3,220.8 104.4,231.4 105.5,215.9 106.6,228.9 107.8,235.2 111.1,262.7 112.2,246.2 113.3,263.4 114.4,295.2 115.5,267.1 118.8,306.7 120.0,289.3 121.1,305.3 122.2,303.9 123.3,316.6 126.6,324.9 900.0,324.9" fill="none" stroke="#C62A2F" stroke-width="6" stroke-linejoin="round" stroke-dasharray="1 0"/><circle cx="126.6" cy="324.9" r="9" fill="#C62A2F"/><text x="142.6" y="358.9" class="lab" fill="#C62A2F">vendeu: ficou com 661 €</text><text x="900.0" y="51.2" class="lab" text-anchor="end">ficou investido: 1 284 €</text></svg><p class="chart-note">1.000 € investidos no S&amp;P 500 em fevereiro de 2020, antes da queda</p></div>
+<div style="flex:1;padding-top:30px">
+<div class="card" style="margin-bottom:22px"><h3>Quem ficou</h3><p>Viu a carteira cair a 661 € em 5 semanas. Dois anos depois tinha <b>1 284 €</b>.</p></div>
+<div class="card"><h3>Quem vendeu no fundo</h3><p>Transformou uma queda temporária numa <b>perda definitiva</b>: ficou com <b>661 €</b>, e não apanhou a recuperação.</p></div></div></div>
+<p class="src">S&amp;P 500, só preço, sem dividendos, de 19/02/2020 a 18/02/2022. Exemplo extremo (venda no pior dia); ninguém sabe quando é o fundo.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">6 · Onde se compra</div>
+<h2>A corretora é um intermediário: o que pagas todos os anos é que pesa</h2>
+<div class="row" style="margin-top:40px;gap:36px">
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<div class="card"><h3>Regulada, como um banco</h3><p>É o intermediário entre ti e a bolsa.</p></div>
+<div class="card"><h3>Ações inteiras, em teu nome</h3><p>O que compras fica registado em teu nome. Custa mais do que o reforço do mês? Junta 2–3 meses e compra uma ação completa.</p></div></div>
+<div class="card" style="flex:1.1"><h3>Os custos anuais somam-se</h3>
+<div class="bars" style="height:270px;gap:80px;margin-top:50px">
+<div class="bar-group"><div class="bar-pair" style="height:200px"><div class="bar got" style="height:200px;width:130px"><span>100 452 €</span></div></div><div class="bar-label">Sem custos</div></div>
+<div class="bar-group"><div class="bar-pair" style="height:200px"><div class="bar put" style="height:166px;width:130px"><span>83 226 €</span></div></div><div class="bar-label">Com 1 % ao ano</div></div></div>
+<p>100 €/mês, 30 anos. Uma comissão de 1 % ao ano tira <b>17 226 €</b>. Olha para o que pagas por ano, não para os 2 € de hoje.</p></div></div>
+<p class="src">Exemplo: 100 €/mês durante 30 anos, 6 % ao ano antes de custos (5 % depois de 1 % de custos).</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">6 · Porque trabalhamos com a Freedom24</div>
+<h2>Uma parceria de longa data, e três razões</h2>
+<div class="row" style="margin-top:44px;gap:30px">
+<div class="card" style="flex:1"><div class="step-n">1</div><h3>Parceria de longa data</h3><p>Trabalhamos com a Freedom24 há muito tempo e conhecemos bem a forma como funciona.</p></div>
+<div class="card" style="flex:1"><div class="step-n">2</div><h3>Investimentos recorrentes sem comissões</h3><p>Planos de carregamentos e de investimento regular com <b>0 € de comissões</b>: ideais para o reforço mensal.</p></div>
+<div class="card" style="flex:1"><div class="step-n">3</div><h3>Ações inteiras, em teu nome</h3><p>O que compras fica registado em teu nome, e as ações são compradas inteiras.</p></div></div>
+<div class="takeaway">No fim da manhã mostramos, a quem quiser, <b>como abrir conta e as vantagens para a comunidade MoneyFlix.</b></div>
+<p class="src">A MoneyFlix não presta aconselhamento financeiro nem é agente vinculado da Freedom24. Condições sujeitas às da Freedom24.</p></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">7 · Os erros mais comuns</div>
+<h2>Quatro erros que o jogo vai pôr à prova</h2>
+<ol class="steps">
+<li><b>Uma história em vez de pesquisa</b>Ver um nome num anúncio e imaginar o potencial. Uma narrativa não é análise.</li>
+<li><b>Decidir com a emoção</b>Comprar a empresa onde trabalhas ou o clube do coração.</li>
+<li><b>Tudo na moda do momento</b>O medo de ficar de fora faz pôr tudo no mesmo tema.</li>
+<li><b>Tentar adivinhar o momento</b>Ver todos os dias se está verde ou vermelho. Quem vende e compra a toda a hora tende a perder para quem tem paciência.</li>
+</ol></div></div></section>
+<section class="slide" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs "><div class="kicker">8 · Um plano simples</div>
+<h2>Quatro coisas, por esta ordem</h2>
+<ol class="steps">
+<li><b>Para quê</b>O objetivo: liberdade para escolher, não ter de trabalhar por obrigação.</li>
+<li><b>Quanto</b>Gasto mensal × 12 × 25. Exemplo: 1.000 €/mês → 300.000 €.</li>
+<li><b>Todos os meses</b>Um reforço automático, no dia em que entra o salário.</li>
+<li><b>Não desistir na queda</b>Escreve hoje o que vais fazer quando acontecer.</li>
+</ol>
+<p class="src">A regra dos 25 (equivalente a retirar 4 % por ano) é uma referência, não uma garantia.</p></div></div></section>
+<section class="slide secao" data-sec="Abertura"><div class="ab" style="position:absolute;left:0;top:0;width:1600px;height:900px;transform:scale(1.2);transform-origin:0 0"><div class="abs center"><div class="kicker">Agora é convosco</div>
+<h1>Peguem no telemóvel.</h1>
+<div class="row" style="margin-top:56px">
+<div class="card" style="flex:1;text-align:center"><div class="big">1.000 €</div><p style="margin-top:12px">para começar</p></div>
+<div class="card gold" style="flex:1;text-align:center"><div class="big">+ reforço</div><p style="margin-top:12px">todos os meses</p></div>
+<div class="card" style="flex:1;text-align:center"><div class="big red">1 crise</div><p style="margin-top:12px">algures pelo caminho</p></div></div></div></div></section>
+
+<section class="slide" data-sec="Os teus 10K" data-jogo>
+  <div class="grid" style="grid-template-columns: 1fr 560px; gap:80px; align-items:center; margin-top:60px">
+    <div><div class="kicker">No telemóvel</div><h1 style="font-size:120px">Os teus 10K</h1><p class="lead" style="margin-top:32px">Entrem no jogo: nome, perfil e o vosso plano até aos 10.000€.</p>
+      <div class="pil neu" style="margin-top:36px; font-size:24px" data-url-jogo>[URL DO JOGO]</div></div>
+    <div class="card" style="padding:40px; text-align:center"><div class="qr" data-qr="jogo" style="width:440px; height:440px; margin:0 auto"></div><div class="desc" style="margin-top:20px">Aponta a câmara</div></div>
+  </div>
+</section>
+
+
+<!-- 1 · CAPA -->
+<section class="slide capa secao" data-sec="Parte 2">
+  <div style="max-width:1000px; margin-top:-40px">
+    <div class="kicker">MoneyFlix Tour · <em>Parte 2</em></div>
+    <h1>E se conseguíssemos mais do que a média?</h1>
+    <p class="lead" style="margin-top:36px; max-width:880px">Índices, empresas escolhidas e o que a história nos diz, incluindo o que correu mal.</p>
+  </div>
+  <div class="pilha">
+    <div class="card" style="left:0; top:0">
+      <div style="display:flex; gap:18px; align-items:center"><div class="tile s" data-ico="globo" style="background:var(--accent-tint); color:var(--accent-ink)"></div><div><div class="ttl" style="font-size:24px">MSCI World</div><div class="desc" style="font-size:18px; margin:0">1.248 empresas · desde 1988</div></div></div>
+      <div style="display:flex; align-items:baseline; gap:14px; margin-top:22px"><span class="num n-s">9,0%</span><span class="desc" style="margin:0">ao ano</span></div>
+    </div>
+    <div class="card" style="left:120px; top:200px">
+      <div style="display:flex; gap:18px; align-items:center"><div class="tile s" data-ico="grafico" style="background:#5E5CE614; color:#5E5CE6"></div><div><div class="ttl" style="font-size:24px">S&amp;P 500</div><div class="desc" style="font-size:18px; margin:0">~500 empresas · desde 1928</div></div></div>
+      <div style="display:flex; align-items:baseline; gap:14px; margin-top:22px"><span class="num n-s">10,0%</span><span class="desc" style="margin:0">ao ano</span></div>
+    </div>
+    <div class="card" style="left:40px; top:400px">
+      <div style="display:flex; gap:18px; align-items:center"><div class="tile s" data-ico="chip" style="background:var(--serie-b-tint); color:var(--serie-b)"></div><div><div class="ttl" style="font-size:24px">Semicondutores</div><div class="desc" style="font-size:18px; margin:0">30 empresas · desde 2001</div></div></div>
+      <div style="display:flex; align-items:baseline; gap:14px; margin-top:22px"><span class="num n-s">14,7%</span><span class="desc" style="margin:0">ao ano</span></div>
+    </div>
+  </div>
+  <div class="rodape">Médias anuais com dividendos, em dólares: S&amp;P 500 1928–2025 (Damodaran, NYU Stern); MSCI World desde 1988 (MSCI, 30/10/2026); SOXX desde 2001 (iShares, 30/09/2026). <b>Rentabilidades passadas não garantem rentabilidades futuras.</b></div>
+</section>
+
+<!-- 2 · O JOGO -->
+<section class="slide" data-sec="Do jogo">
+  <div class="kicker">O vosso plano no jogo · <em>1.000€ + 150€ por mês</em></div>
+  <h2>Ao fim de 15 anos, a taxa muda tudo</h2>
+  <div class="card mt-s" style="padding:48px 64px 36px">
+    <div class="cols" id="cen-colunas"></div>
+    <div class="colleg" id="cen-leg"></div>
+  </div>
+  <div class="rodape">Cenários hipotéticos com rentabilidade média constante, a mesma conta do jogo. Rentabilidades mais altas implicam mais risco e não são garantidas. <b>Conteúdo educativo. Não constitui recomendação de investimento.</b></div>
+</section>
+
+<!-- 3 · DE ONDE VÊM -->
+<section class="slide" data-sec="Índices">
+  <div class="kicker">De onde vêm estes números?</div>
+  <h2>Décadas de mercado, com crises lá dentro</h2>
+  <div class="grid g3 mt">
+    <div class="card">
+      <div class="tile" data-ico="grafico" style="background:#5E5CE614; color:#5E5CE6"></div>
+      <div class="num n-l" style="margin-top:36px">10,0%</div>
+      <div class="ttl" style="margin-top:14px">S&amp;P 500 · ao ano</div>
+      <div class="desc">1928 a 2025. As 500 maiores empresas americanas, com 1929, a guerra, 2008 e a pandemia lá dentro.</div>
+      <div style="margin-top:22px"><span class="pil neu">98 anos</span></div>
+    </div>
+    <div class="card">
+      <div class="tile" data-ico="globo" style="background:var(--accent-tint); color:var(--accent-ink)"></div>
+      <div class="num n-l" style="margin-top:36px">9,0%</div>
+      <div class="ttl" style="margin-top:14px">MSCI World · ao ano</div>
+      <div class="desc">Desde 1988. 1.248 empresas de 23 países, Portugal incluído.</div>
+      <div style="margin-top:22px"><span class="pil neu">38 anos</span></div>
+    </div>
+    <div class="card">
+      <div class="tile" data-ico="chip" style="background:var(--serie-b-tint); color:var(--serie-b)"></div>
+      <div class="num n-l laranja" style="margin-top:36px">14,7%</div>
+      <div class="ttl" style="margin-top:14px">Semicondutores · ao ano</div>
+      <div class="desc">ETF SOXX, desde 2001. Só 30 empresas, todas de um setor: os chips.</div>
+      <div style="margin-top:22px"><span class="pil neu">25 anos</span></div>
+    </div>
+  </div>
+  <div class="rodape">Fontes: Damodaran, NYU Stern (S&amp;P 500 com dividendos, média geométrica, 1928–2025); ficha MSCI World Index, retorno bruto em USD, a 30/10/2026; ficha iShares SOXX, NAV desde o lançamento, a 30/09/2026. Em dólares. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b></div>
+</section>
+
+<!-- 4 · ÚLTIMOS 10 ANOS -->
+<section class="slide" data-sec="Índices">
+  <div class="kicker">Os últimos 10 anos · <em>até 30 de outubro de 2026</em></div>
+  <h2>Menos empresas, mais retorno… nesta década</h2>
+  <div class="card mt-s" style="padding:36px 48px 20px">
+    <table class="t" id="t-ativos">
+      <thead><tr><th>Índice</th><th>Empresas</th><th>10 anos, ao ano</th><th>Em euros</th><th>Em 2022</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="rodape">Cálculo MoneyFlix com fechos ajustados (dividendos incluídos) do Yahoo Finance, 31/10/2016 a 30/10/2026, em dólares e convertido para euros. Confere com as fichas oficiais MSCI e iShares. Foi uma década excecional, acima das médias longas. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b></div>
+</section>
+
+<!-- 5 · O PREÇO -->
+<section class="slide" data-sec="Índices">
+  <div class="kicker">O preço do retorno</div>
+  <h2>O carrinho pequeno sobe mais. E cai mais.</h2>
+  <div class="grid mt-s" style="grid-template-columns: 1.45fr 1fr">
+    <div class="card" style="padding:36px 40px 28px">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start">
+        <div>
+          <div class="desc" style="margin:0; font-weight:600">A acontecer agora · últimos 12 meses</div>
+          <div style="display:flex; align-items:center; gap:18px; margin-top:12px"><span class="num n-l vermelho" id="queda-agora">−37%</span><span class="pil down forte" id="queda-pil">desde 22 jun</span></div>
+          <div class="desc" id="queda-agora-rot">Semicondutores (SOXX), desde o máximo</div>
+        </div>
+        <div style="text-align:right; font-size:20px; line-height:1.9; color:var(--sub); white-space:nowrap">
+          <div><i style="display:inline-block; width:22px; height:4px; border-radius:2px; background:var(--serie-b); vertical-align:middle; margin-right:10px"></i>Semicondutores (SOXX)</div>
+          <div><i style="display:inline-block; width:22px; height:4px; border-radius:2px; background:var(--accent); vertical-align:middle; margin-right:10px"></i>S&amp;P 500</div>
+        </div>
+      </div>
+      <svg id="graf12m" width="980" height="330" style="margin-top:18px; display:block"></svg>
+    </div>
+    <div class="card">
+      <div class="ttl">Os piores anos</div>
+      <table class="t" style="margin-top:26px" id="t-quedas"></table>
+      <div class="desc" style="margin-top:20px">Menos empresas: mais retorno possível <b style="color:var(--text)">e</b> mais queda. Vêm juntas.</div>
+    </div>
+  </div>
+  <div class="rodape" id="rod-quedas">Cálculo MoneyFlix com fechos ajustados do Yahoo Finance (base 100 há 12 meses); anos civis de 31/12 a 31/12. Em dólares. <b>Investir envolve risco de perda de capital.</b></div>
+</section>
+
+<!-- 6 · O GANCHO -->
+<section class="slide" data-sec="Estar indexado">
+  <div class="kicker">Estar indexado</div>
+  <h2>São as 500 maiores, não as 500 melhores</h2>
+  <div class="grid mt" style="grid-template-columns: 1fr 600px; gap:56px; align-items:center">
+    <div class="card" style="padding:44px">
+      <div id="pontos500" style="display:grid; grid-template-columns: repeat(50, 1fr); gap:7px"></div>
+      <div class="leg" style="margin-top:28px"><span><i style="background:var(--accent)"></i>As que estão a fazer o melhor trabalho</span><span><i style="background:#D2D2D7"></i>Todas as outras</span></div>
+    </div>
+    <div>
+      <p class="lead" style="font-size:34px">No índice, o teu dinheiro vai para cada empresa <b>pelo tamanho que ela tem</b>, não pelo trabalho que está a fazer.</p>
+      <p class="lead" style="font-size:34px; margin-top:28px">As que o mercado está a recompensar estão lá, mas são <b>só uma parte do carrinho</b>.</p>
+    </div>
+  </div>
+  <div class="rodape">Ilustração: os pontos azuis não representam empresas concretas. <b>Conteúdo educativo.</b></div>
+</section>
+
+<!-- 7 · E SE UMA PARTE… -->
+<section class="slide" data-sec="Estar indexado">
+  <div class="kicker">Lembram-se do perfil que escolheram no jogo?</div>
+  <h2>E se uma parte fosse para empresas escolhidas?</h2>
+  <div class="grid g3 mt" id="perfis"></div>
+  <p class="lead mt">Escolher ações: o <b>stock picking</b>. E a pergunta passa a ser: <b>quais?</b></p>
+  <div class="rodape">Percentagens dos perfis do jogo «Os teus 10K» (índice / ações escolhidas). Exercício educativo, não é uma recomendação de alocação.</div>
+</section>
+
+<!-- 8 · O RUÍDO -->
+<section class="slide" data-sec="Escolher empresas">
+  <div class="kicker">Como escolher empresas?</div>
+  <h2>Estudar a empresa é a parte fácil. O difícil é o ruído.</h2>
+  <div class="grid mt-s" style="grid-template-columns: 1fr 1fr; gap:22px 28px" id="notifs"></div>
+  <div class="rodape">Exemplos ilustrativos, não são notícias reais.</div>
+</section>
+
+<!-- 9 · MF PICKS -->
+<section class="slide" data-sec="MF Picks">
+  <div class="kicker">É aqui que entra a <em>MoneyFlix</em></div>
+  <h2>MF Picks: empresas que estudámos, para acompanhares</h2>
+  <div class="grid g3 mt-s">
+    <div class="card"><div class="tile" data-ico="lupa" style="background:var(--accent-tint); color:var(--accent-ink)"></div><div class="ttl" style="margin-top:28px">Estudamos</div><div class="desc">O negócio, os números, as notícias, os riscos e o ruído, para não começares do zero.</div></div>
+    <div class="card"><div class="tile" data-ico="olho" style="background:#5E5CE614; color:#5E5CE6"></div><div class="ttl" style="margin-top:28px">Acompanhas</div><div class="desc">Vês o mercado a atuar sobre cada empresa: o que sobe, o que cai, e porquê.</div></div>
+    <div class="card"><div class="tile" data-ico="bussola" style="background:#15803D14; color:#15803D"></div><div class="ttl" style="margin-top:28px">Tiras as tuas conclusões</div><div class="desc">A decisão é sempre tua. As Picks são um ponto de partida, não uma ordem.</div></div>
+  </div>
+  <div class="card mt-s" style="display:flex; align-items:center; gap:40px; padding:30px 40px">
+    <div style="display:flex; gap:44px; flex-shrink:0">
+      <div><div class="num n-s" id="n-ativas">61</div><div class="desc" style="margin-top:6px">Picks ativas</div></div>
+      <div><div class="num n-s cinza" id="n-ex">15</div><div class="desc" style="margin-top:6px">retiradas</div></div>
+      <div><div class="num n-s cinza">8</div><div class="desc" style="margin-top:6px">setores</div></div>
+    </div>
+    <div id="faixa-logos" style="display:flex; gap:12px; flex-wrap:nowrap; overflow:hidden; flex:1; justify-content:flex-start; mask-image:linear-gradient(90deg,#000 85%,transparent)"></div>
+  </div>
+  <div class="rodape">Fonte: moneyflix.com/discover. As Picks gratuitas continuam a sair. <b>Conteúdo educativo. As MF Picks não constituem recomendação de investimento.</b></div>
+</section>
+
+<!-- 10 · PICKS POR SETOR -->
+<section class="slide" data-sec="MF Picks">
+  <div class="kicker">As Picks, setor a setor</div>
+  <h2>Em todos os setores, umas correm bem e outras mal</h2>
+  <div class="grid g4 mt-s" id="setores" style="gap:24px"></div>
+  <div class="rodape" id="rod-setores"></div>
+</section>
+
+<!-- 11 · SECÇÃO -->
+<section class="slide secao" data-sec="Credibilidade">
+  <div class="kicker" style="color:#A1A1A6">E agora, a parte honesta</div>
+  <h1>Mas é assim tão simples?</h1>
+  <p class="lead" style="margin-top:36px">Vamos ver o histórico todo, incluindo as que correram mal.</p>
+</section>
+
+<!-- 12 · O QUE O SITE MOSTRA -->
+<section class="slide" data-sec="Credibilidade">
+  <div class="kicker">O que vês no site</div>
+  <h2>A média engana. A mediana conta melhor a história.</h2>
+  <div class="grid g3 mt">
+    <div class="card"><div class="desc" style="margin:0; font-weight:600">Média das Picks ativas</div><div class="num n-xl azul" style="margin-top:24px" id="m-media">+63%</div><div class="desc" style="margin-top:22px">Puxada para cima por meia dúzia de empresas que multiplicaram.</div></div>
+    <div class="card"><div class="desc" style="margin:0; font-weight:600">Mediana das Picks ativas</div><div class="num n-xl" style="margin-top:24px" id="m-mediana">+20%</div><div class="desc" style="margin-top:22px" id="m-mediana-d">Metade está acima disto, metade abaixo.</div></div>
+    <div class="card"><div class="desc" style="margin:0; font-weight:600">Média das Picks retiradas</div><div class="num n-xl vermelho" style="margin-top:24px" id="m-ex">−33%</div><div class="desc" style="margin-top:22px" id="m-ex-d">As 15 que saíram da lista. Também contam.</div></div>
+  </div>
+  <div class="rodape" id="rod-site"></div>
+</section>
+
+<!-- 13 · A CONTA JUSTA -->
+<section class="slide" data-sec="Credibilidade">
+  <div class="kicker" id="justa-eye">E se tivesses seguido todas?</div>
+  <h2>A conta justa: contra o índice, nas mesmas datas</h2>
+  <div class="grid mt-s" style="grid-template-columns: 1fr 620px; align-items:stretch">
+    <div class="card" style="padding:44px 56px 32px">
+      <div class="cols" id="justa-col" style="height:440px"></div>
+      <div class="colleg" id="justa-leg"></div>
+    </div>
+    <div class="card" style="display:flex; flex-direction:column">
+      <div class="tile s" data-ico="balanca" style="background:var(--accent-tint); color:var(--accent-ink)"></div>
+      <div class="ttl" style="margin-top:24px">Como fizemos a conta</div>
+      <div class="desc" id="justa-como"></div>
+      <div style="margin-top:auto">
+        <div class="lin"><span>Bateram o índice</span><b id="justa-batem">36 de 76</b></div>
+        <div class="lin"><span>Em ganho</span><b id="justa-ganho">54 de 76</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="rodape" id="rod-justa"></div>
+</section>
+
+<!-- 14 · O QUE NÃO APARECE -->
+<section class="slide" data-sec="Credibilidade">
+  <div class="kicker">O que não aparece nos reels</div>
+  <h2 id="naoaparece-h">Menos de metade bateu o índice. Duas fizeram a diferença.</h2>
+  <div id="strip"></div>
+  <div class="leg">
+    <span><i style="background:var(--accent)"></i>Bateu o S&amp;P 500 no mesmo período</span>
+    <span><i style="background:#C7C7CC"></i>Não bateu</span>
+    <span><i style="background:var(--bg); box-shadow: inset 0 0 0 3px var(--sub)"></i>Retirada da lista</span>
+    <span style="margin-left:auto"><span class="pil neu" id="semtop2" style="font-size:21px">Sem APP e CLS: +32% contra +28%</span></span>
+  </div>
+  <div class="rodape">Cada ponto é uma Pick: retorno com dividendos desde a data da Pick até ao último fecho (ou até sair da lista). Simulação MoneyFlix, Yahoo Finance, em dólares. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b></div>
+</section>
+
+<!-- 15 · CONVICÇÃO VS PASTA DE DENTES -->
+<section class="slide" data-sec="Setores">
+  <div class="kicker">Picks por tipo de empresa</div>
+  <h2>Convicção ou pasta de dentes?</h2>
+  <div class="grid g2 mt-s">
+    <div class="card">
+      <div style="display:flex; gap:22px; align-items:center"><div class="tile" data-ico="foguete" style="background:var(--serie-b-tint); color:var(--serie-b)"></div><div><div class="ttl">Crescimento</div><div class="desc" style="margin:2px 0 0">Convicção: acreditamos no que estão a construir</div></div></div>
+      <div id="logos-cresc" style="display:flex; gap:10px; margin-top:26px"></div>
+      <div id="t-cresc" style="margin-top:22px"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex; gap:22px; align-items:center"><div class="tile" data-ico="escudo" style="background:#15803D14; color:#15803D"></div><div><div class="ttl">Defensivas</div><div class="desc" style="margin:2px 0 0">«Todos os dias preciso de pasta de dentes»</div></div></div>
+      <div id="logos-def" style="display:flex; gap:10px; margin-top:26px"></div>
+      <div id="t-def" style="margin-top:22px"></div>
+    </div>
+  </div>
+  <div class="rodape" id="rod-tipos"></div>
+</section>
+
+<!-- 16 · POR ONDE COMEÇAR -->
+<section class="slide" data-sec="Setores">
+  <div class="kicker">Sem filtro, não sabes por onde começar</div>
+  <h2>As Picks são o início do caminho, não o fim</h2>
+  <div class="grid g3 mt-s">
+    <div class="card"><div class="tile" data-ico="grelha" style="background:rgba(0,0,0,.05); color:var(--sub)"></div><div class="num n-m cinza" style="margin-top:30px">1.248</div><div class="ttl" style="margin-top:12px">empresas só no MSCI World</div><div class="desc">Por onde se começa a estudar?</div></div>
+    <div class="card"><div class="tile" data-ico="filtro" style="background:var(--accent-tint); color:var(--accent-ink)"></div><div class="num n-m azul" style="margin-top:30px" id="n-ativas2">61</div><div class="ttl" style="margin-top:12px">MF Picks</div><div class="desc">Um filtro para começar: empresas estudadas, em 8 setores.</div></div>
+    <div class="card"><div class="tile" data-ico="pessoa" style="background:var(--serie-b-tint); color:var(--serie-b)"></div><div class="num n-m laranja" style="margin-top:30px">Tu</div><div class="ttl" style="margin-top:12px">Os setores que conheces</div><div class="desc">Com o tempo, olhas para sítios novos, a começar pelo teu trabalho.</div></div>
+  </div>
+  <div class="grid mt-s" style="grid-template-columns: repeat(5, 1fr); gap:18px" id="profissoes"></div>
+  <div class="rodape">Fonte: ficha MSCI World Index, 30/10/2026. <b>Conteúdo educativo.</b></div>
+</section>
+
+<!-- 17 · O CAMINHO -->
+<section class="slide" data-sec="Fecho">
+  <div class="kicker">Então, qual é o caminho?</div>
+  <h2>O que te deixa dormir à noite</h2>
+  <div style="display:flex; flex-direction:column; gap:14px; margin-top:44px; max-width:1360px" id="camadas"></div>
+  <p class="lead" style="margin-top:36px">O melhor portfólio é <b>o que consegues manter numa queda de 40%</b>.</p>
+  <div class="rodape">~10% ao ano: S&amp;P 500 1928–2025 (Damodaran, NYU Stern), em dólares, com dividendos. <b>Conteúdo educativo. Rentabilidades passadas não garantem rentabilidades futuras.</b></div>
+</section>
+
+<!-- 18 · PONTE PARA O CONSTRUTOR -->
+<section class="slide" data-sec="No telemóvel">
+  <div class="kicker">Agora é convosco · <em>no telemóvel</em></div>
+  <h2>Montem o vosso portfólio modelo, a começar pelos setores</h2>
+  <div class="grid g3 mt">
+    <div class="card"><div style="display:flex; justify-content:space-between; align-items:center"><div class="tile" data-ico="camadas" style="background:var(--accent-tint); color:var(--accent-ink)"></div><span class="num n-s cinza">1</span></div><div class="ttl" style="margin-top:30px">Escolhe setores</div><div class="desc">Os que conheces, os que te deixam tranquilo e os que te dão convicção.</div></div>
+    <div class="card"><div style="display:flex; justify-content:space-between; align-items:center"><div class="tile" data-ico="predio" style="background:#5E5CE614; color:#5E5CE6"></div><span class="num n-s cinza">2</span></div><div class="ttl" style="margin-top:30px">Escolhe empresas</div><div class="desc">Dentro de cada setor, as MF Picks: o que cada empresa faz, as que correram bem e as que não.</div></div>
+    <div class="card"><div style="display:flex; justify-content:space-between; align-items:center"><div class="tile" data-ico="tarte" style="background:#15803D14; color:#15803D"></div><span class="num n-s cinza">3</span></div><div class="ttl" style="margin-top:30px">Vê o teu portfólio</div><div class="desc">A base em índice e a parte em empresas, com o teu reforço mensal. Recebes o plano por email.</div></div>
+  </div>
+  <div class="rodape"><b>Exercício educativo.</b> O portfólio é teu e a decisão é tua: não é uma recomendação de investimento nem aconselhamento personalizado. Investir envolve risco de perda de capital.</div>
+</section>
+
+
+
+
+<section class="slide" data-sec="Portfólio" data-jogo>
+  <div class="grid" style="grid-template-columns: 1fr 560px; gap:80px; align-items:center; margin-top:60px">
+    <div><div class="kicker">No telemóvel</div><h1 style="font-size:120px">Constrói o teu portfólio</h1><p class="lead" style="margin-top:32px">Mesmo endereço do jogo: escolhe setores, depois empresas, e recebe o plano por email.</p>
+      <div class="pil neu" style="margin-top:36px; font-size:24px" data-url-jogo>[URL DO JOGO]</div></div>
+    <div class="card" style="padding:40px; text-align:center"><div class="qr" data-qr="jogo" style="width:440px; height:440px; margin:0 auto"></div><div class="desc" style="margin-top:20px">Aponta a câmara</div></div>
+  </div>
+</section>
+
+<section class="slide capa secao" data-sec="Freedom24">
+  <div class="kicker">Para os interessados</div>
+  <h1 style="max-width:1500px">Orientamos a abertura de conta na Freedom24</h1>
+  <p class="lead" style="margin-top:36px">A plataforma parceira de que falámos no início da manhã. Ninguém é obrigado: é para quem quer pôr o plano em prática.</p>
+</section>
+
+<section class="slide" data-sec="Freedom24">
+  <div class="kicker">Passo a passo · <em>cerca de 10 minutos</em></div>
+  <h2>Como se abre a conta</h2>
+  <div class="grid g4 mt" id="passos"></div>
+  <div class="rodape">Passos a confirmar com a Freedom24 antes de sábado. A abertura de conta está sujeita à aprovação da Freedom24.</div>
+</section>
+
+<section class="slide" data-sec="Freedom24">
+  <div class="kicker">As vantagens</div>
+  <h2>Porquê pela MoneyFlix</h2>
+  <div class="grid g2 mt-s" id="vantagens"></div>
+  <div class="rodape">Condições da oferta da responsabilidade da Freedom24. Investir envolve risco de perda de capital.</div>
+</section>
+
+<section class="slide" data-sec="Freedom24">
+  <div class="kicker">Oferta ao carregar a conta</div>
+  <h2>Ações de oferta ao carregar a conta</h2>
+  <div class="card mt" style="padding:56px 64px; border-left:8px solid var(--accent)"><div class="ttl" style="font-size:44px; line-height:1.25">Oferta de boas-vindas em ações ao abrir e carregar a conta. Os patamares e as condições estão na página da Freedom24.</div></div>
+  <p class="lead" style="margin-top:32px">Não começas com 1.000€? Planos de <b>investimento recorrente com 0€ de comissões</b>: o reforço mensal do teu plano.</p>
+  <div class="rodape">Condições da oferta da responsabilidade da Freedom24.</div>
+</section>
+
+<section class="slide" data-sec="Freedom24">
+  <div class="grid" style="grid-template-columns: 1fr 560px; gap:80px; align-items:center; margin-top:40px">
+    <div>
+      <div class="kicker">Aponta a câmara</div>
+      <h2>Abre a conta com o link da comunidade MoneyFlix</h2>
+      <p class="lead" style="margin-top:30px">Estamos na sala para ajudar quem quiser, passo a passo. Quem preferir, faz em casa: o link vai também no email com o teu plano.</p>
+    </div>
+    <div class="card" style="padding:40px; text-align:center">
+      <div id="qr" style="width:440px; height:440px; margin:0 auto; border:3px dashed #D2D2D7; border-radius:20px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--muted)">Sem internet: QR indisponível</div>
+      <div class="desc" style="margin-top:20px">Link de afiliado da MoneyFlix</div>
+    </div>
+  </div>
+  <div class="rodape">A MoneyFlix recebe uma compensação da Freedom24 pelas contas abertas com este link. Investir envolve risco de perda de capital.</div>
+</section>
+
+</div>
+<div id="nav"></div>
+<script src="dados-slides.js"></script>
+<script>
+const URL_JOGO = '[URL DO JOGO]';
+const LINK = 'https://lp.freedom24.com/pt/etf-investment-plan?utm_source=4647&utm_medium=affiliates&utm_campaign=mc_inaff_3174&utm_term=4647&s_id=lisboa14';
+const D = window.DADOS || null;
+const $ = id => document.getElementById(id);
+const slides = [...document.querySelectorAll('.slide')];
+// ---------- ícones de linha (traço 1,8, como no Hub) ----------
+const P = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICO = {
+  grafico: P('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'),
+  globo: P('<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>'),
+  chip: P('<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>'),
+  banco: P('<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 21h18"/>'),
+  saude: P('<path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.6-7 10-7 10z"/><path d="M8 12h2l1.2-2 1.6 4 1.2-2h2"/>'),
+  raio: P('<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>'),
+  predio: P('<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M9 15h1M14 15h1M10 21v-3h4v3"/>'),
+  fabrica: P('<path d="M3 21V10l5 3V10l5 3V6l8 4v11z"/><path d="M3 21h18"/><path d="M8 17h2M14 17h2"/>'),
+  minerio: P('<path d="M6 3h12l3 6-9 12L3 9z"/><path d="M3 9h18M9 3l3 6 3-6M12 9v12"/>'),
+  saco: P('<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 016 0v2"/>'),
+  lupa: P('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.3-4.3"/>'),
+  olho: P('<path d="M2.5 12s3.5-7 9.5-7 9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="3"/>'),
+  bussola: P('<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>'),
+  balanca: P('<path d="M12 3v18M7 21h10M5 7h14"/><path d="M5 7l-3 6a3 3 0 006 0zM19 7l-3 6a3 3 0 006 0z"/>'),
+  foguete: P('<path d="M5 15c-1.5 1.5-2 5-2 5s3.5-.5 5-2"/><path d="M9 15l-3-3c1-4 5-9 13-9 0 8-5 12-9 13z"/><circle cx="15" cy="9" r="1.5"/>'),
+  escudo: P('<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+  grelha: P('<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><rect x="14" y="14" width="6" height="6" rx="1.2"/>'),
+  filtro: P('<path d="M3 5h18l-7 8v6l-4 2v-8z"/>'),
+  pessoa: P('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'),
+  camadas: P('<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'),
+  tarte: P('<path d="M12 3v9h9"/><path d="M21 12a9 9 0 11-9-9"/>'),
+  noticia: P('<rect x="3" y="5" width="15" height="15" rx="2"/><path d="M18 9h3v9a2 2 0 01-2 2"/><path d="M7 9h7M7 13h7M7 17h4"/>'),
+  alerta: P('<path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17.5v.01"/>'),
+  balao: P('<path d="M4 5h16v11H9l-5 4z"/>'),
+  doc: P('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/>'),
+  euro: P('<path d="M17 6.5A7 7 0 0010 18M17 17.5A7 7 0 016 12"/><path d="M4 10h9M4 14h9"/>'),
+  pessoas: P('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14a6.5 6.5 0 013.5 6"/>'),
+  estrada: P('<path d="M8 3L4 21M16 3l4 18M12 4v3M12 11v3M12 18v2"/>'),
+  lua: P('<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'),
+  mala: P('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/>'),
+  capacete: P('<path d="M4 17h16v2H4z"/><path d="M5 17a7 7 0 0114 0"/><path d="M10 10V7h4v3"/>'),
+};
+document.querySelectorAll('[data-ico]').forEach(el => el.innerHTML = ICO[el.dataset.ico] || '');
+
+
+ICO.pausa = P('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>');
+ICO.carrinho = P('<path d="M3 4h2l2.4 11h10.2L20 8H6.3"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>');
+document.querySelectorAll('[data-ico]').forEach(el => el.innerHTML = ICO[el.dataset.ico] || '');
+// ---------- formatação ----------
+const pct = (x, d = 0) => (x >= 0 ? '+' : '−') + Math.abs(x * 100).toFixed(d).replace('.', ',') + '%';
+const pctS = (x, d = 0) => Math.abs(x * 100).toFixed(d).replace('.', ',') + '%';
+const eur = n => n.toLocaleString('pt-PT').replace(/\s/g, '.') + '€';
+const dataPT = s => { const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+const pil = (x, forte = false, d = 0) => `<span class="pil ${x >= 0 ? 'up' : 'down'} ${forte ? 'forte' : ''}"><span class="tri">${x >= 0 ? '▲' : '▼'}</span>${pctS(x, d)}</span>`;
+const logo = (t, cls = '') => `<img class="logo ${cls}" src="logos/${t}.png" alt="${t}" onerror="this.style.visibility='hidden'">`;
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+// ---------- 2 · cenários ----------
+(function () {
+  const c = D ? D.cenarios['150']['15'] : { bolso: 28000, '7': 49425, '10': 63944, '15': 99521 };
+  const it = [['Do teu bolso', 'sem rentabilidade', c.bolso, '#D2D2D7'], ['7% ao ano', 'a conta do jogo', c['7'], 'var(--accent)'],
+              ['10% ao ano', 'cenário', c['10'], 'var(--accent)'], ['15% ao ano', 'cenário', c['15'], 'var(--serie-b)']];
+  const mx = Math.max(...it.map(i => i[2]));
+  $('cen-colunas').innerHTML = it.map(i => `<div class="col"><div class="v">${eur(i[2])}</div><div class="bar" style="height:${(i[2] / mx * 76).toFixed(1)}%; background:${i[3]}"></div></div>`).join('');
+  $('cen-leg').innerHTML = it.map(i => `<div>${i[0]}<small>${i[1]}</small></div>`).join('');
+})();
+
+// ---------- 4 · tabela ----------
+(function () {
+  const ico = { amplo: ['grafico', '#5E5CE6'], concentrado: ['chip', 'var(--serie-b)'] };
+  const lin = D ? D.ativos : [];
+  let h = lin.map(a => {
+    const [ic, cor] = a.t === 'URTH' ? ['globo', 'var(--accent)'] : (ico[a.tipo] || ['grafico', '#8E8E93']);
+    return `<tr><td><div style="display:flex; gap:20px; align-items:center"><div class="tile s" style="background:${cor}14; color:${cor}">${ICO[ic]}</div><div><b>${a.nome}</b><span class="s">${a.etf}</span></div></div></td>
+      <td>${a.empresas}</td>
+      <td><span class="num n-s ${a.tipo === 'concentrado' ? 'laranja' : ''}" style="font-size:40px">${a.a10_usd != null ? pctS(a.a10_usd, 1) : '—'}</span></td>
+      <td style="color:var(--sub)">${a.a10_eur != null ? pctS(a.a10_eur, 1) : '—'}</td>
+      <td>${a.ano2022 != null ? pil(a.ano2022) : '—'}</td></tr>`;
+  }).join('');
+  for (let i = lin.length; i < 6; i++)
+    h += `<tr class="vazio"><td><div style="display:flex; gap:20px; align-items:center"><div class="tile s" style="border:2px dashed #D2D2D7"></div><span style="font-size:22px">Ativo a acrescentar · lista final do Daniel</span></div></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>`;
+  document.querySelector('#t-ativos tbody').innerHTML = h;
+})();
+
+// ---------- 5 · últimos 12 meses + piores anos ----------
+(function () {
+  const by = t => D && D.ativos.find(a => a.t === t);
+  const sp = by('SPY'), sx = by('SOXX');
+  if (!sp || !sx) return;
+  const [, m, d] = sx.pico_data.split('-');
+  $('queda-agora').textContent = pct(sx.queda_atual);
+  $('queda-pil').textContent = `desde ${+d} de ${MESES[+m - 1]}`;
+  $('queda-agora-rot').innerHTML = `Semicondutores (SOXX), desde o máximo. O S&amp;P 500 está ${pct(sp.queda_atual)} abaixo do seu máximo recente.`;
+  // gráfico
+  const W = 980, H = 330, padB = 34;
+  const all = [...sx.serie12m, ...sp.serie12m].map(p => p[1]);
+  const lo = Math.min(...all) * 0.95, hi = Math.max(...all) * 1.03;
+  const n = sx.serie12m.length;
+  const X = i => i / (n - 1) * (W - 90);
+  const Y = v => (H - padB) - (v - lo) / (hi - lo) * (H - padB - 10);
+  const path = s => s.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('');
+  let g = '';
+  [100].forEach(v => g += `<line x1="0" x2="${W - 90}" y1="${Y(v)}" y2="${Y(v)}" stroke="#D2D2D7" stroke-dasharray="6 6" stroke-width="2"/><text x="${W - 80}" y="${Y(v) + 6}" font-size="18" fill="#A1A1A6">100</text>`);
+  const area = s => path(s) + `L${X(n - 1)},${H - padB}L0,${H - padB}Z`;
+  g += `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--serie-b)" stop-opacity=".16"/><stop offset="1" style="stop-color:var(--serie-b)" stop-opacity="0"/></linearGradient></defs>`;
+  g += `<path d="${area(sx.serie12m)}" fill="url(#ga)"/>`;
+  g += `<path d="${path(sp.serie12m)}" fill="none" style="stroke:var(--serie-a)" stroke-width="3"/>`;
+  g += `<path d="${path(sx.serie12m)}" fill="none" style="stroke:var(--serie-b)" stroke-width="3"/>`;
+  const iPk = sx.serie12m.reduce((b, p, i, a) => p[1] > a[b][1] ? i : b, 0);
+  g += `<circle cx="${X(iPk)}" cy="${Y(sx.serie12m[iPk][1])}" r="7" style="fill:var(--serie-b)" stroke="#fff" stroke-width="3"/>`;
+  g += `<circle cx="${X(n - 1)}" cy="${Y(sx.serie12m[n - 1][1])}" r="7" fill="#C62A2F" stroke="#fff" stroke-width="3"/>`;
+  const lab = (i) => { const [y, mm] = sx.serie12m[i][0].split('-'); return `${MESES[+mm - 1].slice(0, 3)} ${y.slice(2)}`; };
+  [0, Math.round((n - 1) / 2), n - 1].forEach(i => g += `<text x="${Math.min(X(i), W - 150)}" y="${H - 4}" font-size="18" fill="#A1A1A6">${lab(i)}</text>`);
+  $('graf12m').innerHTML = g;
+  $('t-quedas').innerHTML = `<tr><th>Ano</th><th>S&amp;P 500</th><th>Semicond.</th></tr>` +
+    [2008, 2022].map(y => `<tr><td><b>${y}</b></td><td>${pil(sp['ano' + y])}</td><td>${pil(sx['ano' + y], true)}</td></tr>`).join('');
+  $('rod-quedas').innerHTML = `Cálculo MoneyFlix com fechos ajustados do Yahoo Finance (base 100 há 12 meses, até ao fecho de ${dataPT(sx.ultimo_fecho)}); anos civis de 31/12 a 31/12. Em dólares. <b>Investir envolve risco de perda de capital.</b>`;
+})();
+
+// ---------- 6 · 500 pontos ----------
+(function () {
+  const dest = new Set([3, 17, 42, 66, 91, 118, 140, 163, 201, 230, 257, 288, 312, 349, 377, 402, 433, 461, 488, 25, 199, 310]);
+  let h = '';
+  for (let i = 0; i < 500; i++) h += `<i style="display:block; aspect-ratio:1; border-radius:50%; background:${dest.has(i) ? 'var(--accent)' : '#E1E1E6'}"></i>`;
+  $('pontos500').innerHTML = h;
+})();
+
+// ---------- 7 · perfis ----------
+$('perfis').innerHTML = [['Índice', 100, 0, 'O mercado inteiro: as melhores e todas as outras.', 'var(--accent)', 'grafico'],
+  ['Índice + ações escolhidas', 70, 30, 'A base no índice e uma parte em empresas que estudaste.', '#5E5CE6', 'camadas'],
+  ['Ações escolhidas', 35, 65, 'A maior parte em empresas escolhidas. Mais convicção, mais oscilação.', 'var(--serie-b)', 'foguete']]
+  .map(([n, a, b, d, c, ic]) => `<div class="card"><div class="tile" style="background:${c}14; color:${c}">${ICO[ic]}</div>
+    <div class="ttl" style="margin-top:28px">${n}</div><div class="desc">${d}</div>
+    <div class="aloc">${a ? `<span style="flex:${a}; background:var(--accent)"></span>` : ''}${b ? `<span style="flex:${b}; background:var(--serie-b)"></span>` : ''}</div>
+    <div class="aloc-leg"><span>Índice <b style="color:var(--text)">${a}%</b></span><span>${b ? `Escolhidas <b style="color:var(--text)">${b}%</b>` : ''}</span></div></div>`).join('');
+
+// ---------- 8 · o ruído (notificações) ----------
+$('notifs').innerHTML = [
+  ['noticia', 'var(--accent)', 'Resultados · agora', 'Lucros acima do esperado', 'E a ação cai 8% no dia. Ninguém percebe porquê.'],
+  ['alerta', '#C62A2F', 'Short report · há 12 min', '«A empresa esconde dívida»', 'Um fundo aposta na queda e publica 80 páginas.'],
+  ['balao', '#5E5CE6', 'Redes sociais · há 1 h', '«Esta vai multiplicar por 10»', '2,4 mil gostos. Zero explicações.'],
+  ['euro', 'var(--serie-b)', 'Mercados · há 2 h', 'Banco central mantém os juros', 'O mercado esperava outra coisa. Tudo vermelho.'],
+  ['doc', '#8E8E93', 'Relatório anual · ontem', '214 páginas para ler', 'Riscos, contas, notas de rodapé, letra pequena.'],
+  ['pessoas', '#15803D', 'Família · ontem', 'O cunhado: «Já compraste aquela?»', 'Ele comprou. Diz que está a correr muito bem.'],
+].map(([ic, c, meta, t, b], i) => `<div class="notif" style="${i % 2 ? 'margin-left:40px; margin-right:-40px' : ''}"><div class="tile s" style="background:${c}14; color:${c}">${ICO[ic]}</div>
+   <div style="flex:1"><div class="meta"><span>${meta.split(' · ')[0]}</span><span style="text-transform:none; letter-spacing:0; font-weight:500">${meta.split(' · ')[1]}</span></div>
+   <div class="tt">${t}</div><div class="bd">${b}</div></div></div>`).join('');
+
+// ---------- 16 · profissões ----------
+$('profissoes').innerHTML = [['saude', 'Enfermeira', 'Saúde', '#FF375F'], ['capacete', 'Engenheiro civil', 'Indústria', '#8E6E4E'],
+  ['banco', 'Bancária', 'Bancos e seguros', 'var(--accent)'], ['raio', 'Eletricista', 'Energia', 'var(--serie-b)'], ['saco', 'Lojista', 'Consumo', '#15803D']]
+  .map(([ic, p, s, c]) => `<div class="card" style="padding:24px 26px; display:flex; gap:18px; align-items:center"><div class="tile s" style="background:${c}14; color:${c}">${ICO[ic]}</div>
+     <div><div style="font-size:22px; font-weight:700">${p}</div><div style="font-size:19px; color:var(--sub); margin-top:2px">→ ${s}</div></div></div>`).join('');
+
+// ---------- 17 · camadas ----------
+$('camadas').innerHTML = [['grafico', 'ETFs de índice: a base do carrinho', 'o mercado inteiro, ~10% ao ano em décadas', 1],
+  ['grelha', 'Diversificação', 'nenhuma empresa pode estragar o plano'], ['camadas', 'Setores', 'uns para crescer, outros para proteger'],
+  ['globo', 'Geografias', 'não só os Estados Unidos'], ['predio', 'Grandes e pequenas empresas', 'big caps e small caps']]
+  .map(([ic, t, k, base]) => `<div class="camada ${base ? 'base' : ''}"><div class="tile s" style="background:${base ? 'rgba(255,255,255,.18)' : 'var(--accent-tint)'}; color:${base ? 'var(--on-accent)' : 'var(--accent-ink)'}">${ICO[ic]}</div>
+     <div class="ttl">${t}</div><div class="k">${k}</div></div>`).join('');
+
+// ---------- dados das Picks ----------
+const SET = { tecnologia: ['chip', '#5E5CE6'], financeiro: ['banco', 'var(--accent)'], saude: ['saude', '#FF375F'], energia: ['raio', 'var(--serie-b)'],
+  imobiliario: ['predio', '#30A2B8'], industria: ['fabrica', '#8E6E4E'], materias: ['minerio', '#AF52DE'], consumo: ['saco', '#15803D'] };
+if (D) {
+  const Pk = D.picks, S = Pk.seguir, fim = dataPT(D.ultimo_fecho);
+  const fonteSite = `moneyflix.com/discover (preços de ${fim})`;
+  $('n-ativas').textContent = Pk.site_ativas.n; $('n-ex').textContent = Pk.site_ex.n; $('n-ativas2').textContent = Pk.site_ativas.n;
+  // faixa de logótipos (as ativas)
+  $('faixa-logos').innerHTML = Pk.pontos.filter(p => p.ativa).slice(0, 18).map(p => logo(p.t, 'l')).join('');
+
+  // 10 · setores
+  $('setores').innerHTML = Pk.setores.map(s => {
+    const [ic, c] = SET[s.id] || ['grelha', '#8E8E93'];
+    return `<div class="card" style="padding:28px 30px 20px">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start"><div class="tile s" style="background:${c}14; color:${c}">${ICO[ic]}</div>${pil(s.mediana)}</div>
+      <div style="font-size:25px; font-weight:700; margin-top:18px">${s.nome}</div>
+      <div style="font-size:18px; color:var(--muted); margin:2px 0 12px">${s.n} Picks · ${s.em_ganho} em ganho · mediana</div>
+      <div class="lin"><span class="emp" style="color:var(--text)">${logo(s.melhor_t)}${s.melhor_t}</span><b class="verde">${pct(s.melhor)}</b></div>
+      <div class="lin"><span class="emp" style="color:var(--text)">${logo(s.pior_t)}${s.pior_t}</span><b class="vermelho">${pct(s.pior)}</b></div></div>`;
+  }).join('');
+  $('rod-setores').innerHTML = `Picks ativas. Pílula = mediana do setor; em baixo, a melhor e a pior. Retorno desde a data de cada Pick, só preço, em dólares, como no site. Fonte: ${fonteSite}. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b>`;
+
+  // 12 · média vs mediana
+  $('m-media').textContent = pct(Pk.site_ativas.media); $('m-mediana').textContent = pct(Pk.site_ativas.mediana); $('m-ex').textContent = pct(Pk.site_ex.media);
+  $('m-mediana-d').textContent = `Metade está acima disto, metade abaixo. ${Pk.site_ativas.em_ganho} de ${Pk.site_ativas.n} estão em ganho.`;
+  $('m-ex-d').textContent = `As ${Pk.site_ex.n} que saíram da lista, medidas até hoje. Também contam.`;
+  $('rod-site').innerHTML = `Desde a data de cada Pick até ${fim}, só preço, em dólares. Fonte: ${fonteSite}; Ex-Picks com preços do Yahoo Finance. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b>`;
+
+  // 13 · conta justa
+  $('justa-eye').innerHTML = `E se tivesses seguido todas? <em>${S.n} empresas, 1.000 em cada</em>`;
+  const inv = S.n * 1000;
+  const it = [['Investido', `${S.n} × 1.000 dólares`, inv, '#D2D2D7', null], ['S&P 500', 'nas mesmas datas', inv * (1 + S.sp500), 'var(--accent)', S.sp500],
+              ['MF Picks', `todas as ${S.n}`, inv * (1 + S.picks), 'var(--serie-b)', S.picks]];
+  const mx = Math.max(...it.map(i => i[2]));
+  $('justa-col').innerHTML = it.map(i => `<div class="col"><div class="v">${i[4] == null ? '$' + Math.round(i[2] / 1000) + ' mil' : pct(i[4])}</div><div class="bar" style="height:${(i[2] / mx * 80).toFixed(1)}%; background:${i[3]}"></div></div>`).join('');
+  $('justa-leg').innerHTML = it.map(i => `<div>${i[0]}<small>${i[1]}</small></div>`).join('');
+  $('justa-como').innerHTML = `1.000 dólares em cada Pick no dia em que saiu, incluindo as ${S.retiradas} retiradas (vendidas no dia em que saíram da lista). O mesmo dinheiro, nos mesmos dias, no S&amp;P 500. Com dividendos.`;
+  $('justa-batem').textContent = `${S.batem} de ${S.n}`; $('justa-ganho').textContent = `${S.em_ganho} de ${S.n}`;
+  $('rod-justa').innerHTML = `Simulação MoneyFlix com preços ajustados do Yahoo Finance, de ${dataPT(S.desde)} (primeira Pick) a ${fim}, em dólares. Não inclui custos, câmbio nem impostos. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b>`;
+
+  // 14 · pontos
+  const W = 1664, H = 430, LO = -1, HI = 3;
+  const X = v => Math.max(0, Math.min(1, (v - LO) / (HI - LO))) * W;
+  const pts = [...Pk.pontos].sort((a, b) => a.v - b.v), cols = {};
+  let h = '<div class="eixo"></div>';
+  for (let v = -1; v <= 3; v += 0.5) h += `<div class="tick" style="left:${X(v)}px">${v === 0 ? '0%' : pct(v)}</div>`;
+  h += `<div class="linhav" style="left:${X(0)}px; border-left:2px solid var(--line)"></div>`;
+  pts.forEach(p => {
+    const x = X(p.v), k = Math.round(x / 27); cols[k] = (cols[k] || 0) + 1;
+    const y = H - 18 - (cols[k] - 1) * 28;
+    h += `<div class="ponto ${p.ativa ? '' : 'ex'}" title="${p.t}: ${pct(p.v)}" style="left:${x}px; top:${y}px; background:${p.v > p.sp ? 'var(--accent)' : '#C7C7CC'}"></div>`;
+  });
+  const piores = pts.slice(0, 3), fora = pts.filter(p => p.v > HI).reverse();
+  h += `<div class="nota-strip" style="left:0">As piores<div>${piores.map(p => `<span class="emp" style="font-size:20px; color:var(--text)">${logo(p.t)}${p.t} ${pil(p.v)}</span>`).join('')}</div></div>`;
+  if (fora.length) h += `<div class="nota-strip" style="right:0; text-align:right">Fora da escala →<div style="justify-content:flex-end">${fora.map(p => `<span class="emp" style="font-size:20px; color:var(--text)">${logo(p.t)}${p.t} ${pil(p.v)}</span>`).join('')}</div></div>`;
+  const med = pts.map(p => p.v), mediana = (med[(med.length - 1) >> 1] + med[med.length >> 1]) / 2;
+  h += `<div class="linhav" style="left:${X(mediana)}px"><span>Mediana ${pct(mediana)}</span></div>`;
+  $('strip').innerHTML = h; $('strip').style.width = W + 'px';
+  $('semtop2').textContent = `Sem ${S.sem_top2.tirados.join(' e ')}: ${pct(S.sem_top2.picks)} contra ${pct(S.sem_top2.sp500)} do índice`;
+  $('naoaparece-h').textContent = `${S.batem / S.n < 0.5 ? 'Menos de metade' : S.batem + ' de ' + S.n} bateu o índice. Duas fizeram a diferença.`;
+
+  // 15 · tipos
+  const tab = t => `<div class="lin"><span>Mediana desde a Pick</span>${pil(t.mediana)}</div>
+    <div class="lin"><span>Em ganho</span><b>${t.em_ganho} de ${t.n}</b></div>
+    <div class="lin"><span>Oscilação (volatilidade)</span><b>${pctS(t.vol)}</b></div>
+    <div class="lin"><span>Maior queda em 12 meses</span><b class="vermelho">${pct(t.queda12m)}</b></div>`;
+  $('t-cresc').innerHTML = tab(Pk.tipos.crescimento); $('t-def').innerHTML = tab(Pk.tipos.defensiva);
+  $('logos-cresc').innerHTML = Pk.tipos.crescimento.exemplos.slice(0, 10).map(t => logo(t, 'l')).join('');
+  $('logos-def').innerHTML = Pk.tipos.defensiva.exemplos.slice(0, 10).map(t => logo(t, 'l')).join('');
+  const sp = Pk.tipos.sp500;
+  $('rod-tipos').innerHTML = `Picks ativas, classificadas pela MoneyFlix. Medianas de cada grupo. Volatilidade e maior queda nos últimos 12 meses até ${fim}; S&amp;P 500 no mesmo período: volatilidade ${pctS(sp.vol)}, maior queda ${pct(sp.queda12m)}. Yahoo Finance, em dólares. <b>Conteúdo educativo.</b>`;
+}
+
+
+$('passos').innerHTML = [['qr','Lê o QR','Abre a página da Freedom24 com o link da comunidade.'],['pessoa','Dados pessoais','Os teus dados e um documento de identificação.'],['escudo','Verificação','A Freedom24 confirma a tua identidade e o teu perfil.'],['euro','Carregar a conta','Transferência bancária. Daqui vem a oferta em ações.']]
+ .map(([ic,t,d],i)=>`<div class="card"><div style="display:flex; justify-content:space-between"><div class="tile" style="background:var(--accent-tint); color:var(--accent-ink)">${ICO[ic]||ICO.doc}</div><span class="num n-s cinza">${i+1}</span></div><div class="ttl" style="margin-top:28px">${t}</div><div class="desc">${d}</div></div>`).join('');
+$('vantagens').innerHTML = [['euro','Ações ao carregar a conta','Oferta de boas-vindas em ações ao abrir e carregar a conta.'],['camadas','0€ de comissões no recorrente','Para quem começa com menos: o reforço mensal do teu plano, sem comissões.'],['pessoas','Uma parceria de longa data','A MoneyFlix e a Freedom24 trabalham juntas há anos.'],['foguete','Mais vantagens a caminho','Estamos a preparar novas ofertas para a comunidade MoneyFlix.']]
+ .map(([ic,t,d])=>`<div class="card" style="display:flex; gap:26px; align-items:flex-start"><div class="tile" style="background:#15803D14; color:#15803D">${ICO[ic]}</div><div><div class="ttl">${t}</div><div class="desc">${d}</div></div></div>`).join('');
+
+// QR: jogo/construtor e link de afiliado (precisam de internet para a biblioteca do QR)
+function qr(el, url) {
+  if (!url || url.startsWith('[')) { el.textContent = url || '[sem endereço]'; return; }
+  if (!window.QRCode) { el.textContent = 'Sem internet: QR indisponível'; return; }
+  el.innerHTML = ''; el.classList.add('qr', 'ok'); new QRCode(el, { text: url, width: 440, height: 440 });
+}
+// Servida por http(s) (ex.: o servidor do jogo no Render): o endereço do jogo é o da própria página. Por file://: o valor configurado.
+const JOGO = /^https?:$/.test(location.protocol) ? location.origin : URL_JOGO;
+document.querySelectorAll('[data-url-jogo]').forEach(el => el.textContent = JOGO.replace(/^https?:\/\//, ''));
+document.querySelectorAll('[data-qr="jogo"]').forEach(el => qr(el, JOGO));
+if ($('qr')) qr($('qr'), LINK);
+
+// Números em pt-PT: milhares com ponto, decimais com vírgula, espaço antes de € e %
+(function () {
+  const w = document.createTreeWalker(document.getElementById('palco'), NodeFilter.SHOW_TEXT);
+  const fix = t => t
+    .replace(/(\d)[   ](\d{3})(?!\d)/g, '$1.$2')
+    .replace(/(\d)\.(\d{1,2})(?![\d.])/g, '$1,$2')
+    .replace(/(\d)[\s  ]?€/g, '$1 €')
+    .replace(/(\d)[\s  ]?%/g, '$1 %');
+  let n; while ((n = w.nextNode())) { if (n.parentNode.closest('script, style')) continue; const v = fix(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+})();
+// barra de topo
+slides.forEach((s, i) => {
+  const t = document.createElement('div'); t.className = 'topo';
+  const esc = s.classList.contains('secao');
+  t.innerHTML = `<img src="logo-moneyflix.png" alt="MoneyFlix" style="${esc ? 'filter: invert(1) hue-rotate(180deg) brightness(1.4)' : ''}"><div class="dir"><span class="chip ${esc ? 'cinza' : ''}">${s.dataset.sec || ''}</span><span class="pag">${i + 1} / ${slides.length}</span></div>`;
+  s.prepend(t);
+});
+// ---------- navegação ----------
+let atual = 0;
+const nav = $('nav');
+slides.forEach((_, i) => { const b = document.createElement('i'); b.onclick = () => ir(i); nav.appendChild(b); });
+let ir = function (i) {
+  atual = Math.max(0, Math.min(slides.length - 1, i));
+  slides.forEach((s, j) => s.classList.toggle('ativo', j === atual));
+  [...nav.children].forEach((b, j) => b.classList.toggle('on', j === atual));
+  history.replaceState(null, '', '#' + (atual + 1));
+};
+// Teclado e apresentador sem fios (pointer): PageDown/PageUp, setas, espaço, b/. (ecrã preto), F5/Esc
+const preto = document.createElement('div');
+preto.style.cssText = 'position:fixed; inset:0; background:#000; z-index:50; display:none';
+document.body.appendChild(preto);
+function tecla(e) {
+  const k = e.key;
+  if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); preto.style.display = 'none'; ir(atual + 1); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); preto.style.display = 'none'; ir(atual - 1); }
+  else if (k === 'Home') ir(0);
+  else if (k === 'End') ir(slides.length - 1);
+  else if (k === 'b' || k === 'B' || k === '.') { e.preventDefault(); preto.style.display = preto.style.display === 'none' ? 'block' : 'none'; }
+  else if (k === 'Escape') preto.style.display = 'none';
+  else if (k === 'f' || k === 'F' || k === 'F5') { e.preventDefault(); if (!document.fullscreenElement) document.documentElement.requestFullscreen(); }
+}
+document.addEventListener('keydown', tecla);
+
+// Ecrã do jogo ao vivo nos slides «Os teus 10K» e «Constrói o teu portfólio» (só quando servida por http(s),
+// pelo servidor do jogo). Um só iframe, carregado um slide antes e nunca descarregado: mantém a ligação.
+const AO_VIVO = /^https?:$/.test(location.protocol);
+const slidesJogo = slides.map((s, i) => s.hasAttribute('data-jogo') ? i : -1).filter(i => i >= 0);
+let ecra = null;
+if (AO_VIVO) {
+  ecra = document.createElement('iframe');
+  ecra.tabIndex = -1;
+  ecra.setAttribute('aria-hidden', 'true');
+  ecra.style.cssText = 'position:absolute; left:0; top:96px; width:1920px; height:984px; border:0; pointer-events:none; display:none; background:var(--bg); z-index:5';
+  $('palco').appendChild(ecra);
+  ecra.addEventListener('load', () => {
+    try { ecra.contentWindow.addEventListener('keydown', tecla, true); } catch (e) {}
+  });
+  slidesJogo.forEach(i => slides[i].querySelector('.grid').style.visibility = 'hidden');
+}
+// Se o foco fugir para o iframe, volta para a apresentação
+addEventListener('blur', () => setTimeout(() => { if (document.activeElement === ecra) { ecra.blur(); window.focus(); } }, 0));
+function semEcra() { ecra.remove(); ecra = null; slidesJogo.forEach(i => slides[i].querySelector('.grid').style.visibility = ''); }
+const irBase = ir;
+ir = function (i) {
+  irBase(i);
+  if (!ecra) return;
+  if (!ecra.src && !ecra.dataset.pedido && slidesJogo.some(j => atual >= j - 1)) { ecra.dataset.pedido = 1; fetch('/ecra.html', { method: 'HEAD' }).then(r => { if (r.ok) ecra.src = '/ecra.html'; else semEcra(); }).catch(semEcra); }
+  if (ecra) ecra.style.display = slidesJogo.includes(atual) && ecra.src ? 'block' : 'none';
+};
+document.addEventListener('click', e => { if (e.target.closest('#nav')) return; ir(atual + (e.clientX < innerWidth / 3 ? -1 : 1)); });
+function escala() { const k = Math.min(innerWidth / 1920, innerHeight / 1080); $('palco').style.transform = `translate(-50%, -50%) scale(${k})`; }
+addEventListener('resize', escala); escala();
+ir((parseInt(location.hash.slice(1)) || 1) - 1);
+</script></body></html>

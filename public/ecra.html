@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="jogo.css">
+    <link rel="stylesheet" href="portfolio.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -186,7 +187,7 @@
                 <h2>Que tipo de investidor és?</h2>
                 <p>Lê o código com o telemóvel e responde a 6 perguntas. No fim, recebes o perfil e o plano com que vais jogar.</p>
                 <div class="url" id="lobby-url"></div>
-                <div class="players"><span id="lobby-players">0</span> pessoas já fizeram o check-in</div>
+                <div class="players" id="lobby-players">Ainda ninguém fez o check-in</div>
             </div>
             <div id="qr"></div>
         </div>
@@ -432,7 +433,18 @@
         };
         const tocar = (nome, ...args) => { if (somAtivo && state && state.sound) sons[nome](...args); };
         const botaoSom = document.getElementById('ativar-som');
-        botaoSom.onclick = () => { ac().resume(); somAtivo = true; botaoSom.hidden = true; };
+        // Ao ativar, toca logo um som para se confirmar que as colunas estão a funcionar
+        botaoSom.onclick = () => { ac().resume().then(() => sons.abre()); somAtivo = true; botaoSom.hidden = true; };
+        // Embutido nos slides: a primeira tecla ou clique na apresentação (página de fora, mesma origem) liga o som aqui dentro
+        if (window.self !== window.top) {
+            try {
+                const desbloquear = () => {
+                    if (somAtivo) return;
+                    ac().resume().then(() => { if (audio.state === 'running') somAtivo = true; });
+                };
+                ['keydown', 'pointerdown'].forEach(ev => window.top.addEventListener(ev, desbloquear, true));
+            } catch (e) { /* página de fora noutra origem: o som fica desligado */ }
+        }
         // Só toca quando o estado muda, não a cada atualização
         function somDaTransicao(s) {
             const de = ultimoEstado;
@@ -448,7 +460,8 @@
 
         socket.on('state', s => {
             state = s;
-            botaoSom.hidden = somAtivo || !s.sound;
+            // Embutido num slide (iframe), o botão do som não aparece: o ecrã funciona sem nenhum clique
+            botaoSom.hidden = somAtivo || !s.sound || window.self !== window.top;
             somDaTransicao(s);
             clockOffset = s.serverNow - Date.now();
             const roundNo = s.round + 1;
@@ -456,7 +469,7 @@
             document.getElementById('date').innerText = `Ano ${s.year} · ${s.monthLabel}`;
             document.getElementById('round-label').innerText = s.round >= 0 && roundNo <= s.totalRounds ? `Ronda ${roundNo} de ${s.totalRounds}` : '';
             document.getElementById('news').innerText = s.news;
-            document.getElementById('lobby-players').innerText = s.players;
+            document.getElementById('lobby-players').innerText = s.players === 0 ? 'Ainda ninguém fez o check-in' : s.players === 1 ? '1 pessoa já fez o check-in' : `${s.players} pessoas já fizeram o check-in`;
             bands = s.bands || [];
 
             // Quem está a jogar e com que perfil (sem pontos nem rankings)
@@ -515,7 +528,7 @@
             document.getElementById('vote-news').innerText = s.news;
             document.getElementById('vote-question').innerText = s.question;
             document.getElementById('vote-context').innerText = s.context || '';
-            document.getElementById('vote-meta').innerText = `${s.voted || 0} de ${s.players} já votaram`;
+            document.getElementById('vote-meta').innerText = `${s.voted || 0} de ${s.players} já ${(s.voted || 0) === 1 ? 'votou' : 'votaram'}`;
         }
 
         function renderWindow(s) {
@@ -536,7 +549,7 @@
                 .map(([k, label]) => `<span><i style="background: var(--c-${k})"></i>${label} <b>${pctNeg(r[k].drawdown)}</b></span>`).join('');
             show('decide-callback', !!s.callback);
             document.getElementById('decide-callback').innerText = s.callback || '';
-            document.getElementById('decide-meta').innerText = `${s.decisions ? s.decisions.answered : 0} de ${s.players} já decidiram`;
+            document.getElementById('decide-meta').innerText = `${s.decisions ? s.decisions.answered : 0} de ${s.players} já ${(s.decisions ? s.decisions.answered : 0) === 1 ? 'decidiu' : 'decidiram'}`;
         }
 
         function renderReveal(s) {
@@ -639,5 +652,7 @@
         }
         setInterval(tick, 250);
     </script>
+    <!-- Fase 2: constrói o teu portfólio -->
+    <script src="portfolio-ecra.js"></script>
 </body>
 </html>

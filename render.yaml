@@ -1,0 +1,22 @@
+# Render: Web Service do jogo da sessão MoneyFlix (lido automaticamente se escolheres «Blueprint»)
+services:
+  - type: web
+    name: jogo-moneyflix
+    runtime: node
+    plan: starter            # pago: não adormece. Para testes podes mudar para free.
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: false        # nada de deploys automáticos: um deploy reinicia o jogo e apaga a sessão
+    disk:                    # disco persistente: a sessão sobrevive a reinícios e deploys (só nos planos pagos)
+      name: estado
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_PASSWORD
+        sync: false          # o Render pede o valor; não fica no repositório
+      - key: F24_LINK
+        sync: false          # opcional: substitui o link de afiliado que está no código
+      - key: NODE_VERSION
+        value: "22"

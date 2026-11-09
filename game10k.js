@@ -626,7 +626,11 @@ module.exports = function setupGame10k(io, opts = {}) {
         };
     }
 
+    // Avisa a gravação em disco (persistencia.js) de que algo mudou; agora = true grava logo
+    let aoMudar = () => {};
+    let antesDeReiniciar = () => {};   // arquiva a sessão antes de a apagar
     function broadcast() {
+        aoMudar(false);
         // A vista de cada jogador vai antes do estado geral, para o ecrã final já ter os números certos
         game.players.forEach((p, id) => nsp.to('p:' + id).emit('me', playerView(p, id)));
         nsp.emit('state', publicState());
@@ -664,6 +668,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             }
             socket.data.playerId = playerId;
             socket.join('p:' + playerId);
+            aoMudar(true);
             socket.emit('joined', { gameId: game.id });
             socket.emit('me', playerView(p, playerId));
             broadcastSoon();
@@ -721,7 +726,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             if (command === 'SHOW_CONCLUSION' && game.status === 'FINISHED') { game.status = 'CONCLUSION'; game.conclusion = CONCLUSION_MONTHLY[0]; }
             else if (command === 'SHOW_CONCLUSION' && game.status === 'CONCLUSION') game.conclusion = CONCLUSION_MONTHLY[CONCLUSION_MONTHLY.indexOf(game.conclusion) + 1] || game.conclusion;
             if (command === 'HIDE_CONCLUSION' && game.status === 'CONCLUSION') game.status = 'FINISHED';
-            if (command === 'RESET') { stop(); resetGame(); }
+            if (command === 'RESET') { antesDeReiniciar(); stop(); resetGame(); }
             broadcast();
         });
     });
@@ -736,14 +741,18 @@ module.exports = function setupGame10k(io, opts = {}) {
         experience: { NUNCA: 'Nunca', EXPERIMENTEI: 'Já experimentei', REGULAR: 'Regularmente' }
     };
     function csvCell(v) {
-        const s = v === null || v === undefined ? '' : String(v);
+        let s = v === null || v === undefined ? '' : String(v);
+        // Proteção contra fórmulas no Excel: texto começado por = + - @ (ou tab/enter) leva um apóstrofo à frente.
+        // Os números (ex.: -5) ficam como estão.
+        if (typeof v === 'string' && /^[=+\-@\t\r]/.test(s) && !/^-?\d+([.,]\d+)?%?$/.test(s)) s = "'" + s;
         return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
     }
-    function exportCsv() {
+    // extra (opcional): colunas acrescentadas por outra fase, { header: [...], row: playerId => [...] }
+    function exportCsv(extra) {
         const header = ['Nome', 'Perfil', 'Reforço por mês', 'Quando precisa do dinheiro', 'Se cair 30%', 'Acompanhar empresas', 'Fundo de emergência', 'Experiência',
-            'Na crise', 'Pontos', ...ROUNDS.map((_, i) => `Ronda ${i + 1}`), 'Valor do plano', 'Chegou aos 10K em'];
+            'Na crise', 'Pontos', ...ROUNDS.map((_, i) => `Ronda ${i + 1}`), 'Valor do plano', 'Chegou aos 10K em', ...(extra ? extra.header : [])];
         const rows = [];
-        game.players.forEach(p => {
+        game.players.forEach((p, id) => {
             const a = p.answers || {};
             rows.push([
                 p.name,
@@ -759,11 +768,72 @@ module.exports = function setupGame10k(io, opts = {}) {
                     return `${v.vote === 'SOBE' ? 'Sobe' : 'Desce'} (${v.hit ? 'certo' : 'errado'})`;
                 }),
                 Math.round(p.plan.value),
-                p.plan.hitMonth ? duracao(p.plan.hitMonth) : ''
+                p.plan.hitMonth ? duracao(p.plan.hitMonth) : '',
+                ...(extra ? extra.row(id) : [])
             ]);
         });
         return '﻿' + [header, ...rows].map(r => r.map(csvCell).join(';')).join('\r\n') + '\r\n';
     }
 
-    return { exportCsv, playerCount: () => game.players.size };
+    // --- Para a fase do portfólio (portfolio.js): quem está no jogo e o que fez ---
+    const r2 = v => Math.round(v * 100) / 100;
+    const CHECKIN_KEYS = { horizon: 'horizonte', drop: 'queda', interest: 'acompanhar', emergency: 'fundo_emergencia', experience: 'experiencia' };
+    function checkinOf(a) {
+        if (!a) return null;
+        const out = {};
+        Object.entries(CHECKIN_KEYS).forEach(([k, nome]) => { out[nome] = a[k]; out[nome + '_texto'] = LABELS[k][a[k]] || null; });
+        out.reforco_mensal = Number(a.monthly);
+        return out;
+    }
+    function exportPlayer(id) {
+        const p = game.players.get(id);
+        if (!p) return null;
+        return {
+            id, nome: p.name, perfil: p.profile, perfil_nome: PROFILES[p.profile].label,
+            checkin: checkinOf(p.answers),
+            resultado_jogo: {
+                valor_final: r2(p.plan.value), do_bolso: r2(p.plan.pocket), do_mercado: r2(p.plan.value - p.plan.pocket),
+                chegou_10k_em_meses: p.plan.hitMonth, chegou_10k_em_texto: p.plan.hitMonth ? duracao(p.plan.hitMonth) : null,
+                decisao_crise: p.decision, decisao_crise_texto: p.decision ? DECISIONS[p.decision] : null,
+                valor_se_mantivesse: p.kept ? r2(p.kept.value) : null,
+                chegou_10k_meses_se_mantivesse: p.kept ? p.kept.hitMonth : null,
+                historico: p.plan.history.slice(),     // o valor do plano mês a mês (85 valores no fim dos 7 anos)
+                pior_queda: r2(p.plan.worstDrawdown), previsoes_certas: p.score, rondas: ROUNDS.length,
+                terminado: game.status === 'FINISHED' || game.status === 'CONCLUSION'
+            }
+        };
+    }
+    function playerInfo(id) {
+        const p = game.players.get(id);
+        return p ? { name: p.name, profile: p.profile, profileLabel: PROFILES[p.profile].label, monthly: p.monthly } : null;
+    }
+
+    // --- Gravação e recuperação (persistencia.js) ---
+    function snapshot() {
+        return { sound, game: { ...game, players: [...game.players.entries()] } };
+    }
+    function restaurar(dados) {
+        if (!dados || !dados.game || !Array.isArray(dados.game.players)) return false;
+        stop();
+        sound = dados.sound !== false;
+        game = { ...dados.game, players: new Map(dados.game.players) };
+        // Retoma o que estava a correr quando o servidor parou
+        const s = game.status, agora = Date.now();
+        if (s === 'FAST') {
+            const i = game.round;
+            const fim = i >= ROUNDS.length ? finish : () => (ROUNDS[i].decisao && game.decidedAt === null ? openDecision() : showNews());
+            runTo(game.target, FAST_MS, fim);
+        } else if (s === 'WINDOW') runTo(game.target, WINDOW_MS, reveal);
+        else if (s === 'VOTING') timer = setTimeout(closeVote, Math.max(0, (game.voteEndsAt || agora) - agora));
+        else if (s === 'DECIDE') timer = setTimeout(closeDecision, Math.max(0, (game.decideEndsAt || agora) - agora));
+        console.log(`Jogo recuperado: ${game.players.size} jogadores, estado ${s}.`);
+        return true;
+    }
+
+    return {
+        snapshot, restaurar, aoMudar: fn => { aoMudar = fn; }, antesDeReiniciar: fn => { antesDeReiniciar = fn; },
+        exportCsv, playerCount: () => game.players.size,
+        gameId: () => game.id, playerIds: () => [...game.players.keys()], playerInfo, exportPlayer,
+        profileIndexShare: profile => PROFILES[profile] ? PROFILES[profile].index : 1
+    };
 };
