@@ -29,7 +29,6 @@ const F24 = {
     link: process.env.F24_LINK || 'https://lp.freedom24.com/pt/etf-investment-plan?utm_source=4647&utm_medium=affiliates&utm_campaign=mc_inaff_3174&utm_term=4647&s_id=lisboa14',
     botao: 'Abrir conta na Freedom24',
     vantagens: [
-        'Oferta de boas-vindas em ações para novos clientes, segundo os patamares e as condições da Freedom24',
         'Planos recorrentes sem comissão de compra (podem aplicar-se outros custos)',
         'Ações inteiras, registadas em teu nome',
         'A MoneyFlix tem uma relação comercial com a Freedom24'
