@@ -1,7 +1,7 @@
 // ==================================================
 // O JOGO DA SESSÃO — consegues prever o mercado?
 // Em cada ronda aparece uma notícia e a sala vota: nos próximos meses o mercado sobe ou desce?
-// Por trás, o plano de cada jogador (1.000€ + o reforço que escolheu, no seu perfil) cresce sozinho até aos 10K.
+// Por trás, o plano de cada jogador (1.000 € + o reforço que escolheu, no seu perfil) cresce sozinho até aos 10K.
 // Entre rondas, um exemplo histórico real; na crise, cada um decide o que faz ao seu plano.
 // ==================================================
 
@@ -20,7 +20,7 @@ const PICKS_BETA = 1.3;             // simulação: as ações escolhidas oscila
 const PICKS_NOISE = 0.015;          // e têm uma parte própria, que soma zero ao longo dos 7 anos
 const PROJECTION_RATE = 0.07;       // para estimar quando chega aos 10K quem não chegou em 7 anos
 
-// Todos os perfis são 100% ações; muda a parte num ETF de índice e a parte em ações escolhidas
+// Todos os perfis são 100 % ações; muda a parte num ETF de índice e a parte em ações escolhidas
 const PROFILES = {
     indice:     { label: 'Índice',                    index: 1,    picks: 0 },
     misto:      { label: 'Índice + ações escolhidas', index: 0.7,  picks: 0.3 },
@@ -61,7 +61,7 @@ const ROUNDS = [
     {
         at: 0, horizon: 12, answer: 'SOBE',
         news: 'A economia cresce de forma estável.',
-        context: 'As empresas estão a vender mais e os lucros sobem. O desemprego está baixo e os juros estáveis. É o primeiro mês do teu plano: 1.000€ investidos e um reforço todos os meses.',
+        context: 'As empresas estão a vender mais e os lucros sobem. O desemprego está baixo e os juros estáveis. É o primeiro mês do teu plano: 1.000 € investidos e um reforço todos os meses.',
         intro: 'Como jogar: lê a notícia e vota no telemóvel. Acertas se o mercado fizer o que disseste nos meses da pergunta.',
         seconds: 35,
         usual: 'Contando com os dividendos, a bolsa americana teve ganhos em cerca de 3 de cada 4 anos.',
@@ -70,7 +70,7 @@ const ROUNDS = [
             titulo: 'Quase um século de bolsa',
             texto: [
                 'Desde 1928, contando com os dividendos, o S&P 500 (as 500 maiores empresas americanas) teve ganhos em cerca de 3 de cada 4 anos.',
-                'Com os dividendos, rendeu em média perto de 10% ao ano, antes da inflação, com anos muito bons e anos muito maus pelo meio.',
+                'Com os dividendos, rendeu em média perto de 10 % ao ano, antes da inflação, com anos muito bons e anos muito maus pelo meio.',
                 'Repara na década de 2000: duas crises, e o índice acabou mais baixo do que começou.'
             ],
             serie: { nome: 'S&P 500 no fim de cada década', pontos: [['1950', 20], ['1960', 58], ['1970', 92], ['1980', 136], ['1990', 330], ['2000', 1320], ['2010', 1258], ['2020', 3756]] }
@@ -78,15 +78,15 @@ const ROUNDS = [
     },
     {
         at: 12, horizon: 6, answer: 'SOBE',
-        news: 'A bolsa subiu 10% no último ano e toda a gente fala de investir.',
+        news: 'A bolsa subiu 10 % no último ano e toda a gente fala de investir.',
         context: 'Nas redes sociais só se fala de ganhos. Um amigo diz que ficou rico com uma só ação e pergunta porque é que ainda não puseste tudo nela. Os lucros das empresas continuam a crescer, mas os preços sobem mais depressa.',
         usual: 'Desde 1928, depois de um semestre a subir, o semestre seguinte também subiu em cerca de 7 de cada 10 vezes; depois de um semestre a descer, só em pouco mais de metade.',
         lesson: 'No curto prazo as tendências tendem a continuar (momentum). Mas na euforia os preços sobem mais depressa do que os lucros.',
         historia: {
             titulo: '1999: a bolha da internet',
             texto: [
-                'Em 1999, com toda a gente a falar de empresas da internet, o Nasdaq subiu cerca de 86% num só ano, e continuou a subir até março de 2000.',
-                'Depois caiu cerca de 78% até 2002, e só voltou ao máximo em 2015.',
+                'Em 1999, com toda a gente a falar de empresas da internet, o Nasdaq subiu cerca de 86 % num só ano, e continuou a subir até março de 2000.',
+                'Depois caiu cerca de 78 % até 2002, e só voltou ao máximo em 2015.',
                 'A euforia pode durar mais do que parece, e acabar pior do que se espera.'
             ],
             serie: { nome: 'Nasdaq', pontos: [['dez 1998', 2193], ['dez 1999', 4069], ['mar 2000', 5049], ['out 2002', 1114], ['abr 2015', 5056]] }
@@ -95,14 +95,14 @@ const ROUNDS = [
     {
         at: 18, horizon: 6, answer: 'SOBE',
         news: 'Comentador famoso garante: "vem aí um crash".',
-        context: 'Um comentador conhecido, que diz ter previsto a última crise, anuncia na televisão uma queda de 50% para breve. Entretanto, a economia continua a crescer e as empresas apresentam bons resultados.',
+        context: 'Um comentador conhecido, que diz ter previsto a última crise, anuncia na televisão uma queda de 50 % para breve. Entretanto, a economia continua a crescer e as empresas apresentam bons resultados.',
         usual: 'Desde 1950, a bolsa americana subiu em cerca de 7 de cada 10 períodos de 6 meses.',
         lesson: 'Há previsões de crash todos os anos. Uma acaba por acertar, mas quase nunca no momento; quem sai à espera perde as subidas.',
         historia: {
             titulo: '2010 a 2019: um crash anunciado todos os anos',
             texto: [
                 'Depois da crise de 2008, não faltaram previsões de um novo crash, ano após ano.',
-                'Entre 2010 e 2019, com os dividendos, o S&P 500 só teve um ano negativo: 2018, com cerca de −4%.',
+                'Entre 2010 e 2019, com os dividendos, o S&P 500 só teve um ano negativo: 2018, com cerca de −4 %.',
                 'Quem saiu à espera da queda perdeu uma década em que o investimento mais do que triplicou.'
             ],
             serie: { nome: 'S&P 500 no fim do ano', pontos: [['2009', 1115], ['2012', 1426], ['2015', 2044], ['2018', 2507], ['2019', 3231]] }
@@ -119,7 +119,7 @@ const ROUNDS = [
             titulo: 'Setembro de 2008: a falência do Lehman Brothers',
             texto: [
                 'O Lehman Brothers, um dos maiores bancos de investimento dos EUA, faliu a 15 de setembro de 2008.',
-                'Entre outubro de 2007 e março de 2009, o S&P 500 caiu cerca de 57%.',
+                'Entre outubro de 2007 e março de 2009, o S&P 500 caiu cerca de 57 %.',
                 'Quem estava investido viu a carteira cair para menos de metade. A pergunta é o que fazer a seguir.'
             ],
             serie: { nome: 'S&P 500', pontos: [['out 2007', 1565], ['set 2008', 1193], ['nov 2008', 752], ['mar 2009', 677]] }
@@ -127,15 +127,15 @@ const ROUNDS = [
     },
     {
         at: 33, horizon: 12, answer: 'SOBE', decisao: true,   // antes desta notícia, cada um decide o que faz ao plano
-        news: 'A bolsa já caiu mais de 30%. O desemprego continua a subir e na televisão dizem que "é o fim".',
+        news: 'A bolsa já caiu mais de 30 %. O desemprego continua a subir e na televisão dizem que "é o fim".',
         context: 'As notícias são todas más e muitos investidores já venderam tudo. Os bancos centrais cortaram os juros para perto de zero e os governos anunciam planos de apoio, mas a economia ainda não melhorou.',
-        usual: 'Depois de quedas de mais de 30%, a bolsa costuma recuperar antes de a economia melhorar, muitas vezes com subidas fortes.',
+        usual: 'Depois de quedas de mais de 30 %, a bolsa costuma recuperar antes de a economia melhorar, muitas vezes com subidas fortes.',
         lesson: 'A bolsa antecipa: costuma recuperar meses antes de a economia e o desemprego melhorarem. Quando as notícias parecem as piores, o preço já reflete o pior.',
         historia: {
             titulo: 'Março de 2009: o fundo chegou com as piores notícias',
             texto: [
-                'A bolsa tocou no fundo a 9 de março de 2009. O desemprego nos EUA só atingiu o máximo, 10%, em outubro, sete meses depois.',
-                'Nos 12 meses seguintes, o S&P 500 subiu cerca de 68%, e em 2013 já estava acima do máximo de 2007.',
+                'A bolsa tocou no fundo a 9 de março de 2009. O desemprego nos EUA só atingiu o máximo, 10 %, em outubro, sete meses depois.',
+                'Nos 12 meses seguintes, o S&P 500 subiu cerca de 68 %, e em 2013 já estava acima do máximo de 2007.',
                 'Em 2020 repetiu-se: a bolsa recuperou a partir de 23 de março, e o desemprego só atingiu o máximo em abril.'
             ],
             serie: { nome: 'S&P 500', pontos: [['mar 2009', 677], ['set 2009', 1057], ['mar 2010', 1140], ['mar 2013', 1569]] }
@@ -150,7 +150,7 @@ const ROUNDS = [
         historia: {
             titulo: 'Fevereiro e março de 2020: a pandemia',
             texto: [
-                'Entre 19 de fevereiro e 23 de março de 2020, o S&P 500 caiu cerca de 34%: a queda de 30% mais rápida da história.',
+                'Entre 19 de fevereiro e 23 de março de 2020, o S&P 500 caiu cerca de 34 %: a queda de 30 % mais rápida da história.',
                 'Ninguém sabia quanto tempo ia durar, e muita gente vendeu perto do pior momento.'
             ],
             serie: { nome: 'S&P 500 em 2020', pontos: [['2 jan', 3258], ['19 fev', 3386], ['23 mar', 2237]] }
@@ -166,7 +166,7 @@ const ROUNDS = [
             titulo: 'Novembro de 2020: a primeira vacina',
             texto: [
                 'Em agosto de 2020, cinco meses depois do fundo, o S&P 500 já tinha voltado ao máximo de antes da pandemia.',
-                'A 9 de novembro foi anunciada a primeira vacina eficaz. Nesse mês, o S&P 500 subiu cerca de 11%.',
+                'A 9 de novembro foi anunciada a primeira vacina eficaz. Nesse mês, o S&P 500 subiu cerca de 11 %.',
                 'O ano da pandemia acabou com a bolsa em máximos históricos.'
             ],
             serie: { nome: 'S&P 500 em 2020', pontos: [['23 mar', 2237], ['18 ago', 3390], ['30 out', 3270], ['31 dez', 3756]] }
@@ -180,10 +180,10 @@ const ROUNDS = [
         usual: 'Resultados abaixo das expectativas costumam fazer o preço cair, mesmo com lucros recorde.',
         lesson: 'O preço já incluía o que se esperava. O que mexe o mercado é a surpresa, não a notícia em si.',
         historia: {
-            titulo: 'Fevereiro de 2022: a Meta cai 26% num dia',
+            titulo: 'Fevereiro de 2022: a Meta cai 26 % num dia',
             texto: [
                 'A Meta (Facebook) apresentou receitas recorde, mas previsões abaixo do esperado e, pela primeira vez, uma descida dos utilizadores diários do Facebook.',
-                'A ação caiu cerca de 26% num só dia e, em novembro de 2022, já tinha perdido mais de três quartos do valor face ao máximo de 2021.',
+                'A ação caiu cerca de 26 % num só dia e, em novembro de 2022, já tinha perdido mais de três quartos do valor face ao máximo de 2021.',
                 'Numa carteira só com essa empresa, é um desastre. Numa carteira com várias empresas e um índice por baixo, é uma entre muitas.'
             ],
             serie: { nome: 'Meta (ação, em dólares)', pontos: [['set 2021', 382], ['2 fev 2022', 323], ['3 fev 2022', 238], ['nov 2022', 89], ['2 fev 2024', 475]] }
@@ -213,9 +213,9 @@ function cleanAnswers(raw) {
 }
 
 // --- CONCLUSÃO: o mesmo plano de referência com rentabilidades médias constantes (cenários hipotéticos) ---
-const SCENARIO_RATES = [0.07, 0.10, 0.15];   // 7% = referência da média do mercado
+const SCENARIO_RATES = [0.07, 0.10, 0.15];   // 7 % = referência da média do mercado
 const SCENARIO_YEARS = [7, 10, 15, 30];
-const CONCLUSION_MONTHLY = [150, 300];   // a conclusão mostra primeiro 150€ por mês e depois 300€
+const CONCLUSION_MONTHLY = [150, 300];   // a conclusão mostra primeiro 150 € por mês e depois 300 €
 function buildScenarios(monthly) {
     const rates = SCENARIO_RATES.map(R => {
         const r = Math.pow(1 + R, 1 / 12) - 1;
@@ -277,7 +277,7 @@ function duracao(meses) {
 }
 
 function monthsToGoal(value, monthly) {
-    // Quantos meses faltam para os 10K a uma média de 7% ao ano (para quem não chegou nos 7 anos do jogo)
+    // Quantos meses faltam para os 10K a uma média de 7 % ao ano (para quem não chegou nos 7 anos do jogo)
     const r = Math.pow(1 + PROJECTION_RATE, 1 / 12) - 1;
     let v = value, m = 0;
     while (v < GOAL && m < 600) { v = v * (1 + r) + monthly; m++; }
@@ -338,7 +338,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             index,
             picks: buildPicksPath(index),
             news: 'O jogo vai começar. Faz o check-in e entra.',
-            // Planos de referência (1.000€ + 150€/mês): os três perfis no ecrã grande e o Índice com cada decisão
+            // Planos de referência (1.000 € + 150 €/mês): os três perfis no ecrã grande e o Índice com cada decisão
             refs: {
                 indice: newPlan('indice', REF_MONTHLY), misto: newPlan('misto', REF_MONTHLY), escolhidas: newPlan('escolhidas', REF_MONTHLY),
                 parou: newPlan('indice', REF_MONTHLY, 'PARO'), vendeu: newPlan('indice', REF_MONTHLY, 'VENDO'),
@@ -420,7 +420,8 @@ module.exports = function setupGame10k(io, opts = {}) {
         game.status = 'DECIDE';
         game.news = 'A tua carteira está a cair. O que fazes ao teu plano?';
         game.decideEndsAt = Date.now() + DECIDE_SECONDS * 1000;
-        timer = setTimeout(closeDecision, DECIDE_SECONDS * 1000);
+        if (game.paused) { game.pausaRestante = DECIDE_SECONDS * 1000; game.decideEndsAt = null; }
+        else timer = setTimeout(closeDecision, DECIDE_SECONDS * 1000);
         broadcast();
     }
 
@@ -452,13 +453,35 @@ module.exports = function setupGame10k(io, opts = {}) {
         broadcast();
     }
 
+    // ⏸ Pausa: para o mercado e também o relógio da votação ou da decisão; ao retomar, continua com o tempo que faltava
+    function pausar() {
+        if (game.paused) return;
+        game.paused = true;
+        const fim = game.status === 'VOTING' ? game.voteEndsAt : game.status === 'DECIDE' ? game.decideEndsAt : null;
+        if (fim) {
+            game.pausaRestante = Math.max(1000, fim - Date.now());
+            if (timer) { clearTimeout(timer); timer = null; }
+            if (game.status === 'VOTING') game.voteEndsAt = null; else game.decideEndsAt = null;
+        }
+    }
+    function retomar() {
+        if (!game.paused) return;
+        game.paused = false;
+        const resto = game.pausaRestante;
+        game.pausaRestante = null;
+        if (!resto) return;
+        if (game.status === 'VOTING') { game.voteEndsAt = Date.now() + resto; timer = setTimeout(closeVote, resto); }
+        else if (game.status === 'DECIDE') { game.decideEndsAt = Date.now() + resto; timer = setTimeout(closeDecision, resto); }
+    }
+
     function openVote() {
         const r = ROUNDS[game.round];
         game.status = 'VOTING';
         const seconds = r.seconds || VOTE_SECONDS;
         game.voteEndsAt = Date.now() + seconds * 1000;
         stop();
-        timer = setTimeout(closeVote, seconds * 1000);
+        if (game.paused) { game.pausaRestante = seconds * 1000; game.voteEndsAt = null; }
+        else timer = setTimeout(closeVote, seconds * 1000);
         broadcast();
     }
 
@@ -588,10 +611,11 @@ module.exports = function setupGame10k(io, opts = {}) {
             historia: s === 'HISTORY' && r ? r.historia : null,
             nextIsDecision: s === 'HISTORY' && ROUNDS[game.round + 1] && ROUNDS[game.round + 1].decisao && !decided,
             callback: s === 'DECIDE' && survey.answered
-                ? `No check-in, ${Math.round(survey.wouldSell / survey.answered * 100)}% de vocês disseram que vendiam tudo se a carteira caísse 30%.`
+                ? `No check-in, ${Math.round(survey.wouldSell / survey.answered * 100)} % de vocês disseram que vendiam tudo se a carteira caísse 30 %.`
                 : null,
             survey,
             voteEndsAt: game.voteEndsAt,
+            pausaRestante: game.paused ? (game.pausaRestante || null) : null,   // em pausa: segundos que faltam (relógio parado)
             decideEndsAt: game.decideEndsAt,
             serverNow: Date.now(),
             voted: s === 'VOTING' ? voteCounts().SOBE + voteCounts().DESCE : null,
@@ -629,7 +653,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             cash: plan.cash,
             drawdown: drawdown(plan),
             hitMonth: plan.hitMonth,
-            // Quem não chegou aos 10K nos 7 anos: em que mês chegaria a 7% ao ano
+            // Quem não chegou aos 10K nos 7 anos: em que mês chegaria a 7 % ao ano
             projectedMonth: over && !plan.hitMonth ? TOTAL_MONTHS + monthsToGoal(plan.value, p.monthly) : null,
             score: p.score,
             vote: p.vote,
@@ -653,7 +677,7 @@ module.exports = function setupGame10k(io, opts = {}) {
         nsp.to('screen').emit('screen', { history: game.history });
         const roster = [];
         game.players.forEach(p => roster.push({ name: p.name, profile: PROFILES[p.profile].label, monthly: p.monthly, score: p.score, vote: p.vote, decision: p.decision }));
-        roster.sort((a, b) => b.score - a.score);
+        roster.sort((a, b) => a.name.localeCompare(b.name, 'pt'));   // por nome: a ordem por pontos seria um ranking à vista
         nsp.to('admin').emit('admin', { roster, rounds: ROUNDS.map(r => ({ ...r, question: questionText(r) })) });
     }
 
@@ -737,10 +761,10 @@ module.exports = function setupGame10k(io, opts = {}) {
             if (command === 'CLOSE_VOTE') closeVote();
             if (command === 'SOUND_ON') sound = true;
             if (command === 'SOUND_OFF') sound = false;
-            if (command === 'PAUSE') game.paused = true;
-            if (command === 'RESUME') game.paused = false;
+            if (command === 'PAUSE') pausar();
+            if (command === 'RESUME') retomar();
             if (command === 'FINISH') finish();
-            // A conclusão tem dois passos: primeiro com 150€ por mês, depois com 300€
+            // A conclusão tem dois passos: primeiro com 150 € por mês, depois com 300 €
             if (command === 'SHOW_CONCLUSION' && game.status === 'FINISHED') { game.status = 'CONCLUSION'; game.conclusion = CONCLUSION_MONTHLY[0]; }
             else if (command === 'SHOW_CONCLUSION' && game.status === 'CONCLUSION') game.conclusion = CONCLUSION_MONTHLY[CONCLUSION_MONTHLY.indexOf(game.conclusion) + 1] || game.conclusion;
             if (command === 'HIDE_CONCLUSION' && game.status === 'CONCLUSION') game.status = 'FINISHED';
@@ -842,8 +866,9 @@ module.exports = function setupGame10k(io, opts = {}) {
             if (game.waitNews) { /* parado à espera do admin: não volta a correr */ }
             else runTo(game.target, FAST_MS, i >= ROUNDS.length ? finish : () => chegada(i));
         } else if (s === 'WINDOW') runTo(game.target, WINDOW_MS, reveal);
-        else if (s === 'VOTING') timer = setTimeout(closeVote, Math.max(0, (game.voteEndsAt || agora) - agora));
-        else if (s === 'DECIDE') timer = setTimeout(closeDecision, Math.max(0, (game.decideEndsAt || agora) - agora));
+        // Em pausa, os relógios ficam parados (o tempo que faltava está em pausaRestante)
+        else if (s === 'VOTING' && !game.paused) timer = setTimeout(closeVote, Math.max(0, (game.voteEndsAt || agora) - agora));
+        else if (s === 'DECIDE' && !game.paused) timer = setTimeout(closeDecision, Math.max(0, (game.decideEndsAt || agora) - agora));
         console.log(`Jogo recuperado: ${game.players.size} jogadores, estado ${s}.`);
         return true;
     }

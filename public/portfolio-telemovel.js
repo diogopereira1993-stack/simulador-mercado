@@ -19,12 +19,12 @@
     const $ = id => document.getElementById(id);
     const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const grupo = n => String(Math.trunc(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    const eur = v => (Math.round(v) < 0 ? '−' : '') + grupo(Math.round(v)) + '€';
+    const eur = v => (Math.round(v) < 0 ? '−' : '') + grupo(Math.round(v)) + ' €';
     const dec = v => { const c = Math.round(Math.abs(v) * 100); return grupo(Math.floor(c / 100)) + ',' + String(c % 100).padStart(2, '0'); };
-    const eur2 = v => (v < 0 ? '−' : '') + dec(v) + '€';
+    const eur2 = v => (v < 0 ? '−' : '') + dec(v) + ' €';
     const SIMB = { USD: '$', CAD: 'C$', GBP: '£' };
-    const precoNativo = (v, moeda) => moeda === 'EUR' ? dec(v) + '€' : (SIMB[moeda] || moeda + ' ') + dec(v);
-    const pctTxt = v => (v >= 0 ? '+' : '−') + String(Math.round(Math.abs(v) * 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '%';
+    const precoNativo = (v, moeda) => moeda === 'EUR' ? dec(v) + ' €' : (SIMB[moeda] || moeda + ' ') + dec(v);
+    const pctTxt = v => (v >= 0 ? '+' : '−') + String(Math.round(Math.abs(v) * 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' %';
     const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
     // «2026-11-10» → «10 nov»
     function dataCurta(s) { const m = String(s || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); return m ? `${Number(m[3])} ${MESES[Number(m[2]) - 1]}` : String(s || ''); }
@@ -218,9 +218,9 @@
 
     function vCarteira() {
         const sugestao = eu.perfil === 'indice'
-            ? `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha tudo no índice. Aqui começa com ${Math.round(eu.etfSugerido * 100)}% para experimentares com uma parte pequena em empresas.`
-            : `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha ${Math.round(eu.perfilIndice * 100)}% no índice. Começa igual e muda se quiseres.`;
-        const jaTens = 'Já tens um ETF? Põe 0% e usa isto só para as ações escolhidas.';
+            ? `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha tudo no índice. Aqui começa com ${Math.round(eu.etfSugerido * 100)} % para experimentares com uma parte pequena em empresas.`
+            : `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha ${Math.round(eu.perfilIndice * 100)} % no índice. Começa igual e muda se quiseres.`;
+        const jaTens = 'Já tens um ETF? Põe 0 % e usa isto só para as ações escolhidas.';
         return `${passo('CARTEIRA')}
             <h1 class="pf-h1">Monta a tua carteira</h1>
             <p class="pf-lead">Quanto pões para começar e como divides, aos preços de hoje. Compras ações inteiras: ficam registadas em teu nome.</p>
@@ -249,7 +249,7 @@
         $('pf-etf-card').style.display = c.empresas.length ? '' : 'none';
         const rng = $('pf-etf');
         if (document.activeElement !== rng) rng.value = Math.round(c.etfPct * 100);
-        $('pf-etf-lbl').innerText = `${Math.round(c.etfPct * 100)}%`;
+        $('pf-etf-lbl').innerText = `${Math.round(c.etfPct * 100)} %`;
 
         const ativos = Object.keys(c.w);
         const investido = d.montante - c.sobra;
@@ -264,7 +264,7 @@
             </div>`;
         }).join('');
         const barras = ativos.filter(t => c.acoes[t]).map(t => `<i style="width:${(c.acoes[t] * c.precos[t] / d.montante * 100).toFixed(2)}%;background:${cor(t)}"></i>`).join('');
-        const legenda = ativos.filter(t => c.acoes[t]).map(t => `<span><i style="background:${cor(t)}"></i>${esc(nomeT(t))} ${Math.round(c.acoes[t] * c.precos[t] / d.montante * 100)}%</span>`).join('');
+        const legenda = ativos.filter(t => c.acoes[t]).map(t => `<span><i style="background:${cor(t)}"></i>${esc(nomeT(t))} ${Math.round(c.acoes[t] * c.precos[t] / d.montante * 100)} %</span>`).join('');
         $('pf-dyn').innerHTML = `
             <div class="pf-card">
                 <div class="pf-card-t">A tua carteira</div>
@@ -283,7 +283,7 @@
             <h1 class="pf-h1">O teu plano de todos os meses</h1>
             <div class="pf-card">
                 <div class="pf-card-t">Quanto pões por mês</div>
-                <div class="pf-amounts four">${REFORCOS.map(v => `<button class="pf-amt" data-a="reforco" data-v="${v}">${v}€</button>`).join('')}<button class="pf-amt" data-a="reforco" data-v="outro">Outro</button></div>
+                <div class="pf-amounts four">${REFORCOS.map(v => `<button class="pf-amt" data-a="reforco" data-v="${v}">${v} €</button>`).join('')}<button class="pf-amt" data-a="reforco" data-v="outro">Outro</button></div>
                 <div class="pf-input-row" id="pf-ref-row"><input class="pf-input" id="pf-ref" type="number" inputmode="numeric" min="10" max="10000" step="10" placeholder="Ex.: 75"><span>€</span></div>
                 <p class="pf-note">No check-in disseste ${eur(eu.reforcoCheckin)} por mês.</p>
             </div>
@@ -300,7 +300,7 @@
             const e = alcance[0], m = P.mesesPara(e.preco_eur, c.reforco);
             partes.push(`Uma ação da <b>${esc(e.nome)}</b> custa ${eur(e.preco_eur)} e tu pões ${eur(c.reforco)} por mês. Não é impossível: juntas ${m} meses e compras.`);
         } else if (!longe.length) {
-            partes.push(`Se pões 50€ por mês e uma ação custa 100€, não é impossível: juntas 2 meses e compras. Com ${eur(c.reforco)} por mês, todas as tuas empresas cabem num mês.`);
+            partes.push(`Se pões 50 € por mês e uma ação custa 100 €, não é impossível: juntas 2 meses e compras. Com ${eur(c.reforco)} por mês, todas as tuas empresas cabem num mês.`);
         }
         if (longe.length) {
             const e = longe[0];
@@ -361,7 +361,7 @@
     const EMAIL_RE = /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,}$/i;
     function vEmail() {
         const c = contas();
-        const resumo = `${eur(d.montante)} para começar e ${eur(c.reforco)} por mês · ${c.empresas.length ? `${c.empresas.length} ${c.empresas.length === 1 ? 'empresa' : 'empresas'} e ${Math.round(c.etfPct * 100)}% no ETF` : 'tudo no ETF'}`;
+        const resumo = `${eur(d.montante)} para começar e ${eur(c.reforco)} por mês · ${c.empresas.length ? `${c.empresas.length} ${c.empresas.length === 1 ? 'empresa' : 'empresas'} e ${Math.round(c.etfPct * 100)} % no ETF` : 'tudo no ETF'}`;
         if (d.quer === true && !d.confirmado) {
             const sug = sugerirDominio(d.email);
             return `${passo('EMAIL')}

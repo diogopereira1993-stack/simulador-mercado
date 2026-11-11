@@ -143,7 +143,7 @@
 <body>
     <header>
         <img class="logo" src="logo-moneyflix.png" alt="MoneyFlix">
-        <div class="ref">Plano de referência: 1.000€ + 150€ por mês</div>
+        <div class="ref">Plano de referência: 1.000 € + 150 € por mês</div>
         <span id="round-label"></span>
         <div id="date">Ano 1 · jan</div>
     </header>
@@ -151,7 +151,7 @@
     <main>
         <section class="card chart-card">
             <div class="chart-head">
-                <h2>O plano de cada perfil, com 150€ por mês</h2>
+                <h2>O plano de cada perfil, com 150 € por mês</h2>
                 <div class="legend">
                     <span><i style="background: var(--c-indice)"></i>Índice</span>
                     <span><i style="background: var(--c-misto)"></i>Índice + ações escolhidas</span>
@@ -201,7 +201,7 @@
                 </div>
             </div>
             <div class="card room-card"><div class="lbl">Nunca investiram</div><div class="room-big" id="r-never">—</div></div>
-            <div class="card room-card"><div class="lbl">Vendiam tudo numa queda de 30%</div><div class="room-big" id="r-sell">—</div></div>
+            <div class="card room-card"><div class="lbl">Vendiam tudo numa queda de 30 %</div><div class="room-big" id="r-sell">—</div></div>
             <div class="card room-card"><div class="lbl">Sem fundo de emergência</div><div class="room-big" id="r-emergency">—</div></div>
             <div class="card room-card"><div class="lbl">Por mês, em média</div><div class="room-big" id="r-monthly">—</div></div>
         </div>
@@ -290,12 +290,12 @@
     <!-- ── CONCLUSÃO ───────────────────────────────────── -->
     <div class="overlay" id="conclusion">
         <div>
-            <div class="kicker" id="concl-kicker">O mesmo plano: 1.000€ + 150€ por mês</div>
+            <div class="kicker" id="concl-kicker">O mesmo plano: 1.000 € + 150 € por mês</div>
             <h2 class="concl-title">E se a média fosse outra?</h2>
             <p class="concl-sub">O jogo usou a média do mercado. Com outras rentabilidades médias, o mesmo plano chegava a isto, com mais risco pelo caminho.</p>
         </div>
         <table class="concl-table">
-            <thead><tr><th></th><th>Do teu bolso</th><th>7% ao ano<small>média do mercado</small></th><th>10% ao ano</th><th>15% ao ano</th></tr></thead>
+            <thead><tr><th></th><th>Do teu bolso</th><th>7 % ao ano<small>média do mercado</small></th><th>10 % ao ano</th><th>15 % ao ano</th></tr></thead>
             <tbody id="concl-body"></tbody>
         </table>
         <p class="concl-note">Cenários hipotéticos com rentabilidades médias constantes. Rentabilidades mais altas implicam mais risco e mais volatilidade, e não são garantidas.</p>
@@ -307,9 +307,9 @@
     <script>
         const socket = io();
         socket.on('connect', () => socket.emit('register-screen'));
-        const eur = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '€';
-        const pctAbs = v => Math.abs(v * 100).toFixed(0) + '%';
-        const pctNeg = v => '−' + Math.abs(v * 100).toFixed(0) + '%';
+        const eur = v => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
+        const pctAbs = v => Math.abs(v * 100).toFixed(0) + ' %';
+        const pctNeg = v => '−' + Math.abs(v * 100).toFixed(0) + ' %';
         const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const show = (id, on) => document.getElementById(id).style.display = on ? '' : 'none';
@@ -363,7 +363,7 @@
                         grid: { color: ctx => ctx.tick.value % 12 === 0 ? '#E5E5EA' : 'transparent' },
                         ticks: { stepSize: 12, callback: v => v === 0 ? 'Início' : 'Ano ' + v / 12 }
                     },
-                    y: { min: 0, suggestedMax: 12000, position: 'right', grid: { color: '#EEEEF0' }, ticks: { callback: v => (v / 1000) + 'K€' } }
+                    y: { min: 0, suggestedMax: 12000, position: 'right', grid: { color: '#EEEEF0' }, ticks: { callback: v => (v / 1000) + 'K €' } }
                 }
             },
             plugins: [bandsPlugin]
@@ -474,7 +474,7 @@
 
             // Quem está a jogar e com que perfil (sem pontos nem rankings)
             const sv = s.survey;
-            document.getElementById('sala').innerHTML = `<div class="sala-big">${s.players}</div><div class="sala-sub">${s.players === 1 ? 'pessoa' : 'pessoas'} a jogar${sv.avgMonthly ? ` · ${sv.avgMonthly}€ por mês, em média` : ''}</div>` +
+            document.getElementById('sala').innerHTML = `<div class="sala-big">${s.players}</div><div class="sala-sub">${s.players === 1 ? 'pessoa' : 'pessoas'} a jogar${sv.avgMonthly ? ` · ${sv.avgMonthly} € por mês, em média` : ''}</div>` +
                 [['indice', 'Índice'], ['misto', 'Índice + ações escolhidas'], ['escolhidas', 'Ações escolhidas']]
                     .map(([k, label]) => `<div class="sala-row"><i style="background: var(--c-${k})"></i>${label}<b>${sv.profiles[k]}</b></div>`).join('');
 
@@ -499,11 +499,11 @@
                 document.getElementById('pn-' + k).innerText = sv.profiles[k];
                 document.getElementById('pb-' + k).style.width = (sv.profiles[k] / max * 100) + '%';
             });
-            const share = n => sv.answered ? Math.round(n / sv.answered * 100) + '%' : '—';
+            const share = n => sv.answered ? Math.round(n / sv.answered * 100) + ' %' : '—';
             document.getElementById('r-never').innerText = share(sv.neverInvested);
             document.getElementById('r-sell').innerText = share(sv.wouldSell);
             document.getElementById('r-emergency').innerText = share(sv.noEmergency);
-            document.getElementById('r-monthly').innerText = sv.avgMonthly ? sv.avgMonthly + '€' : '—';
+            document.getElementById('r-monthly').innerText = sv.avgMonthly ? sv.avgMonthly + ' €' : '—';
         }
 
         function renderNews(s, kicker) {
@@ -536,7 +536,7 @@
             const total = v.SOBE + v.DESCE;
             const upPct = total ? Math.round(v.SOBE / total * 100) : 0;
             document.getElementById('news').innerText = total
-                ? `${s.news} A sala votou: ${upPct}% sobe, ${100 - upPct}% desce. Vamos ver…`
+                ? `${s.news} A sala votou: ${upPct} % sobe, ${100 - upPct} % desce. Vamos ver…`
                 : `${s.news} Vamos ver…`;
         }
 
@@ -561,7 +561,7 @@
             a.innerText = `${r.answer === 'SOBE' ? '▲ Subiu' : '▼ Desceu'} ${pctAbs(r.marketReturn)} em ${r.horizon === 1 ? '1 mês' : r.horizon + ' meses'}`;
             const voted = r.votes.SOBE + r.votes.DESCE;
             document.getElementById('rev-meta').innerHTML = voted
-                ? `<b>${r.correct} de ${voted}</b> acertaram (${Math.round(r.correct / voted * 100)}% da sala)`
+                ? `<b>${r.correct} de ${voted}</b> acertaram (${Math.round(r.correct / voted * 100)} % da sala)`
                 : 'Ninguém votou nesta ronda';
             document.getElementById('rev-usual').innerText = r.usual;
             document.getElementById('rev-lesson').innerText = r.lesson;
@@ -589,16 +589,16 @@
             const r = s.refs;
             // Um cartão por reforço mensal que alguém escolheu: o valor médio ao fim de 7 anos e quando chegaram aos 10K
             document.getElementById('fin-grid').innerHTML = (s.byMonthly || []).map(g => `<div class="card">
-                <div class="name">${g.monthly}€ por mês · ${g.people} ${g.people === 1 ? 'pessoa' : 'pessoas'}</div>
+                <div class="name">${g.monthly} € por mês · ${g.people} ${g.people === 1 ? 'pessoa' : 'pessoas'}</div>
                 <div class="val">${eur(g.value)}</div>
-                <div class="sub">${eur(g.pocket)} do bolso · ${g.hitMonth ? `10.000€ ao fim de ${duracao(g.hitMonth)}` : `10.000€ por volta dos ${Math.round(g.projectedMonth / 12)} anos`}</div></div>`).join('');
+                <div class="sub">${eur(g.pocket)} do bolso · ${g.hitMonth ? `10.000 € ao fim de ${duracao(g.hitMonth)}` : `10.000 € por volta dos ${Math.round(g.projectedMonth / 12)} anos`}</div></div>`).join('');
             const d = s.decisions;
             document.getElementById('fin-decisions').innerText = d
                 ? `Na sala, ${d.MANTENHO} ${d.MANTENHO === 1 ? 'manteve' : 'mantiveram'} o plano, ${d.PARO} ${d.PARO === 1 ? 'parou' : 'pararam'} os reforços e ${d.VENDO} ${d.VENDO === 1 ? 'vendeu' : 'venderam'} tudo.`
                 : 'A sala não chegou à decisão na crise.';
             const hit = p => p.hitMonth ? duracao(p.hitMonth) : 'não chegou';
             document.getElementById('fin-dec-table').innerHTML =
-                `<tr><td style="color: var(--sub);">Com 150€ por mês no Índice</td><td style="color: var(--sub); font-weight: 600;">Chegou aos 10.000€ em</td><td style="color: var(--sub); font-weight: 600;">Ao fim de 7 anos</td></tr>` +
+                `<tr><td style="color: var(--sub);">Com 150 € por mês no Índice</td><td style="color: var(--sub); font-weight: 600;">Chegou aos 10.000 € em</td><td style="color: var(--sub); font-weight: 600;">Ao fim de 7 anos</td></tr>` +
                 [['Manteve', r.indice], ['Parou um ano', r.parou], ['Vendeu e voltou um ano depois', r.vendeu]]
                     .map(([label, p]) => `<tr><td>${label}</td><td>${hit(p)}</td><td>${eur(p.value)}</td></tr>`).join('');
             // O mesmo perfil com os 4 reforços: o valor por mês muda mais o resultado do que tudo o resto
@@ -611,12 +611,12 @@
                     plugins: { legend: { position: 'top', align: 'start', labels: { boxWidth: 14, boxHeight: 3, font: { size: 13, weight: '600' } } }, tooltip: { enabled: false } },
                     scales: {
                         x: { type: 'linear', min: 0, max: 84, grid: { display: false }, ticks: { stepSize: 12, font: { size: 12 }, callback: v => v === 0 ? 'Início' : 'Ano ' + v / 12 } },
-                        y: { min: 0, position: 'right', grid: { color: '#EEEEF0' }, ticks: { font: { size: 12 }, callback: v => (v / 1000) + 'K€' } }
+                        y: { min: 0, position: 'right', grid: { color: '#EEEEF0' }, ticks: { font: { size: 12 }, callback: v => (v / 1000) + 'K €' } }
                     }
                 }
             });
             linesChart.data.datasets = [300, 150, 100, 50].filter(m => L[m]).map(m => ({
-                label: `${m}€/mês`, data: L[m].map((v, i) => ({ x: i, y: v })), borderColor: cores[m], borderWidth: 3, pointRadius: 0, tension: 0.25 }))
+                label: `${m} €/mês`, data: L[m].map((v, i) => ({ x: i, y: v })), borderColor: cores[m], borderWidth: 3, pointRadius: 0, tension: 0.25 }))
                 .concat([{ label: '10K', data: [{ x: 0, y: 10000 }, { x: 84, y: 10000 }], borderColor: css('--text'), borderWidth: 1.5, borderDash: [3, 5], pointRadius: 0 }]);
             linesChart.resize();
             linesChart.update();
@@ -625,9 +625,9 @@
 
         function renderConclusion(sc) {
             document.getElementById('conclusion').classList.add('show');
-            document.getElementById('concl-kicker').innerText = `O mesmo plano: 1.000€ + ${sc.monthly}€ por mês`;
+            document.getElementById('concl-kicker').innerText = `O mesmo plano: 1.000 € + ${sc.monthly} € por mês`;
             const rows = sc.years.map(y => `<tr><td>${y} anos</td><td class="pocket">${eur(sc.pocket[y])}</td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`);
-            rows.push(`<tr class="hit"><td>Chega aos 10.000€</td><td class="pocket">${duracao(sc.pocketHit)}</td>${sc.rates.map(r => `<td>${duracao(r.hitMonth)}</td>`).join('')}</tr>`);
+            rows.push(`<tr class="hit"><td>Chega aos 10.000 €</td><td class="pocket">${duracao(sc.pocketHit)}</td>${sc.rates.map(r => `<td>${duracao(r.hitMonth)}</td>`).join('')}</tr>`);
             document.getElementById('concl-body').innerHTML = rows.join('');
         }
 
@@ -641,6 +641,11 @@
         function tick() {
             if (!state) return;
             const ends = state.status === 'VOTING' ? state.voteEndsAt : state.status === 'DECIDE' ? state.decideEndsAt : null;
+            // Em pausa: o relógio fica parado no tempo que faltava
+            if (!ends && state.paused && state.pausaRestante && (state.status === 'VOTING' || state.status === 'DECIDE')) {
+                const el = document.getElementById(state.status === 'VOTING' ? 'countdown' : 'decide-countdown');
+                el.innerText = Math.ceil(state.pausaRestante / 1000); el.classList.remove('soon'); return;
+            }
             if (!ends) return;
             const left = Math.max(0, Math.ceil((ends - (Date.now() + clockOffset)) / 1000));
             const el = document.getElementById(state.status === 'VOTING' ? 'countdown' : 'decide-countdown');

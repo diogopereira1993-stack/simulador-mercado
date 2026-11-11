@@ -9,8 +9,8 @@
         null: 'Quando o jogo acabar, abre esta fase: os telemóveis passam para «A tua carteira de exercício», com o perfil e o reforço do check-in. O jogo fica guardado; «Voltar ao jogo» mostra-o outra vez.',
         SETORES: 'Pede a cada um que escolha no telemóvel os setores de que gosta ou de que gostava de saber mais. O ecrã mostra os mais escolhidos. Quando a maioria tiver escolhido, avança: os setores aparecem do mais escolhido para o menos escolhido.',
         EMPRESAS: 'Apresenta o setor e 2 ou 3 empresas. Cada um toca nas empresas para ver a ficha e adiciona com o + as que quiser. É um exercício com as MF Picks, não uma recomendação. O botão principal passa ao setor seguinte; também podes tocar num setor da lista.',
-        CARTEIRA: 'Cada um escolhe quanto põe para começar (1.000€, 1.500€ ou outro) e a parte no ETF de índice (começa na do perfil do jogo). As ações são inteiras: se uma custa mais do que sobra, fica para o plano mensal.',
-        PLANO: 'O reforço é o do check-in (podem mudá-lo). Mostra o calendário: se pões 50€ por mês e a ação custa 100€, juntas 2 meses e compras. Fecha com: não importa por onde começas, o importante é começar.',
+        CARTEIRA: 'Cada um escolhe quanto põe para começar (1.000 €, 1.500 € ou outro) e a parte no ETF de índice (começa na do perfil do jogo). As ações são inteiras: se uma custa mais do que sobra, fica para o plano mensal.',
+        PLANO: 'O reforço é o do check-in (podem mudá-lo). Mostra o calendário: se pões 50 € por mês e a ação custa 100 €, juntas 2 meses e compras. Fecha com: não importa por onde começas, o importante é começar.',
         EMAIL: 'Quem quiser recebe o plano por email: escreve o email e marca a caixa do consentimento. Ninguém é obrigado. No fim, cada um confirma o email («Sim, está certo»). Antes de exportar, vê aqui quantos faltam confirmar e pede à sala; depois exporta o JSON e o CSV antes de reiniciar o jogo.'
     };
 
@@ -161,7 +161,7 @@
             $('pfa-cat').innerHTML = `Catálogo: <b>${esc(c.ficheiro)}</b> · ${c.setores} setores, ${c.empresas} empresas${c.atualizado ? ` · preços de ${esc(c.atualizado)}` : ''}${c.exemplo ? '<div class="pfa-warn">Ainda é o catálogo de EXEMPLO. Quando o verdadeiro estiver em tour-lisboa/dados/picks-catalogo.json (ou em dados/ dentro do projeto), carrega em «Recarregar catálogo».</div>' : ''}`;
             const PASSO = { SETORES: '1 Setores', EMPRESAS: '2 Empresas', CARTEIRA: '3 Carteira', PLANO: '4 Plano', EMAIL: '5 Email' };
             $('pfa-roster').innerHTML = info.roster.length
-                ? info.roster.map(p => `<tr><td>${esc(p.nome)}</td><td>${p.setores}</td><td>${p.empresas}</td><td>${p.montante ? p.montante + '€' : '—'}</td><td>${p.etapa ? PASSO[p.etapa] : '—'}</td><td>${p.email === 'confirmado' ? '✓ confirmado' : p.email === 'por confirmar' ? 'por confirmar' : p.email === 'não' ? 'não' : '—'}</td></tr>`).join('')
+                ? info.roster.map(p => `<tr><td>${esc(p.nome)}</td><td>${p.setores}</td><td>${p.empresas}</td><td>${p.montante ? p.montante + ' €' : '—'}</td><td>${p.etapa ? PASSO[p.etapa] : '—'}</td><td>${p.email === 'confirmado' ? '✓ confirmado' : p.email === 'por confirmar' ? 'por confirmar' : p.email === 'não' ? 'não' : '—'}</td></tr>`).join('')
                 : '<tr><td colspan="6" style="color:var(--sub)">À espera de jogadores…</td></tr>';
         }
     }

@@ -4,7 +4,7 @@
     const $ = id => document.getElementById(id);
     const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const grupo = n => String(Math.trunc(Math.abs(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    const eur = v => grupo(Math.round(v)) + '€';
+    const eur = v => grupo(Math.round(v)) + ' €';
     const CORES = ['#5E5CE6', '#FF9F0A', '#1FA84F', '#E5484D', '#0E9AA7', '#AF52DE', '#B45309', '#D63384', '#3A8F5C', '#6E6E73', '#8E5A2B', '#C2410C'];
     function cor(t) { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) >>> 0; return CORES[h % CORES.length]; }
     const TIPOS = { defensiva: 'Defensiva', crescimento: 'Crescimento', ciclica: 'Cíclica' };
@@ -67,19 +67,19 @@
                 <div class="pfe-stats">
                     <div class="pfe-stat"><b>${s.carteiras}</b><span>${s.carteiras === 1 ? 'carteira montada' : 'carteiras montadas'}</span></div>
                     <div class="pfe-stat"><b>${s.carteiras ? eur(s.montanteMedio) : '—'}</b><span>para começar, em média</span></div>
-                    <div class="pfe-stat"><b>${s.carteiras ? Math.round(s.etfMedio * 100) + '%' : '—'}</b><span>no ETF de índice, em média</span></div>
+                    <div class="pfe-stat"><b>${s.carteiras ? Math.round(s.etfMedio * 100) + ' %' : '—'}</b><span>no ETF de índice, em média</span></div>
                 </div>
                 ${top.length ? `<div><div class="sub" style="margin:0 0 1.6vh;font-weight:700">As empresas mais escolhidas</div><div class="pfe-bars">${top.map(([t, n]) => `<div class="pfe-bar"><span>${esc(t)} · ${esc(porT[t] ? porT[t].nome : '')}</span><div class="track"><div class="fill" style="width:${(n / max * 100).toFixed(1)}%;background:${cor(t)}"></div></div><b>${n}</b></div>`).join('')}</div></div>` : ''}
             </div>`;
     }
 
-    // O exemplo da sala: 50€ por mês e uma ação de 100€
+    // O exemplo da sala: 50 € por mês e uma ação de 100 €
     function plano() {
         const meses = ['Mês 1', 'Mês 2', 'Mês 3', 'Mês 4', 'Mês 5', 'Mês 6'];
         const cal = meses.map((m, k) => k % 2 === 0
-            ? `<div class="pf-mo wait"><div class="mh"><span>${m}</span></div><div class="save">50€ guardados</div><div class="bar"><i style="width:50%"></i></div></div>`
+            ? `<div class="pf-mo wait"><div class="mh"><span>${m}</span></div><div class="save">50 € guardados</div><div class="bar"><i style="width:50%"></i></div></div>`
             : `<div class="pf-mo"><div class="mh"><span>${m}</span></div><div class="buys"><span class="buy" style="background:var(--accent)">Compras 1 ação</span></div></div>`).join('');
-        return `<div><h2>Pões 50€ por mês e a ação custa 100€?</h2><p class="sub">Não é impossível: juntas 2 meses e compras. No telemóvel tens o teu calendário, com o teu reforço e as tuas empresas.</p></div>
+        return `<div><h2>Pões 50 € por mês e a ação custa 100 €?</h2><p class="sub">Não é impossível: juntas 2 meses e compras. No telemóvel tens o teu calendário, com o teu reforço e as tuas empresas.</p></div>
             <div class="body" style="gap:5vh"><div class="pfe-cal">${cal}</div>
             <div class="pfe-big">Não importa por onde começas.<br><span>O importante é começar.</span></div></div>`;
     }

@@ -204,9 +204,9 @@
 
         <span class="field-label">Podes mudar de perfil se preferires</span>
         <div class="profiles">
-            <button class="profile-opt" data-profile="indice"><i class="dot" style="background: var(--c-indice)"></i><div><b>Índice</b><span>100% num ETF de índice (ex.: S&amp;P 500)</span></div></button>
-            <button class="profile-opt" data-profile="misto"><i class="dot" style="background: var(--c-misto)"></i><div><b>Índice + ações escolhidas</b><span>70% ETF de índice · 30% ações escolhidas</span></div></button>
-            <button class="profile-opt" data-profile="escolhidas"><i class="dot" style="background: var(--c-escolhidas)"></i><div><b>Ações escolhidas</b><span>35% ETF de índice · 65% ações escolhidas</span></div></button>
+            <button class="profile-opt" data-profile="indice"><i class="dot" style="background: var(--c-indice)"></i><div><b>Índice</b><span>100 % num ETF de índice (ex.: S&amp;P 500)</span></div></button>
+            <button class="profile-opt" data-profile="misto"><i class="dot" style="background: var(--c-misto)"></i><div><b>Índice + ações escolhidas</b><span>70 % ETF de índice · 30 % ações escolhidas</span></div></button>
+            <button class="profile-opt" data-profile="escolhidas"><i class="dot" style="background: var(--c-escolhidas)"></i><div><b>Ações escolhidas</b><span>35 % ETF de índice · 65 % ações escolhidas</span></div></button>
         </div>
 
         <button class="btn btn-primary" id="join-btn" style="margin-top: 14px;">Confirmar e entrar</button>
@@ -221,11 +221,11 @@
 
         <div class="card plan">
             <div class="plan-head"><span class="plan-label" id="plan-label">O teu plano</span><span class="date" id="date">Ano 1 · jan</span></div>
-            <div class="value-row"><div id="value">1.000€</div><span class="badge" id="delta"></span><span class="badge neg" id="drawdown"></span></div>
+            <div class="value-row"><div id="value">1.000 €</div><span class="badge" id="delta"></span><span class="badge neg" id="drawdown"></span></div>
             <svg id="spark" class="spark" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"></svg>
             <div class="spark-legend"><span><i id="l-plan"></i>O teu plano</span><span><i class="l-pocket"></i>Do teu bolso</span><span>7 anos</span></div>
             <div class="progress"><div id="bar"></div></div>
-            <div class="progress-row"><span id="pct">10% dos 10.000€</span><span id="split">1.000€ do teu bolso</span></div>
+            <div class="progress-row"><span id="pct">10 % dos 10.000 €</span><span id="split">1.000 € do teu bolso</span></div>
         </div>
 
         <div class="card round" id="round">
@@ -258,8 +258,8 @@
             <p class="lesson">As tuas previsões não mexeram no plano. O que fez a diferença foi o reforço de todos os meses e não desistir na crise.</p>
             <div id="concl" class="card concl" style="display: none;">
                 <div class="concl-head">E se a média fosse outra?</div>
-                <p class="concl-sub" id="concl-sub">O mesmo plano de 1.000€ + 150€ por mês, com rentabilidades médias diferentes.</p>
-                <table class="concl-table"><thead><tr><th></th><th>7%<small>média</small></th><th>10%</th><th>15%</th></tr></thead><tbody id="concl-body"></tbody></table>
+                <p class="concl-sub" id="concl-sub">O mesmo plano de 1.000 € + 150 € por mês, com rentabilidades médias diferentes.</p>
+                <table class="concl-table"><thead><tr><th></th><th>7 %<small>média</small></th><th>10 %</th><th>15 %</th></tr></thead><tbody id="concl-body"></tbody></table>
                 <p class="concl-note">Cenários hipotéticos. Rentabilidades mais altas implicam mais risco e não são garantidas.</p>
             </div>
             <button class="btn btn-secondary" onclick="finalClosed = true; document.getElementById('final').style.display='none'">Fechar</button>
@@ -271,9 +271,9 @@
         const socket = io();
         // Ponto dos milhares sempre (o pt-PT não agrupa números de 4 dígitos)
         const group = n => String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        const eur = v => (Math.round(v) < 0 ? '−' : '') + group(v) + '€';
-        const signedEur = v => (Math.round(v) < 0 ? '−' : '+') + group(v) + '€';
-        const pct = v => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(0) + '%';
+        const eur = v => (Math.round(v) < 0 ? '−' : '') + group(v) + ' €';
+        const signedEur = v => (Math.round(v) < 0 ? '−' : '+') + group(v) + ' €';
+        const pct = v => (v >= 0 ? '+' : '−') + Math.abs(v * 100).toFixed(0) + ' %';
         const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
         const COLOR = { indice: '--c-indice', misto: '--c-misto', escolhidas: '--c-escolhidas' };
         const SHORT = { indice: 'Índice', misto: 'Índice + ações', escolhidas: 'Ações escolhidas' };
@@ -299,7 +299,7 @@
                 { v: 'LT3', label: 'Daqui a menos de 3 anos', pts: 0 },
                 { v: '3A7', label: 'Daqui a 3 a 7 anos', pts: 1 },
                 { v: 'GT7', label: 'Daqui a mais de 7 anos', pts: 2 }] },
-            { key: 'drop', title: 'A tua carteira de 1.000€ cai para 700€ num ano. O que fazes?', options: [
+            { key: 'drop', title: 'A tua carteira de 1.000 € cai para 700 € num ano. O que fazes?', options: [
                 { v: 'VENDO', label: 'Vendo tudo', hint: 'Não quero perder mais', pts: 0 },
                 { v: 'ESPERO', label: 'Espero', hint: 'Não mexo e espero que recupere', pts: 1 },
                 { v: 'REFORCO', label: 'Reforço', hint: 'Aproveito para comprar mais barato', pts: 2 }] },
@@ -308,10 +308,10 @@
                 { v: 'AJUDA', label: 'Às vezes, com ajuda', hint: 'Se alguém me explicar o que escolher e porquê' },
                 { v: 'GOSTO', label: 'Sim, gosto de analisar', hint: 'Ler resultados, seguir notícias das empresas' }] },
             { key: 'monthly', title: 'Quanto conseguias investir por mês?', options: [
-                { v: '50', label: '50€' },
-                { v: '100', label: '100€' },
-                { v: '150', label: '150€' },
-                { v: '300', label: '300€ ou mais' }] },
+                { v: '50', label: '50 €' },
+                { v: '100', label: '100 €' },
+                { v: '150', label: '150 €' },
+                { v: '300', label: '300 € ou mais' }] },
             { key: 'emergency', title: 'Tens poupança para 3 a 6 meses de despesas?', options: [
                 { v: 'SIM', label: 'Sim' },
                 { v: 'MAIS_MENOS', label: 'Mais ou menos' },
@@ -376,7 +376,7 @@
             profile = suggested;
             document.getElementById('res-profile').innerText = PROFILE_TEXT[suggested].label;
             document.getElementById('res-why').innerText = PROFILE_TEXT[suggested].why;
-            document.getElementById('res-plan').innerText = `O teu plano no jogo: 1.000€ para começar e ${answers.monthly || 150}€ todos os meses.`;
+            document.getElementById('res-plan').innerText = `O teu plano no jogo: 1.000 € para começar e ${answers.monthly || 150} € todos os meses.`;
             const note = document.getElementById('res-note');
             const notes = [];
             if (answers.horizon === 'LT3') notes.push('Dinheiro de que precisas em menos de 3 anos não deve estar em ações: uma queda pode apanhar-te sem tempo para recuperar.');
@@ -436,7 +436,7 @@
             if (!state || !me) return;
             const s = state, m = me;
             document.getElementById('me-name').innerText = m.name;
-            document.getElementById('me-profile').innerText = `${SHORT[m.profile]} · ${m.monthly}€/mês`;
+            document.getElementById('me-profile').innerText = `${SHORT[m.profile]} · ${m.monthly} €/mês`;
             document.body.classList.toggle('compact', ['NEWS', 'VOTING', 'DECIDE'].includes(s.status));
 
             // O plano
@@ -456,14 +456,14 @@
             if (n >= 2 && m.spark[n - 2] > 0) {
                 const r = (m.spark[n - 1] - lastPocketDelta(m)) / m.spark[n - 2] - 1;
                 deltaEl.className = 'badge ' + (r >= 0 ? 'pos' : 'neg');
-                deltaEl.innerText = `${r >= 0 ? '▲' : '▼'} ${Math.abs(r * 100).toFixed(1).replace('.', ',')}% este mês`;
+                deltaEl.innerText = `${r >= 0 ? '▲' : '▼'} ${Math.abs(r * 100).toFixed(1).replace('.', ',')} % este mês`;
             } else deltaEl.innerText = '';
             // Quanto a carteira caiu desde o máximo: é isto que se sente numa crise
             document.getElementById('drawdown').innerText = m.drawdown <= -0.05 ? `${pct(m.drawdown)} desde o máximo` : '';
             drawSpark(m);
             const p = Math.min(m.value / s.goal * 100, 100);
             document.getElementById('bar').style.width = p + '%';
-            document.getElementById('pct').innerText = m.hitMonth ? `10.000€ ao fim de ${duracao(m.hitMonth)}` : `${p.toFixed(0)}% dos 10.000€`;
+            document.getElementById('pct').innerText = m.hitMonth ? `10.000 € ao fim de ${duracao(m.hitMonth)}` : `${p.toFixed(0)} % dos 10.000 €`;
             const split = document.getElementById('split');
             const below = m.value < m.pocket - 1;
             split.className = below ? 'neg' : '';
@@ -497,8 +497,8 @@
                 body.innerHTML = `<div class="decide-head">${pct(m.drawdown)} desde o máximo</div>
                     <div class="decide-sub">${m.value < m.pocket ? `Puseste ${eur(m.pocket)} e a carteira vale ${eur(m.value)}.` : `A carteira vale ${eur(m.value)}, e caiu muito nos últimos meses.`} O que fazes ao teu plano?</div>
                     <div class="decide-opts">
-                        ${opt('MANTENHO', 'Mantenho o plano', `Continuo a investir ${m.monthly}€ todos os meses`)}
-                        ${opt('PARO', 'Paro os reforços', `Durante um ano, os ${m.monthly}€ ficam no banco`)}
+                        ${opt('MANTENHO', 'Mantenho o plano', `Continuo a investir ${m.monthly} € todos os meses`)}
+                        ${opt('PARO', 'Paro os reforços', `Durante um ano, os ${m.monthly} € ficam no banco`)}
                         ${opt('VENDO', 'Vendo tudo', 'Passo tudo para o banco e volto daqui a um ano')}
                     </div>`;
             } else if (s.status === 'NEWS') {
@@ -564,6 +564,9 @@
             const el = document.getElementById('timer');
             const bar = document.getElementById('timebar');
             const ends = state && (state.status === 'VOTING' ? state.voteEndsAt : state.status === 'DECIDE' ? state.decideEndsAt : null);
+            if (!ends && state && state.paused && state.pausaRestante && (state.status === 'VOTING' || state.status === 'DECIDE')) {
+                el.innerText = 'Em pausa'; el.classList.remove('soon'); bar.style.display = 'none'; return;
+            }
             if (!ends) { el.innerText = ''; bar.style.display = 'none'; return; }
             const total = state.status === 'DECIDE' ? state.decideSeconds : (state.round === 0 ? state.firstVoteSeconds : state.voteSeconds);
             const left = Math.max(0, (ends - (Date.now() + clockOffset)) / 1000);
@@ -576,12 +579,12 @@
 
         function showFinal() {
             const m = me, s = state;
-            document.getElementById('final-title').innerText = m.hitMonth ? `O teu plano chegou aos 10.000€ ao fim de ${duracao(m.hitMonth)}` : 'O teu plano ao fim de 7 anos';
+            document.getElementById('final-title').innerText = m.hitMonth ? `O teu plano chegou aos 10.000 € ao fim de ${duracao(m.hitMonth)}` : 'O teu plano ao fim de 7 anos';
             document.getElementById('final-value').innerText = eur(m.value);
-            document.getElementById('final-sub').innerText = `${m.profileLabel} · ${m.monthly}€ por mês · 7 anos`;
+            document.getElementById('final-sub').innerText = `${m.profileLabel} · ${m.monthly} € por mês · 7 anos`;
             const proj = document.getElementById('final-proj');
             proj.style.display = m.projectedMonth ? 'block' : 'none';
-            if (m.projectedMonth) proj.innerText = `Com ${m.monthly}€ por mês, chegavas aos 10.000€ ao fim de cerca de ${Math.round(m.projectedMonth / 12)} anos, a uma média de 7% ao ano. Cada euro a mais por mês aproxima a meta.`;
+            if (m.projectedMonth) proj.innerText = `Com ${m.monthly} € por mês, chegavas aos 10.000 € ao fim de cerca de ${Math.round(m.projectedMonth / 12)} anos, a uma média de 7 % ao ano. Cada euro a mais por mês aproxima a meta.`;
             document.getElementById('final-pocket').innerText = eur(m.pocket);
             document.getElementById('final-market').innerText = signedEur(m.market);
             document.getElementById('final-decision').innerText = m.decisionLabel || '—';
@@ -589,12 +592,12 @@
             // Quem parou ou vendeu vê o que teria se tivesse mantido
             const kept = document.getElementById('final-kept');
             kept.style.display = m.kept ? 'block' : 'none';
-            if (m.kept) kept.innerHTML = `Se tivesses mantido o plano na crise, terias <b>${eur(m.kept.value)}</b> (${signedEur(m.kept.value - m.value)})${m.kept.hitMonth ? ` e chegavas aos 10.000€ ao fim de ${duracao(m.kept.hitMonth)}` : ''}.`;
+            if (m.kept) kept.innerHTML = `Se tivesses mantido o plano na crise, terias <b>${eur(m.kept.value)}</b> (${signedEur(m.kept.value - m.value)})${m.kept.hitMonth ? ` e chegavas aos 10.000 € ao fim de ${duracao(m.kept.hitMonth)}` : ''}.`;
             // A conclusão aparece quando o apresentador a abre no admin
             const concl = document.getElementById('concl');
             if (s.status === 'CONCLUSION' && s.scenarios) {
                 const sc = s.scenarios;
-                document.getElementById('concl-sub').innerText = `O mesmo plano de 1.000€ + ${sc.monthly}€ por mês, com rentabilidades médias diferentes.`;
+                document.getElementById('concl-sub').innerText = `O mesmo plano de 1.000 € + ${sc.monthly} € por mês, com rentabilidades médias diferentes.`;
                 document.getElementById('concl-body').innerHTML = sc.years.map(y =>
                     `<tr><td>${y} anos<small>${eur(sc.pocket[y])} do bolso</small></td>${sc.rates.map(r => `<td>${eur(r.byYear[y])}</td>`).join('')}</tr>`).join('');
                 if (concl.style.display === 'none') { finalClosed = false; concl.style.display = 'block'; }

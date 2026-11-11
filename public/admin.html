@@ -86,7 +86,7 @@
                 <div class="stats">
                     <div><b id="s-players">0</b><span>jogadores</span></div>
                     <div><b id="s-voted">—</b><span id="s-voted-label">votaram nesta ronda</span></div>
-                    <div><b id="s-avg">0</b><span>média de pontos</span></div>
+                    <div><b id="s-avg">0</b><span>fizeram o check-in</span></div>
                 </div>
                 <div id="survey-line" style="margin-top: 10px; font-size: 0.85rem; color: var(--sub); line-height: 1.5;">Check-in: ainda sem respostas.</div>
                 <h2 style="margin-top: 18px;" id="script-title">As rondas</h2>
@@ -97,8 +97,8 @@
         <div class="card">
             <h2>Jogadores</h2>
             <table>
-                <thead><tr><th>#</th><th>Nome</th><th>Perfil</th><th>Por mês</th><th>Pontos</th><th>Voto atual</th><th>Na crise</th></tr></thead>
-                <tbody id="roster"><tr><td colspan="7" style="color: var(--sub);">À espera de jogadores…</td></tr></tbody>
+                <thead><tr><th>#</th><th>Nome</th><th>Perfil</th><th>Por mês</th><th>Voto atual</th><th>Na crise</th></tr></thead>
+                <tbody id="roster"><tr><td colspan="6" style="color: var(--sub);">À espera de jogadores…</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -169,7 +169,7 @@
                 REVEAL: 'Explica o que costuma acontecer e porquê. Depois mostra o exemplo histórico.',
                 HISTORY: 'Conta o exemplo histórico. Depois avança.',
                 FINISHED: 'Jogo terminado. Comenta quanto juntou cada reforço e o que a sala fez na crise. Depois mostra a conclusão.',
-                CONCLUSION: 'A conclusão está no ecrã grande e nos telemóveis. Primeiro com 150€ por mês, depois com 300€.'
+                CONCLUSION: 'A conclusão está no ecrã grande e nos telemóveis. Primeiro com 150 € por mês, depois com 300 €.'
             }[s.status];
         }
 
@@ -206,20 +206,20 @@
             next.innerText = nextLabel(s);
             const concl = document.getElementById('btn-concl');
             concl.disabled = !(s.status === 'FINISHED' || s.status === 'CONCLUSION');
-            concl.innerText = s.nextConclusion ? `📊 Conclusão com ${s.nextConclusion}€ por mês` : '↩ Voltar ao resultado';
+            concl.innerText = s.nextConclusion ? `📊 Conclusão com ${s.nextConclusion} € por mês` : '↩ Voltar ao resultado';
             const pause = document.getElementById('btn-pause');
-            pause.disabled = !(s.status === 'FAST' || s.status === 'WINDOW');
-            pause.innerText = s.paused ? '▶ Retomar mercado' : '⏸ Pausar mercado';
+            pause.disabled = !['FAST', 'WINDOW', 'VOTING', 'DECIDE'].includes(s.status);
+            pause.innerText = s.paused ? '▶ Retomar' : (s.status === 'VOTING' || s.status === 'DECIDE' ? '⏸ Pausar o relógio' : '⏸ Pausar mercado');
             document.getElementById('btn-sound').innerText = s.sound ? '🔊 Som ligado no ecrã' : '🔇 Som desligado no ecrã';
 
             document.getElementById('s-players').innerText = s.players;
             const deciding = s.status === 'DECIDE';
             document.getElementById('s-voted').innerText = deciding ? (s.decisions ? s.decisions.answered : 0) : (s.voted !== null ? s.voted : (s.votes ? s.votes.SOBE + s.votes.DESCE : '—'));
             document.getElementById('s-voted-label').innerText = deciding ? 'já decidiram' : 'votaram nesta ronda';
-            document.getElementById('s-avg').innerText = s.avgScore.toFixed(1).replace('.', ',');
-            const sv = s.survey, share = n => Math.round(n / sv.answered * 100) + '%';
+            document.getElementById('s-avg').innerText = s.survey.answered;   // sem pontos à vista: o admin pode estar projetado
+            const sv = s.survey, share = n => Math.round(n / sv.answered * 100) + ' %';
             document.getElementById('survey-line').innerText = sv.answered
-                ? `Check-in (${sv.answered}): ${sv.profiles.indice} Índice, ${sv.profiles.misto} Índice + ações, ${sv.profiles.escolhidas} Ações escolhidas · ${sv.avgMonthly}€ por mês em média · ${share(sv.neverInvested)} nunca investiram · ${share(sv.wouldSell)} vendiam numa queda de 30% · ${share(sv.noEmergency)} sem fundo de emergência`
+                ? `Check-in (${sv.answered}): ${sv.profiles.indice} Índice, ${sv.profiles.misto} Índice + ações, ${sv.profiles.escolhidas} Ações escolhidas · ${sv.avgMonthly} € por mês em média · ${share(sv.neverInvested)} nunca investiram · ${share(sv.wouldSell)} vendiam numa queda de 30 % · ${share(sv.noEmergency)} sem fundo de emergência`
                 : 'Check-in: ainda sem respostas.';
             renderNotes(); renderScript();
         });
@@ -227,8 +227,8 @@
         socket.on('admin', ({ roster, rounds: r }) => {
             rounds = r; renderNotes(); renderScript();
             document.getElementById('roster').innerHTML = roster.length
-                ? roster.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.name)}</td><td>${esc(p.profile)}</td><td>${p.monthly}€</td><td>${p.score}</td><td>${p.vote ? (p.vote === 'SOBE' ? '▲ Sobe' : '▼ Desce') : '—'}</td><td>${p.decision ? DECISION[p.decision] : '—'}</td></tr>`).join('')
-                : '<tr><td colspan="7" style="color: var(--sub);">À espera de jogadores…</td></tr>';
+                ? roster.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.name)}</td><td>${esc(p.profile)}</td><td>${p.monthly} €</td><td>${p.vote ? (p.vote === 'SOBE' ? '▲ Sobe' : '▼ Desce') : '—'}</td><td>${p.decision ? DECISION[p.decision] : '—'}</td></tr>`).join('')
+                : '<tr><td colspan="6" style="color: var(--sub);">À espera de jogadores…</td></tr>';
         });
 
         // Notas do apresentador para o passo em que se está
@@ -236,7 +236,7 @@
             if (!state || !rounds.length) return;
             const s = state, el = document.getElementById('notes');
             if (s.status === 'CONCLUSION') {
-                el.innerHTML = '<b>Conclusão</b>O jogo usou a média do mercado. Mostra o mesmo plano com médias mais altas e explica que vêm com mais risco e quedas maiores pelo caminho. Depois carrega outra vez no botão da conclusão para mostrar o mesmo plano com 300€ por mês: o reforço muda mais o resultado do que a rentabilidade. Fecha com: tudo começa no mesmo sítio, 1.000€ e um reforço todos os meses, sem desistir.';
+                el.innerHTML = '<b>Conclusão</b>O jogo usou a média do mercado. Mostra o mesmo plano com médias mais altas e explica que vêm com mais risco e quedas maiores pelo caminho. Depois carrega outra vez no botão da conclusão para mostrar o mesmo plano com 300 € por mês: o reforço muda mais o resultado do que a rentabilidade. Fecha com: tudo começa no mesmo sítio, 1.000 € e um reforço todos os meses, sem desistir.';
                 return;
             }
             if (s.status === 'FINISHED') {
@@ -245,7 +245,7 @@
             }
             if (s.status === 'DECIDE') {
                 const sv = s.survey;
-                const recall = sv.answered ? `<b>Lembrar a sala</b>No check-in, ${Math.round(sv.wouldSell / sv.answered * 100)}% disseram que vendiam tudo se a carteira caísse 30%.` : '';
+                const recall = sv.answered ? `<b>Lembrar a sala</b>No check-in, ${Math.round(sv.wouldSell / sv.answered * 100)} % disseram que vendiam tudo se a carteira caísse 30 %.` : '';
                 el.innerHTML = `<b>Decisão na crise</b>Diz: "As vossas carteiras caíram. Cada um decide no telemóvel o que faz ao seu plano. Não há resposta certa no ecrã: no fim vamos ver o que aconteceu a cada escolha."${recall}`;
                 return;
             }
