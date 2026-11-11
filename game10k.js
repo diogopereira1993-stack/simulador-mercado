@@ -677,7 +677,7 @@ module.exports = function setupGame10k(io, opts = {}) {
         nsp.to('screen').emit('screen', { history: game.history });
         const roster = [];
         game.players.forEach(p => roster.push({ name: p.name, profile: PROFILES[p.profile].label, monthly: p.monthly, score: p.score, vote: p.vote, decision: p.decision }));
-        roster.sort((a, b) => a.name.localeCompare(b.name, 'pt'));   // por nome: a ordem por pontos seria um ranking à vista
+        roster.sort((a, b) => b.score - a.score);
         nsp.to('admin').emit('admin', { roster, rounds: ROUNDS.map(r => ({ ...r, question: questionText(r) })) });
     }
 
