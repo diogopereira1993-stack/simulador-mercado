@@ -182,7 +182,7 @@
         main.innerHTML = `<div class="pf-wrap">${html}</div>`;
         if (vista === 'CARTEIRA') atualizarCarteira();
         if (vista === 'PLANO') atualizarPlano();
-        if (vista === 'EMAIL') { atualizarEmail(); qrF24(); }
+        if (vista === 'EMAIL') { atualizarEmail(); }
         barra();
         if (topo) main.scrollTop = 0;
     }
@@ -413,8 +413,7 @@
         return `<div class="pf-card pf-f24">
             <div class="pf-f24-t">${esc(f.titulo)}</div>
             <ul>${f.vantagens.map(v => `<li>${esc(v)}</li>`).join('')}</ul>
-            ${pronto ? `<a class="btn btn-primary" href="${esc(f.link)}" target="_blank" rel="noopener">${esc(f.botao)}</a>
-            <div class="pf-f24-qr"><div id="pf-f24-qr"></div><span>Ou mostra este código a quem quiser abrir conta</span></div>` : `<div class="btn btn-secondary pf-f24-falta">${esc(f.link)}</div>`}
+            ${pronto ? `<a class="btn btn-primary" href="${esc(f.link)}" target="_blank" rel="noopener">${esc(f.botao)}</a>` : `<div class="btn btn-secondary pf-f24-falta">${esc(f.link)}</div>`}
         </div>`;
     }
     // O QR do link (a biblioteca só se carrega quando é preciso)
