@@ -2,10 +2,22 @@
   "atualizado": "2026-11-06",
   "fonte": "Lista, datas e alfa: moneyflix.com/discover (Picks e Ex-Picks), lido a 2026-11-09. Preços e retornos: os do site (fecho de 2026-11-06). Logótipos: eodhd.com (a mesma fonte do site), copiados para logos/. Preços na moeda indicada; retornos em fração (0.35 = +35%). Exercício educativo, não é recomendação.",
   "cambio": {
-    "USD_por_EUR": 1.1165,
-    "CAD_por_EUR": 1.5705,
-    "data": "2026-11-06",
+    "USD_por_EUR": 1.1214,
+    "CAD_por_EUR": 1.5852,
+    "data": "2026-11-10",
     "fonte": "BCE (taxa de referência)"
+  },
+  "etf": {
+    "ticker": "VUAA",
+    "nome": "Vanguard S&P 500 UCITS ETF (Acc)",
+    "isin": "IE00BFMXXD54",
+    "bolsa": "Xetra",
+    "descricao": "Um só produto que segue as 500 maiores empresas americanas, como a Apple, a Microsoft ou a Amazon. É de acumulação: os dividendos ficam lá dentro e são reinvestidos, sem teres de fazer nada.",
+    "preco": 130.18,
+    "moeda": "EUR",
+    "preco_data": "2026-11-10",
+    "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)",
+    "ilustrativo": false
   },
   "setores": [
     {
@@ -88,7 +100,7 @@
       "ticker": "ECPG",
       "nome": "Encore Capital Group",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Compra a bancos e operadoras as dívidas que os clientes deixaram de pagar, a um preço muito abaixo do valor, e tenta recuperar o dinheiro junto dos devedores. Trabalha sobretudo nos Estados Unidos e na Europa. Ganha se cobrar mais do que pagou pela dívida.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 114.14,
@@ -96,7 +108,7 @@
       "data_pick": "2026-10-16",
       "retorno_desde_pick": 0.1059,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É o negócio de quem fica com as dívidas que o banco já deu como perdidas e tenta cobrá-las.",
       "retorno_ytd": 1.1001,
       "alfa": 0.1464,
       "alfa_data": "2026-11-06",
@@ -108,13 +120,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/ECPG.png",
       "logo_url": "https://eodhd.com/img/logos/US/ECPG.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CME",
       "nome": "CME Group",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "É a bolsa onde se negociam contratos sobre petróleo, ouro, milho, taxas de juro ou o índice das 500 maiores empresas americanas. Quem quer proteger-se de variações de preço, ou apostar nelas, passa por aqui. Ganha uma pequena comissão por cada contrato negociado.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 305.89,
@@ -122,7 +134,7 @@
       "data_pick": "2026-10-16",
       "retorno_desde_pick": 0.0536,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Quando o preço do petróleo ou do ouro aparece nas notícias, muitas vezes é de um contrato negociado na CME.",
       "retorno_ytd": 0.1583,
       "alfa": 0.0941,
       "alfa_data": "2026-11-06",
@@ -134,13 +146,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/CME.png",
       "logo_url": "https://eodhd.com/img/logos/US/cme.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ALL",
       "nome": "Allstate",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Seguradora americana: vende seguros de automóvel, de casa e de vida a milhões de famílias. Recebe os prémios todos os meses e paga quando há acidentes, roubos ou tempestades. Os anúncios da «Allstate» são muito conhecidos nos Estados Unidos.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 254.81,
@@ -148,7 +160,7 @@
       "data_pick": "2026-10-16",
       "retorno_desde_pick": 0.05,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É uma seguradora de massas: cobra a muita gente um pouco e paga a quem tem o azar do mês.",
       "retorno_ytd": 0.242,
       "alfa": 0.0905,
       "alfa_data": "2026-11-06",
@@ -160,13 +172,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/ALL.png",
       "logo_url": "https://eodhd.com/img/logos/US/all.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ENVA",
       "nome": "Enova International",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Empresa americana de crédito online: empresta dinheiro a particulares e a pequenos negócios que muitas vezes têm dificuldade em obter crédito no banco. Usa algoritmos para decidir em minutos quem recebe e quanto. Os juros são altos, porque o risco também é.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 172.48,
@@ -174,7 +186,7 @@
       "data_pick": "2026-08-17",
       "retorno_desde_pick": -0.3412,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Crédito feito por algoritmo, para quem o banco tradicional costuma recusar.",
       "retorno_ytd": 0.0972,
       "alfa": -0.2897,
       "alfa_data": "2026-11-06",
@@ -186,13 +198,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/ENVA.png",
       "logo_url": "https://eodhd.com/img/logos/US/ENVA.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "PARR",
       "nome": "Par Pacific Holdings",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Refina petróleo e transforma-o em gasolina, gasóleo e combustível de aviões, com refinarias no Havai, no Noroeste dos EUA e nas Montanhas Rochosas. Tem também postos de abastecimento. Ganha com a diferença entre o custo do petróleo e o preço dos combustíveis.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 68.06,
@@ -200,7 +212,7 @@
       "data_pick": "2026-07-30",
       "retorno_desde_pick": -0.2078,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Não extrai petróleo, transforma-o: o que sobra entre o petróleo e a bomba de gasolina é o negócio.",
       "retorno_ytd": 0.9368,
       "alfa": -0.1991,
       "alfa_data": "2026-11-06",
@@ -212,7 +224,7 @@
       "setor_site": "Energy",
       "logo": "logos/PARR.png",
       "logo_url": "https://eodhd.com/img/logos/US/PARR.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "KLIC",
@@ -244,7 +256,7 @@
       "ticker": "BTSG",
       "nome": "BrightSpring Health Services",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Presta cuidados de saúde ao domicílio e gere farmácias especializadas para doentes crónicos e pessoas mais velhas, nos Estados Unidos. A ideia é tratar as pessoas em casa, o que costuma ser mais barato do que o hospital.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 67.15,
@@ -252,7 +264,7 @@
       "data_pick": "2026-05-26",
       "retorno_desde_pick": 0.1479,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Tratar em casa em vez de no hospital: é uma tendência que cresce com o envelhecimento da população.",
       "retorno_ytd": 0.7931,
       "alfa": 0.1684,
       "alfa_data": "2026-11-06",
@@ -264,13 +276,13 @@
       "setor_site": "Healthcare",
       "logo": "logos/BTSG.png",
       "logo_url": "https://eodhd.com/img/logos/US/BTSG.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CSTM",
       "nome": "Constellium",
       "setor": "materias",
-      "descricao": "",
+      "descricao": "Produz alumínio em chapas e perfis para latas de bebidas, carros e aviões, e também recicla alumínio. Está presente na Europa e nos Estados Unidos.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 21.81,
@@ -278,7 +290,7 @@
       "data_pick": "2026-04-11",
       "retorno_desde_pick": -0.2642,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Aquela lata de refrigerante pode ter sido feita com alumínio desta empresa.",
       "retorno_ytd": 0.157,
       "alfa": -0.3463,
       "alfa_data": "2026-11-06",
@@ -290,13 +302,13 @@
       "setor_site": "Basic Materials",
       "logo": "logos/CSTM.png",
       "logo_url": "https://eodhd.com/img/logos/US/CSTM.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "MFC",
       "nome": "Manulife Financial",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Seguradora e gestora de poupanças canadiana, com forte presença na Ásia e nos Estados Unidos, onde opera com a marca John Hancock. Vende seguros de vida, planos de reforma e gere investimentos de milhões de clientes.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 43.24,
@@ -304,7 +316,7 @@
       "data_pick": "2026-02-25",
       "retorno_desde_pick": 0.2071,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Se pensam em seguros de vida e planos de reforma à escala mundial, é este o tipo de empresa.",
       "retorno_ytd": 0.2249,
       "alfa": 0.1289,
       "alfa_data": "2026-11-06",
@@ -316,13 +328,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/MFC.png",
       "logo_url": "https://eodhd.com/img/logos/US/MFC.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CYD",
       "nome": "China Yuchai International",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Fabrica motores a diesel e a gás para camiões, autocarros e máquinas na China, através da Yuchai. Depende muito da economia chinesa e do ciclo da construção e dos transportes.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 20.0,
@@ -330,7 +342,7 @@
       "data_pick": "2026-01-31",
       "retorno_desde_pick": -0.5583,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Motores para camiões e autocarros chineses: o negócio vive do ritmo da economia da China.",
       "retorno_ytd": -0.4255,
       "alfa": -0.6209,
       "alfa_data": "2026-11-06",
@@ -342,13 +354,13 @@
       "setor_site": "Consumer Cyclical",
       "logo": "logos/CYD.png",
       "logo_url": "https://eodhd.com/img/logos/US/CYD.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "BAC",
       "nome": "Bank of America",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Um dos maiores bancos dos Estados Unidos: contas, cartões, crédito à habitação e empréstimos a empresas. Tem milhões de clientes e a corretora Merrill. Ganha com a diferença entre os juros que cobra e os que paga.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 49.42,
@@ -356,7 +368,7 @@
       "data_pick": "2025-12-22",
       "retorno_desde_pick": -0.1054,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É um banco gigante: quando a economia americana vai bem, os bancos costumam sentir primeiro.",
       "retorno_ytd": -0.087,
       "alfa": -0.1857,
       "alfa_data": "2026-11-06",
@@ -368,13 +380,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/BAC.png",
       "logo_url": "https://eodhd.com/img/logos/US/bac.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "SSRM",
       "nome": "SSR Mining",
       "setor": "materias",
-      "descricao": "",
+      "descricao": "Mineira de ouro e prata, com minas em vários países. Quando o preço do ouro sobe, o lucro costuma subir mais do que o preço, porque os custos de extrair são quase fixos.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 28.64,
@@ -382,7 +394,7 @@
       "data_pick": "2025-11-03",
       "retorno_desde_pick": 0.2695,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma mineira de ouro: o preço do metal manda.",
       "retorno_ytd": 0.3077,
       "alfa": 0.1914,
       "alfa_data": "2026-11-06",
@@ -394,13 +406,13 @@
       "setor_site": "Basic Materials",
       "logo": "logos/SSRM.png",
       "logo_url": "https://eodhd.com/img/logos/US/SSRM.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "HST",
       "nome": "Host Hotels & Resorts",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de hotéis de luxo e de gama alta nos Estados Unidos, geridos por marcas como a Marriott, a Hyatt ou a Ritz-Carlton. Ganha com a ocupação e o preço dos quartos. Quando o turismo e as viagens de negócios sobem, o negócio sobe.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 24.62,
@@ -408,7 +420,7 @@
       "data_pick": "2025-10-17",
       "retorno_desde_pick": 0.5123,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Os hotéis onde ficamos podem ser de uma marca e ter outra dona: é esta o tipo de dona.",
       "retorno_ytd": 0.4707,
       "alfa": 0.4056,
       "alfa_data": "2026-11-06",
@@ -420,7 +432,7 @@
       "setor_site": "Real Estate",
       "logo": "logos/HST.png",
       "logo_url": "https://eodhd.com/img/logos/US/hst.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "MU",
@@ -478,7 +490,7 @@
       "ticker": "FOUR",
       "nome": "Shift4 Payments",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Faz as máquinas e os sistemas que cobram os pagamentos em restaurantes, hotéis, estádios e lojas. Também trata do dinheiro entre o cliente e o comerciante. Ganha uma pequena percentagem de cada pagamento.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 43.96,
@@ -486,7 +498,7 @@
       "data_pick": "2025-09-04",
       "retorno_desde_pick": -0.4977,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Aquele terminal onde passam o cartão no restaurante pode muito bem ser deste género de empresa.",
       "retorno_ytd": -0.3019,
       "alfa": -0.6305,
       "alfa_data": "2026-11-06",
@@ -498,13 +510,13 @@
       "setor_site": "Technology",
       "logo": "logos/FOUR.png",
       "logo_url": "https://eodhd.com/img/logos/US/FOUR.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "VRTX",
       "nome": "Vertex Pharmaceuticals",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Biotecnológica americana, conhecida pelos medicamentos para a fibrose quística, uma doença genética grave dos pulmões. Esses tratamentos mudaram a vida de milhares de doentes e são a base do seu negócio. Investe em novas terapias para outras doenças.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 547.09,
@@ -512,7 +524,7 @@
       "data_pick": "2025-09-04",
       "retorno_desde_pick": 0.3783,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma biotecnológica que construiu a empresa quase toda à volta de uma doença rara.",
       "retorno_ytd": 0.2067,
       "alfa": 0.2456,
       "alfa_data": "2026-11-06",
@@ -524,13 +536,13 @@
       "setor_site": "Healthcare",
       "logo": "logos/VRTX.png",
       "logo_url": "https://eodhd.com/img/logos/US/VRTX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "TMDX",
       "nome": "TransMedics Group",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Criou um sistema que mantém o coração, os pulmões ou o fígado «vivos» e quentes durante o transporte para um transplante, em vez de os levar no gelo. Assim os órgãos aguentam mais tempo e chegam em melhor estado. Tem até aviões próprios para os levar.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 88.24,
@@ -538,7 +550,7 @@
       "data_pick": "2025-08-28",
       "retorno_desde_pick": -0.2483,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Imaginem um órgão para transplante a viajar ligado a uma máquina, em vez de numa mala de gelo.",
       "retorno_ytd": -0.2746,
       "alfa": -0.3814,
       "alfa_data": "2026-11-06",
@@ -550,13 +562,13 @@
       "setor_site": "Healthcare",
       "logo": "logos/TMDX.png",
       "logo_url": "https://eodhd.com/img/logos/US/TMDX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "VICI",
       "nome": "VICI Properties",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona dos edifícios de casinos e hotéis famosos, como o Caesars Palace, em Las Vegas. Não gere os casinos: arrenda-os às empresas que os operam e cobra rendas por contratos muito longos.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 24.79,
@@ -564,7 +576,7 @@
       "data_pick": "2025-07-03",
       "retorno_desde_pick": -0.2488,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Dona do edifício do casino, não do casino: o que recebe é a renda, não as apostas.",
       "retorno_ytd": -0.0715,
       "alfa": -0.4246,
       "alfa_data": "2026-11-06",
@@ -576,13 +588,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/VICI.png",
       "logo_url": "https://eodhd.com/img/logos/US/VICI.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CVX",
       "nome": "Chevron",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Uma das maiores petrolíferas do mundo: extrai petróleo e gás natural, refina-os e vende os combustíveis. Tem postos de abastecimento nos Estados Unidos e grandes projetos no Texas, no Cazaquistão e na Austrália.",
       "conhecida": true,
       "tipo": "ciclica",
       "preco": 212.61,
@@ -590,7 +602,7 @@
       "data_pick": "2025-06-26",
       "retorno_desde_pick": 0.4829,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É o tipo de empresa que sobe e desce com o preço do petróleo.",
       "retorno_ytd": 0.4339,
       "alfa": 0.2812,
       "alfa_data": "2026-11-06",
@@ -602,13 +614,13 @@
       "setor_site": "Energy",
       "logo": "logos/CVX.png",
       "logo_url": "https://eodhd.com/img/logos/US/cvx.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "MTZ",
       "nome": "MasTec",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Constrói infraestruturas: linhas elétricas, gasodutos, redes de fibra ótica, torres de telecomunicações e parques solares. É a empresa que as outras contratam para pôr em obra.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 174.1,
@@ -616,7 +628,7 @@
       "data_pick": "2025-06-23",
       "retorno_desde_pick": 0.0635,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Quem constrói as redes de fibra e de eletricidade que o resto da economia usa.",
       "retorno_ytd": -0.1991,
       "alfa": -0.1617,
       "alfa_data": "2026-11-06",
@@ -628,13 +640,13 @@
       "setor_site": "Industrials",
       "logo": "logos/MTZ.png",
       "logo_url": "https://eodhd.com/img/logos/US/MTZ.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CTRE",
       "nome": "CareTrust REIT",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de lares de idosos e residências de cuidados continuados nos Estados Unidos, que arrenda a quem os gere. Cobra as rendas e deixa a operação a outros. Beneficia do envelhecimento da população.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 38.21,
@@ -642,7 +654,7 @@
       "data_pick": "2025-06-22",
       "retorno_desde_pick": 0.2715,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "A população envelhece e alguém tem de ser dono dos edifícios onde as pessoas são cuidadas.",
       "retorno_ytd": 0.0898,
       "alfa": 0.0464,
       "alfa_data": "2026-11-06",
@@ -654,7 +666,7 @@
       "setor_site": "Real Estate",
       "logo": "logos/CTRE.png",
       "logo_url": "https://eodhd.com/img/logos/US/CTRE.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "APH",
@@ -686,7 +698,7 @@
       "ticker": "TT",
       "nome": "Trane Technologies",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Faz equipamento de ar condicionado, aquecimento e refrigeração para edifícios, camiões e centros de dados. Marcas como a Trane e a Thermo King são muito usadas nos Estados Unidos.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 401.76,
@@ -694,7 +706,7 @@
       "data_pick": "2025-05-29",
       "retorno_desde_pick": -0.0844,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Os centros de dados aquecem muito, e alguém tem de os arrefecer.",
       "retorno_ytd": 0.0396,
       "alfa": -0.3306,
       "alfa_data": "2026-11-06",
@@ -706,13 +718,13 @@
       "setor_site": "Industrials",
       "logo": "logos/TT.png",
       "logo_url": "https://eodhd.com/img/logos/US/TT.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "JPM",
       "nome": "JPMorgan Chase",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "O maior banco dos Estados Unidos: cartões Chase, contas, crédito e banca de investimento para grandes empresas. É frequentemente apontado como o banco mais sólido do país. O seu presidente é uma das vozes mais ouvidas na economia americana.",
       "conhecida": true,
       "tipo": "ciclica",
       "preco": 334.49,
@@ -720,7 +732,7 @@
       "data_pick": "2025-05-22",
       "retorno_desde_pick": 0.2838,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É o banco que o mercado costuma tomar como referência para o setor.",
       "retorno_ytd": 0.0581,
       "alfa": 0.0228,
       "alfa_data": "2026-11-06",
@@ -732,13 +744,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/JPM.png",
       "logo_url": "https://eodhd.com/img/logos/US/JPM.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "EQNR",
       "nome": "Equinor",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Petrolífera norueguesa, controlada pelo Estado da Noruega. Extrai petróleo e gás do Mar do Norte e fornece uma parte importante do gás que a Europa consome. Está também a investir em energia eólica no mar.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 41.99,
@@ -746,7 +758,7 @@
       "data_pick": "2025-05-15",
       "retorno_desde_pick": 0.7967,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "A Noruega é o grande fornecedor de gás da Europa, e é esta a empresa que lá está.",
       "retorno_ytd": 0.8368,
       "alfa": 0.5515,
       "alfa_data": "2026-11-06",
@@ -758,13 +770,13 @@
       "setor_site": "Energy",
       "logo": "logos/EQNR.png",
       "logo_url": "https://eodhd.com/img/logos/US/EQNR.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "AXP",
       "nome": "American Express",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Emite os cartões American Express, associados a clientes com rendimentos mais altos e a muitos benefícios de viagens. Ganha comissões a quem paga com o cartão e também juros e anuidades. É ao mesmo tempo o banco e a rede de pagamentos.",
       "conhecida": true,
       "tipo": "ciclica",
       "preco": 320.99,
@@ -772,7 +784,7 @@
       "data_pick": "2025-05-01",
       "retorno_desde_pick": 0.1999,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Os cartões dourados e platinados: têm clientes de gastos altos, que é o que o negócio procura.",
       "retorno_ytd": -0.1226,
       "alfa": -0.1167,
       "alfa_data": "2026-11-06",
@@ -784,13 +796,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/AXP.png",
       "logo_url": "https://eodhd.com/img/logos/US/axp.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "GEV",
       "nome": "GE Vernova",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Fabrica turbinas a gás, turbinas eólicas e equipamento para redes elétricas. Nasceu em 2024, quando a General Electric se dividiu em três. Com o aumento do consumo de eletricidade, nomeadamente dos centros de dados, há procura por este equipamento.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 774.11,
@@ -798,7 +810,7 @@
       "data_pick": "2025-03-08",
       "retorno_desde_pick": 1.8657,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Para ligar mais centros de dados à rede, alguém tem de fazer as turbinas e os transformadores.",
       "retorno_ytd": 0.1873,
       "alfa": 1.554,
       "alfa_data": "2026-11-06",
@@ -810,13 +822,13 @@
       "setor_site": "Industrials",
       "logo": "logos/GEV.png",
       "logo_url": "https://eodhd.com/img/logos/US/GEV.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "TDG",
       "nome": "TransDigm",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Fabrica peças de substituição para aviões comerciais e militares, muitas das quais só ela produz. Como o avião precisa mesmo da peça, consegue cobrar preços altos e ter margens elevadas.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 1197.01,
@@ -824,7 +836,7 @@
       "data_pick": "2025-03-08",
       "retorno_desde_pick": -0.1045,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma peça de avião que só uma empresa fabrica: quem precisa dela tem de a comprar.",
       "retorno_ytd": -0.0999,
       "alfa": -0.4161,
       "alfa_data": "2026-11-06",
@@ -836,13 +848,13 @@
       "setor_site": "Industrials",
       "logo": "logos/TDG.png",
       "logo_url": "https://eodhd.com/img/logos/US/tdg.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "AMZN",
       "nome": "Amazon",
       "setor": "consumo",
-      "descricao": "",
+      "descricao": "Loja online que vende de tudo, entrega em casa e tem o serviço Prime. Mas boa parte do lucro vem da Amazon Web Services, que aluga servidores e computação na «nuvem» a empresas de todo o mundo. Tem ainda a Alexa e publicidade.",
       "conhecida": true,
       "tipo": "crescimento",
       "preco": 259.3,
@@ -850,7 +862,7 @@
       "data_pick": "2025-03-08",
       "retorno_desde_pick": 1.0062,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Provavelmente já compraram alguma coisa lá, e muitas das apps que usam correm nos seus servidores.",
       "retorno_ytd": 0.1234,
       "alfa": 0.6945,
       "alfa_data": "2026-11-06",
@@ -862,7 +874,7 @@
       "setor_site": "Consumer Cyclical",
       "logo": "logos/AMZN.png",
       "logo_url": "https://eodhd.com/img/logos/US/amzn.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "GOOGL",
@@ -894,7 +906,7 @@
       "ticker": "PR",
       "nome": "Permian Resources",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Extrai petróleo e gás na bacia do Permiano, no Texas e no Novo México, a maior região de petróleo de xisto dos Estados Unidos. Vende o que produz ao preço do mercado, por isso o seu negócio acompanha de perto o preço do petróleo.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 21.75,
@@ -902,7 +914,7 @@
       "data_pick": "2025-01-04",
       "retorno_desde_pick": 0.5125,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Petróleo de xisto no Texas: é a zona onde os Estados Unidos mais produzem.",
       "retorno_ytd": 0.5864,
       "alfa": 0.2018,
       "alfa_data": "2026-11-06",
@@ -914,13 +926,13 @@
       "setor_site": "Energy",
       "logo": "logos/PR.png",
       "logo_url": "https://eodhd.com/img/logos/US/PR.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CTO",
       "nome": "CTO Realty Growth",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de centros comerciais ao ar livre e outros edifícios no sul dos Estados Unidos, sobretudo na Flórida e em estados vizinhos. Arrenda lojas e escritórios. É uma empresa pequena, o que a torna mais sensível a boas e más notícias.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 20.2,
@@ -928,7 +940,7 @@
       "data_pick": "2024-12-30",
       "retorno_desde_pick": 0.0249,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma imobiliária pequena, de centros comerciais, numa das zonas dos EUA onde mais gente tem ido viver.",
       "retorno_ytd": 0.1609,
       "alfa": -0.2252,
       "alfa_data": "2026-11-06",
@@ -940,13 +952,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/CTO.png",
       "logo_url": "https://eodhd.com/img/logos/US/CTO.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "PINE",
       "nome": "Alpine Income Property Trust",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de lojas e outros edifícios arrendados a grandes cadeias americanas, com contratos de longa duração. Cobra a renda e o inquilino trata do resto. É uma das mais pequenas da lista.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 16.62,
@@ -954,7 +966,7 @@
       "data_pick": "2024-12-30",
       "retorno_desde_pick": -0.0101,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Arrenda lojas a cadeias conhecidas, com contratos longos: renda previsível, em ponto pequeno.",
       "retorno_ytd": 0.0427,
       "alfa": -0.2602,
       "alfa_data": "2026-11-06",
@@ -966,13 +978,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/PINE.png",
       "logo_url": "https://eodhd.com/img/logos/US/PINE.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "GTY",
       "nome": "Getty Realty",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de postos de gasolina e lojas de conveniência nos Estados Unidos, arrendados a quem os explora. Recebe uma renda mensal e o inquilino trata do negócio. Tem milhares de locais, quase todos pequenos.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 28.56,
@@ -980,7 +992,7 @@
       "data_pick": "2024-12-30",
       "retorno_desde_pick": -0.0521,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "O posto de gasolina pertence a alguém: aqui, essa pessoa é a que cobra a renda.",
       "retorno_ytd": 0.093,
       "alfa": -0.3021,
       "alfa_data": "2026-11-06",
@@ -992,13 +1004,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/GTY.png",
       "logo_url": "https://eodhd.com/img/logos/US/GTY.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "AER",
       "nome": "AerCap",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "A maior empresa do mundo de aluguer de aviões. Compra aviões e arrenda-os às companhias aéreas, que assim evitam gastar tanto dinheiro de uma vez. Ganha com as rendas e com a venda dos aviões usados.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 169.64,
@@ -1006,7 +1018,7 @@
       "data_pick": "2024-11-16",
       "retorno_desde_pick": 0.7806,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Muitos dos aviões em que viajamos não são das companhias, são alugados, e a AerCap é a maior dona desses aviões.",
       "retorno_ytd": 0.1897,
       "alfa": 0.5304,
       "alfa_data": "2026-11-06",
@@ -1018,13 +1030,13 @@
       "setor_site": "Industrials",
       "logo": "logos/AER.png",
       "logo_url": "https://eodhd.com/img/logos/US/aer.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "TOU",
       "nome": "Tourmaline Oil",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "É a maior produtora de gás natural do Canadá. Extrai o gás no oeste do país e vende-o a empresas e a famílias, e também a terminais que o exportam. O preço do gás dita quase tudo.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 63.03,
@@ -1032,7 +1044,7 @@
       "data_pick": "2024-10-16",
       "retorno_desde_pick": 0.0191,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É uma pick canadiana, e o gás natural é o produto que dá nome ao negócio.",
       "retorno_ytd": 0.0481,
       "alfa": -0.2437,
       "alfa_data": "2026-11-06",
@@ -1044,13 +1056,13 @@
       "setor_site": "Energy",
       "logo": "logos/TOU.png",
       "logo_url": "https://eodhd.com/img/logos/TO/TOU.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "POWL",
       "nome": "Powell Industries",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Fabrica quadros elétricos e equipamento de distribuição de energia para fábricas, refinarias e centros de dados. São as «caixas» por onde passa a eletricidade antes de chegar às máquinas.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 133.12,
@@ -1058,7 +1070,7 @@
       "data_pick": "2024-09-21",
       "retorno_desde_pick": -0.3094,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Quando se constrói uma fábrica ou um centro de dados, alguém tem de montar o quadro elétrico.",
       "retorno_ytd": 0.2543,
       "alfa": -0.6002,
       "alfa_data": "2026-11-06",
@@ -1070,13 +1082,13 @@
       "setor_site": "Industrials",
       "logo": "logos/POWL.png",
       "logo_url": "https://eodhd.com/img/logos/US/POWL.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "MO",
       "nome": "Altria",
       "setor": "consumo",
-      "descricao": "",
+      "descricao": "Fabrica e vende cigarros nos Estados Unidos, incluindo a Marlboro, e outros produtos de tabaco. Paga dividendos elevados, mas o consumo de tabaco vem a descer. É um negócio muito criticado por razões de saúde.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 76.12,
@@ -1084,7 +1096,7 @@
       "data_pick": "2024-08-29",
       "retorno_desde_pick": 0.4516,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma empresa de tabaco: é um negócio que paga bem aos acionistas e enfrenta um mercado em declínio.",
       "retorno_ytd": 0.384,
       "alfa": 0.1347,
       "alfa_data": "2026-11-06",
@@ -1096,13 +1108,13 @@
       "setor_site": "Consumer Defensive",
       "logo": "logos/MO.png",
       "logo_url": "https://eodhd.com/img/logos/US/mo.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "AEM",
       "nome": "Agnico Eagle Mines",
       "setor": "materias",
-      "descricao": "",
+      "descricao": "Uma das maiores mineiras de ouro do mundo, com minas sobretudo no Canadá, mas também na Finlândia e no México. É vista como uma das mineiras mais estáveis do setor.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 191.57,
@@ -1110,7 +1122,7 @@
       "data_pick": "2024-07-27",
       "retorno_desde_pick": 1.6228,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma mineira de ouro de grande dimensão, com a maior parte das minas em países estáveis.",
       "retorno_ytd": 0.1373,
       "alfa": 1.2731,
       "alfa_data": "2026-11-06",
@@ -1122,13 +1134,13 @@
       "setor_site": "Basic Materials",
       "logo": "logos/AEM.png",
       "logo_url": "https://eodhd.com/img/logos/US/AEM.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "LHX",
       "nome": "L3Harris",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Empresa de defesa americana: rádios e comunicações militares, satélites, sensores e eletrónica para aviões e navios. Vende sobretudo ao Governo dos Estados Unidos e a aliados.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 259.89,
@@ -1136,7 +1148,7 @@
       "data_pick": "2024-07-15",
       "retorno_desde_pick": 0.1081,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Os militares precisam de comunicar e de ver à distância, e esta empresa fornece parte disso.",
       "retorno_ytd": -0.1038,
       "alfa": -0.2014,
       "alfa_data": "2026-11-06",
@@ -1148,13 +1160,13 @@
       "setor_site": "Industrials",
       "logo": "logos/LHX.png",
       "logo_url": "https://eodhd.com/img/logos/US/LHX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "AGX",
       "nome": "Argan",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Constrói centrais elétricas a gás e outros projetos de energia nos Estados Unidos. É uma empresa pequena, com poucos clientes e projetos muito grandes, por isso os resultados podem variar bastante.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 277.5,
@@ -1162,7 +1174,7 @@
       "data_pick": "2024-07-15",
       "retorno_desde_pick": 2.6902,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Poucas obras, mas enormes: constrói as centrais que produzem eletricidade a gás.",
       "retorno_ytd": -0.1099,
       "alfa": 2.3807,
       "alfa_data": "2026-11-06",
@@ -1174,13 +1186,13 @@
       "setor_site": "Industrials",
       "logo": "logos/AGX.png",
       "logo_url": "https://eodhd.com/img/logos/US/AGX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CRS",
       "nome": "Carpenter Technology",
       "setor": "materias",
-      "descricao": "",
+      "descricao": "Faz ligas metálicas especiais, muito resistentes, para motores de aviões, equipamento médico e defesa. São metais feitos «à medida» para aguentar calor, pressão ou desgaste.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 278.31,
@@ -1188,7 +1200,7 @@
       "data_pick": "2024-07-15",
       "retorno_desde_pick": 1.3832,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Não é aço comum: são metais especiais que aguentam o calor do interior de um motor de avião.",
       "retorno_ytd": -0.1143,
       "alfa": 1.0738,
       "alfa_data": "2026-11-06",
@@ -1200,13 +1212,13 @@
       "setor_site": "Industrials",
       "logo": "logos/CRS.png",
       "logo_url": "https://eodhd.com/img/logos/US/CRS.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "WFC",
       "nome": "Wells Fargo",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Um dos maiores bancos dos Estados Unidos, muito focado em clientes comuns: contas, cartões e crédito à habitação. Esteve vários anos limitado por um escândalo de contas falsas e hoje é de novo mais livre para crescer.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 83.94,
@@ -1214,7 +1226,7 @@
       "data_pick": "2024-07-15",
       "retorno_desde_pick": 0.454,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É um banco de rua: está nas pequenas cidades americanas mais do que nos grandes escritórios.",
       "retorno_ytd": -0.0845,
       "alfa": 0.1446,
       "alfa_data": "2026-11-06",
@@ -1226,13 +1238,13 @@
       "setor_site": "Financial Services",
       "logo": "logos/WFC.png",
       "logo_url": "https://eodhd.com/img/logos/US/WFC.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "BTI",
       "nome": "British American Tobacco",
       "setor": "consumo",
-      "descricao": "",
+      "descricao": "Uma das maiores tabaqueiras do mundo, dona de marcas como a Lucky Strike e a Dunhill, e de produtos sem fumo, como os vapes Vuse e as saquetas de nicotina Velo. Vende em mais de 100 países.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 60.89,
@@ -1240,7 +1252,7 @@
       "data_pick": "2024-06-20",
       "retorno_desde_pick": 0.933,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma tabaqueira britânica que quer deixar de depender do cigarro tradicional.",
       "retorno_ytd": 0.1238,
       "alfa": 0.5888,
       "alfa_data": "2026-11-06",
@@ -1252,13 +1264,13 @@
       "setor_site": "Consumer Defensive",
       "logo": "logos/BTI.png",
       "logo_url": "https://eodhd.com/img/logos/US/BTI.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "WPC",
       "nome": "W. P. Carey",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de armazéns, fábricas e lojas nos Estados Unidos e na Europa, arrendados a empresas por muitos anos. As rendas costumam subir com a inflação, o que protege o negócio quando os preços sobem.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 65.05,
@@ -1266,7 +1278,7 @@
       "data_pick": "2024-06-16",
       "retorno_desde_pick": 0.1597,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Rendas longas e ligadas à inflação, de edifícios de empresas dos dois lados do Atlântico.",
       "retorno_ytd": 0.0533,
       "alfa": -0.1842,
       "alfa_data": "2026-11-06",
@@ -1278,13 +1290,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/WPC.png",
       "logo_url": "https://eodhd.com/img/logos/US/WPC.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "THC",
       "nome": "Tenet Healthcare",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Dona de hospitais e de centros de cirurgia nos Estados Unidos. Ganha com as consultas, as cirurgias e os internamentos pagos por seguros e pelo Estado. Muito do lucro vem dos centros de cirurgia sem internamento.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 283.33,
@@ -1292,7 +1304,7 @@
       "data_pick": "2024-06-16",
       "retorno_desde_pick": 1.05,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É dona dos hospitais, por isso depende de quantas pessoas precisam de ser tratadas e de quem paga.",
       "retorno_ytd": 0.4258,
       "alfa": 0.706,
       "alfa_data": "2026-11-06",
@@ -1304,13 +1316,13 @@
       "setor_site": "Healthcare",
       "logo": "logos/THC.png",
       "logo_url": "https://eodhd.com/img/logos/US/thc.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "RYCEY",
       "nome": "Rolls-Royce",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Faz motores para aviões, como os de aviões da Airbus e da Boeing, e motores de navios e de submarinos. Não tem nada a ver com os carros, que hoje pertencem a outra empresa. Ganha na venda dos motores e na manutenção.",
       "conhecida": true,
       "tipo": "ciclica",
       "preco": 16.82,
@@ -1318,7 +1330,7 @@
       "data_pick": "2024-06-16",
       "retorno_desde_pick": 1.9299,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Quando se diz Rolls-Royce a pensar em carros, está-se a trocar de empresa: esta faz os motores dos aviões.",
       "retorno_ytd": 0.0963,
       "alfa": 1.5859,
       "alfa_data": "2026-11-06",
@@ -1330,13 +1342,13 @@
       "setor_site": "Industrials",
       "logo": "logos/RYCEY.png",
       "logo_url": "https://eodhd.com/img/logos/US/RYCEY.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ADC",
       "nome": "Agree Realty",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de lojas arrendadas a grandes retalhistas americanos, como supermercados, lojas de bricolage e farmácias. Cobra as rendas durante muitos anos. Dá preferência a lojas que as compras online não substituem facilmente.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 69.87,
@@ -1344,7 +1356,7 @@
       "data_pick": "2024-05-31",
       "retorno_desde_pick": 0.1867,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Lojas onde as pessoas ainda vão em pessoa, com contratos de longa duração.",
       "retorno_ytd": 0.0056,
       "alfa": -0.2076,
       "alfa_data": "2026-11-06",
@@ -1356,13 +1368,13 @@
       "setor_site": "Real Estate",
       "logo": "logos/ADC.png",
       "logo_url": "https://eodhd.com/img/logos/US/ADC.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "PFE",
       "nome": "Pfizer",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Uma das maiores farmacêuticas do mundo. Ficou famosa pela vacina contra a covid-19 e por medicamentos como o Viagra. Vende vacinas, tratamentos para o cancro e medicamentos para o coração em quase todo o mundo.",
       "conhecida": true,
       "tipo": "defensiva",
       "preco": 29.39,
@@ -1370,7 +1382,7 @@
       "data_pick": "2024-05-26",
       "retorno_desde_pick": 0.0649,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Muita gente já tomou uma vacina ou um comprimido desta marca sem se aperceber.",
       "retorno_ytd": 0.2592,
       "alfa": -0.323,
       "alfa_data": "2026-11-06",
@@ -1382,7 +1394,7 @@
       "setor_site": "Healthcare",
       "logo": "logos/PFE.png",
       "logo_url": "https://eodhd.com/img/logos/US/pfe.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ACMR",
@@ -1414,7 +1426,7 @@
       "ticker": "BIP",
       "nome": "Brookfield Infrastructure",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Dona de infraestruturas essenciais: linhas de eletricidade, gasodutos, torres de telecomunicações, portos e ferrovias, em vários países. Cobra por contrato a quem as usa, durante muitos anos. Faz parte do grupo canadiano Brookfield.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 39.45,
@@ -1422,7 +1434,7 @@
       "data_pick": "2024-05-13",
       "retorno_desde_pick": 0.2926,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "É dona das estradas invisíveis por onde passam a energia, os dados e as mercadorias.",
       "retorno_ytd": 0.1759,
       "alfa": -0.1455,
       "alfa_data": "2026-11-06",
@@ -1434,13 +1446,13 @@
       "setor_site": "Utilities",
       "logo": "logos/BIP.png",
       "logo_url": "https://eodhd.com/img/logos/US/BIP.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "GCT",
       "nome": "GigaCloud Technology",
       "setor": "consumo",
-      "descricao": "",
+      "descricao": "Plataforma online que liga fábricas, sobretudo da Ásia, a revendedores nos Estados Unidos e na Europa, para móveis grandes como sofás e mesas. Tem armazéns próprios nos países de destino, o que acelera as entregas.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 58.37,
@@ -1448,7 +1460,7 @@
       "data_pick": "2024-05-09",
       "retorno_desde_pick": 1.8515,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Para a mobília grande, em vez de a encomendar à fábrica, o revendedor compra aqui e recebe de um armazém local.",
       "retorno_ytd": 0.486,
       "alfa": 1.4379,
       "alfa_data": "2026-11-06",
@@ -1460,13 +1472,13 @@
       "setor_site": "Technology",
       "logo": "logos/GCT.png",
       "logo_url": "https://eodhd.com/img/logos/US/GCT.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "HCC",
       "nome": "Warrior Met Coal",
       "setor": "materias",
-      "descricao": "",
+      "descricao": "Extrai carvão para fazer aço, no Alabama. Não é carvão para centrais elétricas, é o ingrediente que se mistura com o ferro nas siderurgias. Vende sobretudo para a indústria do aço.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 84.15,
@@ -1474,7 +1486,7 @@
       "data_pick": "2024-04-21",
       "retorno_desde_pick": 0.2543,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Há carvão para eletricidade e carvão para aço: este é o do aço.",
       "retorno_ytd": -0.0421,
       "alfa": -0.2171,
       "alfa_data": "2026-11-06",
@@ -1486,13 +1498,13 @@
       "setor_site": "Basic Materials",
       "logo": "logos/HCC.png",
       "logo_url": "https://eodhd.com/img/logos/US/HCC.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "EPD",
       "nome": "Enterprise Products Partners",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Gasodutos, oleodutos e terminais que transportam e armazenam petróleo, gás natural e derivados nos Estados Unidos. Cobra uma taxa pelo que passa, como uma portagem, por isso depende menos do preço do petróleo do que de quanto se transporta.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 37.02,
@@ -1500,7 +1512,7 @@
       "data_pick": "2024-04-10",
       "retorno_desde_pick": 0.2739,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Em vez de vender petróleo, cobra a quem o transporta, como numa portagem.",
       "retorno_ytd": 0.2258,
       "alfa": -0.1563,
       "alfa_data": "2026-11-06",
@@ -1512,13 +1524,13 @@
       "setor_site": "Energy",
       "logo": "logos/EPD.png",
       "logo_url": "https://eodhd.com/img/logos/US/EPD.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CAH",
       "nome": "Cardinal Health",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Distribuidor de medicamentos e material médico: leva os produtos dos fabricantes às farmácias e aos hospitais americanos. Não inventa medicamentos, ganha uma pequena margem por mover enormes quantidades.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 271.72,
@@ -1526,7 +1538,7 @@
       "data_pick": "2024-03-02",
       "retorno_desde_pick": 1.4477,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Os medicamentos têm de chegar à farmácia de algum lado, e esta é uma das empresas que os leva lá.",
       "retorno_ytd": 0.3347,
       "alfa": 1.0124,
       "alfa_data": "2026-11-06",
@@ -1538,7 +1550,7 @@
       "setor_site": "Healthcare",
       "logo": "logos/CAH.png",
       "logo_url": "https://eodhd.com/img/logos/US/CAH.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "PLAB",
@@ -1570,7 +1582,7 @@
       "ticker": "CELH",
       "nome": "Celsius Holdings",
       "setor": "consumo",
-      "descricao": "",
+      "descricao": "Faz a bebida energética Celsius, vendida como mais saudável por não ter açúcar. Tem a PepsiCo como grande acionista e distribuidora. É muito popular entre quem vai ao ginásio.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 32.16,
@@ -1578,7 +1590,7 @@
       "data_pick": "2024-01-02",
       "retorno_desde_pick": -0.4552,
       "ativa": true,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma bebida energética para quem vai ao ginásio, com a Pepsi a ajudar a pô-la nas lojas.",
       "retorno_ytd": -0.2969,
       "alfa": -1.013,
       "alfa_data": "2026-11-06",
@@ -1590,7 +1602,7 @@
       "setor_site": "Consumer Defensive",
       "logo": "logos/CELH.png",
       "logo_url": "https://eodhd.com/img/logos/US/CELH.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "APP",
@@ -1648,7 +1660,7 @@
       "ticker": "SILA",
       "nome": "Sila Realty Trust",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de edifícios de saúde nos Estados Unidos, como clínicas e centros médicos, arrendados a prestadores de cuidados. Cobra as rendas e deixa a gestão clínica a outros.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 30.36,
@@ -1656,7 +1668,7 @@
       "data_pick": "2024-09-21",
       "retorno_desde_pick": 0.2577,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Clínicas e consultórios de outros: é a dona dos edifícios.",
       "retorno_ytd": 0.341,
       "alfa": 0.0041,
       "alfa_data": "2026-11-06",
@@ -1668,13 +1680,13 @@
       "setor_site": null,
       "logo": "logos/SILA.png",
       "logo_url": "https://eodhd.com/img/logos/US/SILA.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "PAX",
       "nome": "Patria Investments",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Gestora de investimentos da América Latina, com fundos de infraestruturas, capital de risco e crédito. Ganha comissões por gerir o dinheiro de grandes investidores.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 9.5,
@@ -1682,7 +1694,7 @@
       "data_pick": "2025-05-08",
       "retorno_desde_pick": -0.1236,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma gestora que investe na América Latina para outros investidores.",
       "retorno_ytd": -0.3783,
       "alfa": -0.4249,
       "alfa_data": "2026-11-06",
@@ -1694,13 +1706,13 @@
       "setor_site": null,
       "logo": "logos/PAX.png",
       "logo_url": "https://eodhd.com/img/logos/US/PAX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "GRBK",
       "nome": "Green Brick Partners",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Construtora de casas nos Estados Unidos, sobretudo no Texas, na Geórgia e na Flórida. Compra terrenos, constrói e vende casas a famílias. O negócio depende muito dos juros do crédito à habitação.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 64.82,
@@ -1708,7 +1720,7 @@
       "data_pick": "2024-09-21",
       "retorno_desde_pick": -0.1954,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Quando os juros do crédito à habitação sobem, as vendas de casas costumam abrandar.",
       "retorno_ytd": 0.0345,
       "alfa": -0.4861,
       "alfa_data": "2026-11-06",
@@ -1720,13 +1732,13 @@
       "setor_site": null,
       "logo": "logos/GRBK.png",
       "logo_url": "https://eodhd.com/img/logos/US/GRBK.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "NVO",
       "nome": "Novo Nordisk",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Farmacêutica dinamarquesa, conhecida pela insulina e por medicamentos como o Ozempic e o Wegovy, usados na diabetes e na obesidade. Foi das empresas europeias de maior valor, impulsionada por estes medicamentos.",
       "conhecida": true,
       "tipo": "crescimento",
       "preco": 40.31,
@@ -1734,7 +1746,7 @@
       "data_pick": "2025-07-10",
       "retorno_desde_pick": -0.4255,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "O Ozempic e o Wegovy, de que se fala tanto, são desta empresa.",
       "retorno_ytd": -0.1682,
       "alfa": -0.6004,
       "alfa_data": "2026-11-06",
@@ -1746,13 +1758,13 @@
       "setor_site": null,
       "logo": "logos/NVO.png",
       "logo_url": "https://eodhd.com/img/logos/US/NVO.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "CMCSA",
       "nome": "Comcast",
       "setor": "tecnologia",
-      "descricao": "",
+      "descricao": "Dona da Xfinity (internet e televisão por cabo nos EUA), da NBCUniversal, do serviço Peacock, dos parques temáticos da Universal e da Sky na Europa. Vive da mistura entre internet e entretenimento.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 24.39,
@@ -1760,7 +1772,7 @@
       "data_pick": "2023-12-12",
       "retorno_desde_pick": -0.4284,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma empresa que é, ao mesmo tempo, o cabo da internet e o estúdio de cinema.",
       "retorno_ytd": -0.0827,
       "alfa": -1.0127,
       "alfa_data": "2026-11-06",
@@ -1772,13 +1784,13 @@
       "setor_site": null,
       "logo": "logos/CMCSA.png",
       "logo_url": "https://eodhd.com/img/logos/US/CMCSA.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "VISN",
       "nome": "Vistance Networks",
       "setor": "tecnologia",
-      "descricao": "",
+      "descricao": "Empresa de equipamento para redes de comunicações, como cabos e ligações usados por operadoras e centros de dados. Esteve ligada a um processo de reestruturação do negócio.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 5.5,
@@ -1786,7 +1798,7 @@
       "data_pick": "2025-08-16",
       "retorno_desde_pick": -0.6455,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma empresa dos cabos de comunicações que passou por uma reorganização.",
       "retorno_ytd": 0.0903,
       "alfa": -0.7885,
       "alfa_data": "2026-11-06",
@@ -1798,13 +1810,13 @@
       "setor_site": null,
       "logo": null,
       "logo_url": null,
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "NLCP",
       "nome": "NewLake Capital Partners",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de edifícios arrendados a produtores de cannabis legal nos Estados Unidos. Como muitos bancos não trabalham com o setor, a empresa ocupa esse espaço. É muito pequena e negociada com pouca liquidez.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 13.89,
@@ -1812,7 +1824,7 @@
       "data_pick": "2024-07-21",
       "retorno_desde_pick": -0.2784,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Imobiliário muito específico: edifícios arrendados a produtores de cannabis legal.",
       "retorno_ytd": -0.0493,
       "alfa": -0.6041,
       "alfa_data": "2026-11-06",
@@ -1824,13 +1836,13 @@
       "setor_site": null,
       "logo": "logos/NLCP.png",
       "logo_url": "https://eodhd.com/img/logos/US/NLCP.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "WES",
       "nome": "Western Midstream Partners",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Gasodutos e instalações que recolhem e tratam gás e petróleo de produtores no Texas e noutras regiões, antes de o enviarem para os consumidores. Cobra uma taxa pelo serviço.",
       "conhecida": false,
       "tipo": "defensiva",
       "preco": 39.85,
@@ -1838,7 +1850,7 @@
       "data_pick": "2024-07-15",
       "retorno_desde_pick": -0.0455,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "O petróleo e o gás não vão sozinhos para a refinaria: esta empresa cobra por levá-los.",
       "retorno_ytd": 0.075,
       "alfa": -0.3549,
       "alfa_data": "2026-11-06",
@@ -1850,13 +1862,13 @@
       "setor_site": null,
       "logo": "logos/WES.png",
       "logo_url": "https://eodhd.com/img/logos/US/WES.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "BNTX",
       "nome": "BioNTech",
       "setor": "saude",
-      "descricao": "",
+      "descricao": "Empresa alemã de biotecnologia que, com a Pfizer, criou uma das vacinas contra a covid-19, usando tecnologia de ARN mensageiro. Hoje investe sobretudo em tratamentos para o cancro.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 87.51,
@@ -1864,7 +1876,7 @@
       "data_pick": "2024-09-21",
       "retorno_desde_pick": -0.2222,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "A empresa por trás de uma das vacinas contra a covid-19, agora virada para o cancro.",
       "retorno_ytd": -0.0808,
       "alfa": -0.5129,
       "alfa_data": "2026-11-06",
@@ -1876,13 +1888,13 @@
       "setor_site": null,
       "logo": "logos/BNTX.png",
       "logo_url": "https://eodhd.com/img/logos/US/BNTX.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "OPFI",
       "nome": "OppFi",
       "setor": "financeiro",
-      "descricao": "",
+      "descricao": "Empresa de crédito online nos Estados Unidos, que empresta pequenas quantias a quem tem pouco histórico de crédito. Funciona por aplicação, em parceria com bancos. Os juros são altos.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 6.17,
@@ -1890,7 +1902,7 @@
       "data_pick": "2025-01-11",
       "retorno_desde_pick": -0.3301,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Crédito pelo telemóvel para quem o banco tradicional não costuma atender.",
       "retorno_ytd": -0.4101,
       "alfa": -0.5948,
       "alfa_data": "2026-11-06",
@@ -1902,13 +1914,13 @@
       "setor_site": null,
       "logo": "logos/OPFI.png",
       "logo_url": "https://eodhd.com/img/logos/US/OPFI.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "BZH",
       "nome": "Beazer Homes USA",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Construtora de casas nos Estados Unidos, com foco em casas para quem compra a primeira habitação. Depende das taxas de juro e da procura por casas novas.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 33.48,
@@ -1916,7 +1928,7 @@
       "data_pick": "2025-01-13",
       "retorno_desde_pick": 0.3063,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Casas novas para quem compra pela primeira vez, num mercado muito sensível aos juros.",
       "retorno_ytd": 0.6517,
       "alfa": 0.0416,
       "alfa_data": "2026-11-06",
@@ -1928,13 +1940,13 @@
       "setor_site": null,
       "logo": "logos/BZH.png",
       "logo_url": "https://eodhd.com/img/logos/US/bzh.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ASPN",
       "nome": "Aspen Aerogels",
       "setor": "industria",
-      "descricao": "",
+      "descricao": "Fabrica o aerogel, um material isolante finíssimo e muito leve, usado para proteger as baterias de carros elétricos do calor e na indústria da energia.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 4.91,
@@ -1942,7 +1954,7 @@
       "data_pick": "2024-06-16",
       "retorno_desde_pick": -0.8369,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Um material tão leve como o ar, que isola do calor e protege baterias de carros elétricos.",
       "retorno_ytd": 0.735,
       "alfa": -1.1809,
       "alfa_data": "2026-11-06",
@@ -1954,13 +1966,13 @@
       "setor_site": null,
       "logo": "logos/ASPN.png",
       "logo_url": "https://eodhd.com/img/logos/US/ASPN.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "VTS",
       "nome": "Vitesse Energy",
       "setor": "energia",
-      "descricao": "",
+      "descricao": "Tem pequenas participações em muitos poços de petróleo nos Estados Unidos, sem os operar. Recebe a sua parte do que é produzido e paga dividendos.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 14.78,
@@ -1968,7 +1980,7 @@
       "data_pick": "2025-01-04",
       "retorno_desde_pick": -0.4088,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Em vez de explorar os poços, fica com uma parte do petróleo que sai deles.",
       "retorno_ytd": -0.1752,
       "alfa": -0.7195,
       "alfa_data": "2026-11-06",
@@ -1980,13 +1992,13 @@
       "setor_site": null,
       "logo": "logos/VTS.png",
       "logo_url": "https://eodhd.com/img/logos/US/VTS.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ARE",
       "nome": "Alexandria Real Estate Equities",
       "setor": "imobiliario",
-      "descricao": "",
+      "descricao": "Dona de edifícios de laboratórios e escritórios para empresas de biotecnologia e ciências da vida, em polos como Boston e São Francisco. Cobra as rendas aos laboratórios.",
       "conhecida": false,
       "tipo": "ciclica",
       "preco": 44.8,
@@ -1994,7 +2006,7 @@
       "data_pick": "2024-01-28",
       "retorno_desde_pick": -0.6396,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Edifícios feitos para laboratórios, nos sítios onde estão as biotecnológicas.",
       "retorno_ytd": -0.0438,
       "alfa": -1.1363,
       "alfa_data": "2026-11-06",
@@ -2006,13 +2018,13 @@
       "setor_site": null,
       "logo": "logos/ARE.png",
       "logo_url": "https://eodhd.com/img/logos/US/ARE.png",
-      "texto_pronto": false
+      "texto_pronto": true
     },
     {
       "ticker": "ALAR",
       "nome": "Alarum Technologies",
       "setor": "tecnologia",
-      "descricao": "",
+      "descricao": "Empresa israelita de tecnologia, que oferece a outras empresas serviços de acesso a dados na internet. É muito pequena e as ações estão muito abaixo do preço de quando foi escolhida.",
       "conhecida": false,
       "tipo": "crescimento",
       "preco": 1.2,
@@ -2020,7 +2032,7 @@
       "data_pick": "2024-01-01",
       "retorno_desde_pick": -0.8673,
       "ativa": false,
-      "nota_apresentador": "",
+      "nota_apresentador": "Uma empresa pequena de tecnologia, que já saiu das nossas picks e ficou muito abaixo do que valia.",
       "retorno_ytd": -0.8601,
       "alfa": -1.4229,
       "alfa_data": "2026-11-06",
@@ -2032,19 +2044,7 @@
       "setor_site": null,
       "logo": "logos/ALAR.png",
       "logo_url": "https://eodhd.com/img/logos/US/ALAR.png",
-      "texto_pronto": false
+      "texto_pronto": true
     }
-  ],
-  "etf": {
-    "ticker": "VUAA",
-    "nome": "Vanguard S&P 500 UCITS ETF (Acc)",
-    "isin": "IE00BFMXXD54",
-    "bolsa": "Xetra",
-    "descricao": "Um só produto que segue as 500 maiores empresas americanas, como a Apple, a Microsoft ou a Amazon. É de acumulação: os dividendos ficam lá dentro e são reinvestidos, sem teres de fazer nada.",
-    "preco": 130.18,
-    "moeda": "EUR",
-    "preco_data": "2026-11-10",
-    "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)",
-    "ilustrativo": false
-  }
+  ]
 }
