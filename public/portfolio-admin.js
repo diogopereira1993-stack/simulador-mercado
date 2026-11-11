@@ -158,7 +158,8 @@
 
         if (info) {
             const c = info.catalogo;
-            $('pfa-cat').innerHTML = `Catálogo: <b>${esc(c.ficheiro)}</b> · ${c.setores} setores, ${c.empresas} empresas${c.atualizado ? ` · preços de ${esc(c.atualizado)}` : ''}${c.exemplo ? '<div class="pfa-warn">Ainda é o catálogo de EXEMPLO. Quando o verdadeiro estiver em tour-lisboa/dados/picks-catalogo.json (ou em dados/ dentro do projeto), carrega em «Recarregar catálogo».</div>' : ''}`;
+            const etfsTxt = est && est.stats.porEtf && Object.keys(est.stats.porEtf).length ? ` · ETF escolhido: ${esc(Object.entries(est.stats.porEtf).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(' · '))}` : '';
+            $('pfa-cat').innerHTML = `Catálogo: <b>${esc(c.ficheiro)}</b> · ${c.setores} setores, ${c.empresas} empresas${c.atualizado ? ` · preços de ${esc(c.atualizado)}` : ''}${etfsTxt}${c.exemplo ? '<div class="pfa-warn">Ainda é o catálogo de EXEMPLO. Quando o verdadeiro estiver em tour-lisboa/dados/picks-catalogo.json (ou em dados/ dentro do projeto), carrega em «Recarregar catálogo».</div>' : ''}`;
             const PASSO = { SETORES: '1 Setores', EMPRESAS: '2 Empresas', CARTEIRA: '3 Carteira', PLANO: '4 Plano', EMAIL: '5 Email' };
             $('pfa-roster').innerHTML = info.roster.length
                 ? info.roster.map(p => `<tr><td>${esc(p.nome)}</td><td>${p.setores}</td><td>${p.empresas}</td><td>${p.montante ? p.montante + ' €' : '—'}</td><td>${p.etapa ? PASSO[p.etapa] : '—'}</td><td>${p.email === 'confirmado' ? '✓ confirmado' : p.email === 'por confirmar' ? 'por confirmar' : p.email === 'não' ? 'não' : '—'}</td></tr>`).join('')

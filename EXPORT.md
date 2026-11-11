@@ -24,6 +24,9 @@ Valores em euros são números (não texto) e arredondados ao cêntimo. Datas em
   "catalogo": { "ficheiro": "tour-lisboa/dados/picks-catalogo.json", "exemplo": false },
   "cambio": { "EUR": 1, "USD": 0.8957, "CAD": 0.6367, "GBP": 1.15 },   // euros por unidade de cada moeda (do câmbio do catálogo), usado em preco_eur
   "etf": { "ticker": "VUAA", "nome": "Vanguard S&P 500 UCITS ETF (Acc)", "isin": "IE00BFMXXD54", "preco": 130.18, "moeda": "EUR", "preco_eur": 130.18, "preco_data": "2026-11-10", "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)", "ilustrativo": false },  // o ETF real do catálogo (campo etf); no portfolio e no plano aparece com este ticker
+  "etfs": [                              // os ETFs que se podiam escolher (do campo etfs do catálogo); o primeiro é o de omissão
+    { "ticker": "E500", "nome": "…", "nome_completo": "…", "indice": "S&P 500", "isin": "…", "preco": 56.72, "moeda": "EUR", "preco_eur": 56.72, "preco_data": "2026-11-10", "preco_fonte": "…", "ilustrativo": false }
+  ],
   "jogadores": [
     {
       "id": "lq2k8f0x1m3n",                // identificador do telemóvel (não é dado pessoal)
@@ -70,6 +73,7 @@ Valores em euros são números (não texto) e arredondados ao cêntimo. Datas em
       "montante_inicial": 1000,
       "reforco_mensal": 150,               // o do portfólio (começa no do check-in; a pessoa pode mudar)
       "etf_percentagem": 0.7,              // a parte que quis no ETF de índice (0 a 1)
+      "etf_escolhido": "E500",             // o ticker do ETF que a pessoa escolheu (um só); null com 0 % no índice. Sem escolha, o primeiro de "etfs"
 
       "portfolio": [                       // a compra inicial, em ações inteiras; inclui o ETF se tiver unidades
         { "ticker": "VUAA", "nome": "Vanguard S&P 500 UCITS ETF (Acc)", "setor": null, "setor_nome": null, "tipo": "indice",
@@ -106,6 +110,8 @@ Valores em euros são números (não texto) e arredondados ao cêntimo. Datas em
 - Mandar email só a quem tem `consentimento: true` (o `email` vem `null` em todos os outros) e, de preferência, `email_confirmado: true`. O admin mostra «X emails confirmados de Y» antes de exportar.
 - No CSV, a coluna «Email confirmado» diz o mesmo (Sim/Não).
 - Só entram no exercício as Picks com `ativa` diferente de `false` e, quando o catálogo já tem a verificação da F24 (alguma empresa com `disponivel_f24: true`), as que não têm `disponivel_f24: false`.
+- O ETF de cada pessoa é o `etf_escolhido`: no `portfolio[]` e no `plano[]` aparece com esse ticker e `tipo: "indice"`. O `etf` do topo é só o de omissão.
+- O CSV tem a coluna «ETF escolhido».
 - Os preços são os do catálogo das MF Picks no dia (`preco` e `moeda`); `preco_eur` usa o `cambio` acima. São aproximados: o relatório deve dizer «aos preços de [data do catálogo]».
 - O plano usa a regra: todos os meses entra o reforço; compra-se 1 ação de cada vez do ativo que está mais abaixo da parte que a pessoa queria (ETF na `etf_percentagem`, o resto dividido por igual pelas empresas escolhidas); se não chega, junta para o mês seguinte. Empresas que demorariam mais de 6 meses a juntar ficam de fora do plano (`juntar[].no_plano = false`).
 - É um exercício educativo, nunca uma recomendação: o texto do email não deve dizer «recomendamos» nem «deves comprar».

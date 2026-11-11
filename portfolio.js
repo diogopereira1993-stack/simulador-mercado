@@ -93,18 +93,30 @@ function normalizarCatalogo(raw, ficheiro, exemplo) {
     });
     // Em cada setor, as que as pessoas conhecem primeiro
     empresas.sort((a, b) => (b.conhecida - a.conhecida) || a.ordem - b.ordem);
-    const etfRaw = { ...ETF_PADRAO, ...(raw.etf || {}) };
-    // Por dentro o ETF tem sempre a chave 'ETF'; «codigo» é o ticker verdadeiro (ex.: VUAA), que aparece no ecrã e no export
-    const codigo = String(etfRaw.ticker || 'ETF').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12) || 'ETF';
-    const etf = { ticker: 'ETF', codigo, nome: String(etfRaw.nome), descricao: String(etfRaw.descricao), preco: Number(etfRaw.preco), moeda: String(etfRaw.moeda || 'EUR').toUpperCase(),
-        ilustrativo: etfRaw.ilustrativo === true || (!raw.etf && etfRaw.ilustrativo !== false),
-        isin: etfRaw.isin ? String(etfRaw.isin) : null, bolsa: etfRaw.bolsa ? String(etfRaw.bolsa) : null,
-        preco_data: etfRaw.preco_data ? String(etfRaw.preco_data) : null, preco_fonte: etfRaw.preco_fonte ? String(etfRaw.preco_fonte) : null };
-    etf.preco_eur = emEuros(etf.preco, etf.moeda);
+    // Os ETFs para a parte no índice: a lista «etfs» (a pessoa escolhe um); um catálogo antigo só com «etf» dá uma lista de um.
+    // Por dentro o ETF tem sempre a chave 'ETF'; «codigo» é o ticker verdadeiro (ex.: E500), que aparece no ecrã e no export.
+    const lerEtf = (x, doCatalogo) => {
+        const e = { ...ETF_PADRAO, ...(x || {}) };
+        const codigo = String(e.ticker || 'ETF').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 12) || 'ETF';
+        const etf = { ticker: 'ETF', codigo, nome: String(e.nome), nome_completo: e.nome_completo ? String(e.nome_completo) : String(e.nome),
+            indice: e.indice ? String(e.indice) : null, cobertura_cambial: e.cobertura_cambial === undefined ? null : e.cobertura_cambial,
+            descricao: String(e.descricao || ''), preco: Number(e.preco), moeda: String(e.moeda || 'EUR').toUpperCase(),
+            ilustrativo: e.ilustrativo === true || (!doCatalogo && e.ilustrativo !== false),
+            isin: e.isin ? String(e.isin) : null, bolsa: e.bolsa ? String(e.bolsa) : null,
+            preco_data: e.preco_data || e.data_preco ? String(e.preco_data || e.data_preco) : null,
+            preco_fonte: e.preco_fonte || e.fonte ? String(e.preco_fonte || e.fonte) : null };
+        etf.preco_eur = emEuros(etf.preco, etf.moeda);
+        return etf;
+    };
+    let etfs = (Array.isArray(raw.etfs) ? raw.etfs : []).map(x => lerEtf(x, true)).filter(e => e.preco_eur > 0);
+    etfs = etfs.filter((e, i) => etfs.findIndex(y => y.codigo === e.codigo) === i);
+    if (!etfs.length) etfs = [lerEtf(raw.etf, !!raw.etf)];
+    const etf = etfs[0];   // o que vem escolhido por omissão (o primeiro da lista)
     let atualizado = raw.atualizado || raw.data || null;
     if (!atualizado) { try { atualizado = fs.statSync(ficheiro).mtime.toISOString().slice(0, 10); } catch (e) { atualizado = null; } }
     return {
-        ficheiro: path.relative(RAIZ, ficheiro), pasta: path.dirname(ficheiro), exemplo, atualizado, cambio, etf,
+        ficheiro: path.relative(RAIZ, ficheiro), pasta: path.dirname(ficheiro), exemplo, atualizado, cambio, etf, etfs,
+        etfPorCodigo: new Map(etfs.map(e => [e.codigo, e])),
         setores: setores.filter(s => empresas.some(e => e.setor === s.id)),
         empresas, porTicker: new Map(empresas.map(e => [e.ticker, e]))
     };
@@ -130,7 +142,7 @@ function carregarCatalogo(anterior, soExemplo) {
 // O que vai para os telemóveis (sem as notas do apresentador)
 function catalogoPublico(cat) {
     return {
-        atualizado: cat.atualizado, exemplo: cat.exemplo, etf: cat.etf, setores: cat.setores,
+        atualizado: cat.atualizado, exemplo: cat.exemplo, etf: cat.etf, etfs: cat.etfs, setores: cat.setores,
         empresas: cat.empresas.map(({ nota_apresentador, ordem, ...e }) => e),
         maxEspera: Plano.MAX_ESPERA, maxEmpresas: MAX_EMPRESAS, consentimento: CONSENTIMENTO_TEXTO, f24: F24
     };
@@ -165,7 +177,9 @@ module.exports = function setupPortfolio(io, jogo) {
         const etfPct = d.etfPct === null ? etfSugerido : d.etfPct;
         const reforco = d.reforco || info.monthly;
         const w = Plano.pesos(empresas, etfPct);
-        const precos = { ETF: catalogo.etf.preco_eur };
+        // O ETF escolhido pela pessoa; sem escolha gravada (ou se já não existir no catálogo), o primeiro da lista
+        const etf = catalogo.etfPorCodigo.get(d.etf) || catalogo.etfs[0];
+        const precos = { ETF: etf.preco_eur };
         empresas.forEach(t => { precos[t] = catalogo.porTicker.get(t).preco_eur; });
         // As ações que a pessoa acertou à mão, se ainda couberem no montante; senão a compra automática
         let acoes = null;
@@ -176,7 +190,7 @@ module.exports = function setupPortfolio(io, jogo) {
         }
         if (!acoes) acoes = Plano.encher(d.montante, w, precos).acoes;
         const sobra = r2(d.montante - Plano.custo(acoes, precos));
-        return { info, d, empresas, etfSugerido, etfPct, reforco, w, precos, acoes, sobra };
+        return { info, d, empresas, etfSugerido, etfPct, reforco, w, precos, acoes, sobra, etf };
     }
 
     function inicioDoPlano() {
@@ -207,6 +221,7 @@ module.exports = function setupPortfolio(io, jogo) {
             });
             d.acoes = a;
         }
+        if (typeof dados.etf === 'string' && catalogo.etfPorCodigo.has(dados.etf)) d.etf = dados.etf;
         if (dados.reforco !== undefined) {
             const r = Math.round(Number(dados.reforco));
             if (r >= 10 && r <= 10000) d.reforco = r;
@@ -226,7 +241,7 @@ module.exports = function setupPortfolio(io, jogo) {
             nome: r.info.name, perfil: r.info.profile, perfilNome: r.info.profileLabel, reforcoCheckin: r.info.monthly,
             etfSugerido: r.etfSugerido, perfilIndice: jogo.profileIndexShare(r.info.profile),
             setores: d.setores, empresas: r.empresas, montante: d.montante, etfPct: r.etfPct, acoes: d.acoes ? r.acoes : null,
-            reforco: r.reforco, quer: d.quer, email: d.email, consentimento: d.consentimento, confirmado: d.confirmado, etapa: d.etapa,
+            etf: r.etf.codigo, reforco: r.reforco, quer: d.quer, email: d.email, consentimento: d.consentimento, confirmado: d.confirmado, etapa: d.etapa,
             inicio: inicioDoPlano()
         };
     }
@@ -234,7 +249,7 @@ module.exports = function setupPortfolio(io, jogo) {
     // --- O que a sala está a escolher (ecrã grande e admin) ---
     function estatisticas() {
         const ids = new Set(jogo.playerIds());
-        const setores = {}, empresas = {};
+        const setores = {}, empresas = {}, porEtf = {};
         let comSetores = 0, comEmpresas = 0, carteiras = 0, somaMontante = 0, somaEtf = 0, emails = 0, confirmados = 0, naoQuer = 0, porEtapa = {};
         pf.jogadores.forEach((d, id) => {
             if (!ids.has(id)) return;
@@ -245,7 +260,7 @@ module.exports = function setupPortfolio(io, jogo) {
             emp.forEach(t => { empresas[t] = (empresas[t] || 0) + 1; });
             if (d.etapa && ETAPAS.indexOf(d.etapa) >= 2) {
                 const r = resolver(id);
-                if (r) { carteiras++; somaMontante += d.montante; somaEtf += r.etfPct; }
+                if (r) { carteiras++; somaMontante += d.montante; somaEtf += r.etfPct; if (r.etfPct > 0 || !r.empresas.length) porEtf[r.etf.codigo] = (porEtf[r.etf.codigo] || 0) + 1; }
             }
             if (d.quer === true && d.consentimento) { emails++; if (d.confirmado) confirmados++; }
             if (d.quer === false) naoQuer++;
@@ -253,7 +268,7 @@ module.exports = function setupPortfolio(io, jogo) {
         });
         return { pessoas: ids.size, comSetores, comEmpresas, setores, empresas, carteiras,
             montanteMedio: carteiras ? Math.round(somaMontante / carteiras) : 0, etfMedio: carteiras ? somaEtf / carteiras : 0,
-            emails, confirmados, naoQuer, porEtapa };
+            emails, confirmados, naoQuer, porEtapa, porEtf };
     }
 
     function estadoPublico() {
@@ -426,7 +441,7 @@ module.exports = function setupPortfolio(io, jogo) {
             perfil: base.perfil, perfil_nome: base.perfil_nome,
             checkin: base.checkin, resultado_jogo: base.resultado_jogo,
             setores_escolhidos: d ? d.setores.map(s => ({ id: s, nome: (catalogo.setores.find(x => x.id === s) || {}).nome || s })) : [],
-            montante_inicial: null, reforco_mensal: null, etf_percentagem: null,
+            montante_inicial: null, reforco_mensal: null, etf_percentagem: null, etf_escolhido: null,
             portfolio: [], empresas_escolhidas: [], por_investir: null, plano: [], juntar: [],
             etapa: d ? d.etapa : null, atualizado_em: d ? d.atualizadoEm : null
         };
@@ -438,10 +453,11 @@ module.exports = function setupPortfolio(io, jogo) {
         linha.montante_inicial = r.d.montante;
         linha.reforco_mensal = r.reforco;
         linha.etf_percentagem = r.empresas.length ? r.etfPct : 1;
+        linha.etf_escolhido = linha.etf_percentagem > 0 ? r.etf.codigo : null;   // o ticker do ETF que a pessoa escolheu (null com 0 % no índice)
         // No export o ETF aparece com o ticker verdadeiro (ex.: VUAA), não com a chave interna 'ETF'
-        const tk = t => t === 'ETF' ? catalogo.etf.codigo : t;
+        const tk = t => t === 'ETF' ? r.etf.codigo : t;
         linha.portfolio = Object.keys(r.w).filter(t => r.acoes[t] > 0).map(t => {
-            const e = t === 'ETF' ? catalogo.etf : catalogo.porTicker.get(t);
+            const e = t === 'ETF' ? r.etf : catalogo.porTicker.get(t);
             return { ticker: tk(t), nome: e.nome, setor: t === 'ETF' ? null : e.setor, setor_nome: t === 'ETF' ? null : setorNome(e.setor),
                 tipo: t === 'ETF' ? 'indice' : e.tipo, acoes: r.acoes[t], preco: e.preco, moeda: e.moeda, preco_eur: e.preco_eur, montante: r2(r.acoes[t] * e.preco_eur) };
         });
@@ -463,21 +479,23 @@ module.exports = function setupPortfolio(io, jogo) {
             catalogo: { ficheiro: catalogo.ficheiro, exemplo: catalogo.exemplo, atualizado: catalogo.atualizado },
             cambio: catalogo.cambio,
             etf: { ticker: catalogo.etf.codigo, nome: catalogo.etf.nome, isin: catalogo.etf.isin, preco: catalogo.etf.preco, moeda: catalogo.etf.moeda, preco_eur: catalogo.etf.preco_eur,
-                preco_data: catalogo.etf.preco_data, preco_fonte: catalogo.etf.preco_fonte, ilustrativo: catalogo.etf.ilustrativo },
+                preco_data: catalogo.etf.preco_data, preco_fonte: catalogo.etf.preco_fonte, ilustrativo: catalogo.etf.ilustrativo },   // o ETF por omissão
+            etfs: catalogo.etfs.map(e => ({ ticker: e.codigo, nome: e.nome, nome_completo: e.nome_completo, indice: e.indice, isin: e.isin,
+                preco: e.preco, moeda: e.moeda, preco_eur: e.preco_eur, preco_data: e.preco_data, preco_fonte: e.preco_fonte, ilustrativo: e.ilustrativo })),
             jogadores: jogo.playerIds().map(exportarJogador)
         };
     }
 
     // Colunas que se juntam ao CSV do jogo
     const csvExtra = {
-        get header() { return ['Email', 'Consentimento', 'Email confirmado', 'Montante inicial', 'Reforço no portfólio', '% no ETF', 'Empresas escolhidas', 'Carteira inicial']; },
+        get header() { return ['Email', 'Consentimento', 'Email confirmado', 'Montante inicial', 'Reforço no portfólio', '% no ETF', 'Empresas escolhidas', 'Carteira inicial', 'ETF escolhido']; },
         row(id) {
             sync();
             const x = exportarJogador(id);
             return [x.email || '', x.consentimento ? 'Sim' : (x.quer_plano_por_email === false ? 'Não quis' : ''), x.email ? (x.email_confirmado ? 'Sim' : 'Não') : '',
                 x.montante_inicial ?? '', x.reforco_mensal ?? '', x.etf_percentagem === null ? '' : Math.round(x.etf_percentagem * 100) + '%',
                 x.empresas_escolhidas.map(e => e.ticker).join(' '),
-                x.portfolio.map(p => `${p.ticker} ×${p.acoes}`).join(' ')];
+                x.portfolio.map(p => `${p.ticker} ×${p.acoes}`).join(' '), x.etf_escolhido || ''];
         }
     };
 

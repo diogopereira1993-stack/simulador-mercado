@@ -67,7 +67,7 @@
                 <div class="pfe-stats">
                     <div class="pfe-stat"><b>${s.carteiras}</b><span>${s.carteiras === 1 ? 'carteira montada' : 'carteiras montadas'}</span></div>
                     <div class="pfe-stat"><b>${s.carteiras ? eur(s.montanteMedio) : '—'}</b><span>para começar, em média</span></div>
-                    <div class="pfe-stat"><b>${s.carteiras ? Math.round(s.etfMedio * 100) + ' %' : '—'}</b><span>no ETF de índice, em média</span></div>
+                    <div class="pfe-stat"><b>${s.carteiras ? Math.round(s.etfMedio * 100) + ' %' : '—'}</b><span>no ETF de índice, em média${s.porEtf && Object.keys(s.porEtf).length > 1 ? `<br>${Object.entries(s.porEtf).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)} ${n}`).join(' · ')}` : ''}</span></div>
                 </div>
                 ${top.length ? `<div><div class="sub" style="margin:0 0 1.6vh;font-weight:700">As empresas mais escolhidas</div><div class="pfe-bars">${top.map(([t, n]) => `<div class="pfe-bar"><span>${esc(t)} · ${esc(porT[t] ? porT[t].nome : '')}</span><div class="track"><div class="fill" style="width:${(n / max * 100).toFixed(1)}%;background:${cor(t)}"></div></div><b>${n}</b></div>`).join('')}</div></div>` : ''}
             </div>`;

@@ -348,3 +348,16 @@ body.pf-on { overflow: hidden; }
 .pf-guardar-btns .btn { flex: 1; }
 .pfa-copia { margin-top: 12px; padding: 12px; border-radius: 10px; background: var(--bg); font-size: 0.85rem; line-height: 1.5; }
 .pfa-copia > b { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--sub); }
+
+/* Escolha do ETF (um só por pessoa) */
+.pf-etfs { display: flex; flex-direction: column; border: 1px solid var(--line, var(--border)); border-radius: 10px; overflow: hidden; }
+.pf-etf { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line, var(--border)); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pf-etf:last-child { border-bottom: none; }
+.pf-etf:active { background: var(--bg); }
+.pf-etf .radio { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--muted); flex-shrink: 0; }
+.pf-etf.on { background: #F7FAFF; }
+.pf-etf.on .radio { border: 6px solid var(--accent); }
+.pf-etf .mid { flex: 1; min-width: 0; }
+.pf-etf .mid b { display: block; font-size: 0.95rem; }
+.pf-etf .mid small { font-size: 0.8rem; color: var(--sub); }
+.pf-etf .end { font-weight: 700; font-variant-numeric: tabular-nums; }

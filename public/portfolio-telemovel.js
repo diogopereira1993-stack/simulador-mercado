@@ -44,7 +44,10 @@
         return `<span class="pf-logo ${cls}${img ? ' has-img' : ''}" ${t === 'ETF' ? 'style="background:var(--accent);color:#fff"' : ''}>${esc(t === 'ETF' ? nomeT('ETF').slice(0, 4) : t.slice(0, 4))}${img}</span>`;
     };
     // O ETF tem a chave interna 'ETF'; no ecrã aparece o ticker verdadeiro (ex.: VUAA)
-    const nomeT = t => t === 'ETF' ? ((cat && cat.etf && cat.etf.codigo) || 'ETF') : t;
+    // O ETF que a pessoa escolheu (um por pessoa); sem escolha, o primeiro da lista do catálogo
+    const listaEtfs = () => (cat && (cat.etfs && cat.etfs.length ? cat.etfs : [cat.etf])) || [];
+    const etfAtual = () => listaEtfs().find(e => e.codigo === d.etf) || listaEtfs()[0];
+    const nomeT = t => t === 'ETF' ? ((cat && etfAtual() && etfAtual().codigo) || 'ETF') : t;
     const tipoPill = t => t && TIPOS[t] ? `<span class="pf-tipo ${t}">${TIPOS[t].nome}</span>` : '';
     function toast(msg) { const el = $('pf-toast'); el.innerText = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 2600); }
     const vibrar = () => { if (navigator.vibrate) navigator.vibrate(20); };
@@ -66,7 +69,7 @@
 
     // ── estado ──
     let cat = null, porTicker = {}, est = null, eu = null, vista = null, setorVisto = null, carregado = false, erroEmail = '';
-    let d = { setores: [], empresas: [], montante: 1000, etfPct: null, acoes: null, reforco: null, quer: null, email: null, consentimento: false, confirmado: false };
+    let d = { setores: [], empresas: [], montante: 1000, etfPct: null, etf: null, acoes: null, reforco: null, quer: null, email: null, consentimento: false, confirmado: false };
     let montanteOutro = false, reforcoOutro = false;
 
     // ── ligação ao servidor ──
@@ -83,7 +86,7 @@
     socket.on('connect', () => {
         // Volta a mandar o que a pessoa já escolheu (o servidor guarda e ignora o que já tinha) e o pedido de email pendente
         if (carregado) socket.emit('pf-save', { playerId, dados: { setores: d.setores, empresas: d.empresas, montante: d.montante,
-            etfPct: d.etfPct === null ? undefined : d.etfPct, acoes: d.acoes, reforco: d.reforco || undefined, etapa: vista || undefined } });
+            etfPct: d.etfPct === null ? undefined : d.etfPct, etf: d.etf || undefined, acoes: d.acoes, reforco: d.reforco || undefined, etapa: vista || undefined } });
         if (pedidoEmail) socket.emit(pedidoEmail.evento, pedidoEmail.dados);
     });
     // O pedido fica respondido quando o servidor mostra o estado que se pediu
@@ -122,7 +125,7 @@
         emailRespondido(m);
         if (!carregado) {
             // Na primeira vez (ou depois de recarregar a página), o servidor sabe o que a pessoa já tinha escolhido
-            d = { setores: m.setores, empresas: m.empresas, montante: m.montante, etfPct: m.etfPct, acoes: m.acoes, reforco: m.reforco, quer: m.quer, email: m.email, consentimento: m.consentimento, confirmado: m.confirmado };
+            d = { setores: m.setores, empresas: m.empresas, montante: m.montante, etfPct: m.etfPct, etf: m.etf || null, acoes: m.acoes, reforco: m.reforco, quer: m.quer, email: m.email, consentimento: m.consentimento, confirmado: m.confirmado };
             montanteOutro = !MONTANTES.includes(d.montante);
             reforcoOutro = !REFORCOS.includes(d.reforco);
             carregado = true;
@@ -157,7 +160,7 @@
         const etfPct = d.etfPct === null || d.etfPct === undefined ? eu.etfSugerido : d.etfPct;
         const reforco = d.reforco || eu.reforcoCheckin;
         const w = P.pesos(empresas, etfPct);
-        const precos = { ETF: cat.etf.preco_eur };
+        const precos = { ETF: etfAtual().preco_eur };
         empresas.forEach(t => { precos[t] = porTicker[t].preco_eur; });
         let acoes = null;
         if (d.acoes) {
@@ -236,6 +239,7 @@
                 <p class="pf-note">${sugestao}</p>
                 <p class="pf-note">${jaTens}</p>
             </div>
+            <div class="pf-card" id="pf-etf-escolha"></div>
             <div id="pf-dyn"></div>
             ${aEsperar('O apresentador vai avançar para o plano de todos os meses.')}`;
     }
@@ -250,14 +254,21 @@
         const rng = $('pf-etf');
         if (document.activeElement !== rng) rng.value = Math.round(c.etfPct * 100);
         $('pf-etf-lbl').innerText = `${Math.round(c.etfPct * 100)} %`;
+        // A escolha do ETF: só aparece quando há parte no índice e mais do que um ETF no catálogo
+        const escolha = $('pf-etf-escolha'), lista = listaEtfs(), atual = etfAtual();
+        escolha.style.display = c.w.ETF && lista.length > 1 ? '' : 'none';
+        escolha.innerHTML = `<div class="pf-card-t">Qual ETF? <span style="text-transform:none;letter-spacing:0;font-weight:500">um só</span></div>
+            <div class="pf-etfs">${lista.map(e => `<div class="pf-etf ${e.codigo === atual.codigo ? 'on' : ''}" data-a="etf-ficha" data-c="${esc(e.codigo)}">
+                <span class="radio"></span><div class="mid"><b>${esc(e.codigo)}</b><small>${esc(e.indice || e.nome)}</small></div><div class="end">${eur2(e.preco_eur)}</div></div>`).join('')}</div>
+            <p class="pf-note">Toca num ETF para veres o que é e escolheres.</p>`;
 
         const ativos = Object.keys(c.w);
         const investido = d.montante - c.sobra;
         const linhas = ativos.map(t => {
-            const e = t === 'ETF' ? cat.etf : porTicker[t];
+            const e = t === 'ETF' ? etfAtual() : porTicker[t];
             const n = c.acoes[t] || 0;
             const preco = c.precos[t];
-            const nota = t === 'ETF' && cat.etf.ilustrativo ? 'Preço ilustrativo' : t === 'ETF' && cat.etf.preco_data && n ? `Preço de ${esc(dataCurta(cat.etf.preco_data))}` : (n === 0 && preco > c.sobra ? 'Ainda não chega: fica para o plano mensal' : '');
+            const nota = t === 'ETF' && etfAtual().ilustrativo ? 'Preço ilustrativo' : t === 'ETF' && etfAtual().preco_data && n ? `Preço de ${esc(dataCurta(etfAtual().preco_data))}` : (n === 0 && preco > c.sobra ? 'Ainda não chega: fica para o plano mensal' : '');
             return `<div class="pf-pos">
                 <div class="r1">${logo(t)}<div class="mid"><b>${esc(nomeT(t))}</b><small>${n ? `${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')} a ${eur2(preco)}` : `${esc(e.nome)} · ${eur2(preco)}`}</small></div><div class="val">${eur(n * preco)}</div></div>
                 <div class="r2"><em>${nota}</em><div class="pf-step-ctl"><button data-a="menos" data-t="${esc(t)}" ${n ? '' : 'disabled'} aria-label="Menos uma">−</button><span>${n}</span><button data-a="mais" data-t="${esc(t)}" ${preco <= c.sobra + 1e-9 ? '' : 'disabled'} aria-label="Mais uma">+</button></div></div>
@@ -436,7 +447,7 @@
         const p = P.plano({ w: c.w, precos: c.precos, acoes: c.acoes, caixa: c.sobra, reforco: c.reforco, inicio: eu.inicio });
         const linhas = ['O meu plano MoneyFlix (exercício)', '', `Perfil: ${eu.perfilNome}`, `Para começar: ${eur(d.montante)}`, `Por mês: ${eur(c.reforco)}`, '', 'Compra inicial:'];
         Object.keys(c.w).filter(t => c.acoes[t]).forEach(t => {
-            const n = c.acoes[t], nome = t === 'ETF' ? cat.etf.nome : porTicker[t].nome;
+            const n = c.acoes[t], nome = t === 'ETF' ? etfAtual().nome : porTicker[t].nome;
             linhas.push(`- ${nomeT(t)} (${nome}): ${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')}`);
         });
         if (c.sobra >= 1) linhas.push(`- Por investir: ${eur(c.sobra)}`);
@@ -491,6 +502,28 @@
     }
     function fecharFolha() { $('pf-sheet').classList.remove('show'); $('pf-sheet-bg').classList.remove('show'); folhaAberta = null; }
     let folhaAberta = null;
+    // A ficha de um ETF, com o botão para o escolher
+    function fichaEtf(codigo) {
+        const e = listaEtfs().find(x => x.codigo === codigo);
+        if (!e) return;
+        folhaAberta = { tipo: 'etf', codigo };
+        const escolhido = etfAtual().codigo === codigo;
+        const cob = e.cobertura_cambial === true || /sim|eur/i.test(String(e.cobertura_cambial || '')) ? 'Sim (protege do câmbio euro/dólar)' : e.cobertura_cambial === false ? 'Não' : null;
+        abrirFolha(`
+            <div class="pf-f-top"><span class="pf-logo big" style="background:var(--accent);color:#fff">${esc(e.codigo.slice(0, 4))}</span><div><div class="tk">${esc(e.codigo)}</div><h3>${esc(e.nome_completo || e.nome)}</h3></div></div>
+            <div class="pf-f-price"><b>${eur2(e.preco_eur)}</b><span>por unidade${e.moeda !== 'EUR' ? ` · ${precoNativo(e.preco, e.moeda)} na bolsa` : ''}</span></div>
+            <div class="pf-kv"><div class="pf-f-sec">Informação</div>
+                ${e.indice ? `<div><span>Índice</span><b>${esc(e.indice)}</b></div>` : ''}
+                ${cob ? `<div><span>Cobertura cambial</span><b>${esc(cob)}</b></div>` : ''}
+                ${e.isin ? `<div><span>ISIN</span><b>${esc(e.isin)}</b></div>` : ''}
+                ${e.bolsa ? `<div><span>Bolsa</span><b>${esc(e.bolsa)}</b></div>` : ''}
+                ${e.preco_data ? `<div><span>Preço de</span><b>${esc(dataCurta(e.preco_data))}${e.ilustrativo ? ' (ilustrativo)' : ''}</b></div>` : ''}
+                <div><span>Compra mínima</span><b>1 unidade inteira</b></div></div>
+            ${e.descricao ? `<div><div class="pf-f-sec">O que é</div><div class="pf-f-txt">${esc(e.descricao)}</div></div>` : ''}
+            <div class="pf-sheet-cta"><button class="btn ${escolhido ? 'btn-secondary' : 'btn-primary'}" data-a="etf-escolher" data-c="${esc(e.codigo)}" ${escolhido ? 'disabled' : ''}>${escolhido ? 'É o teu ETF' : `Escolher o ${esc(e.codigo)}`}</button>
+            <button class="pf-link" data-a="fechar">Fechar</button></div>`);
+    }
+
     function ficha(t) {
         const e = porTicker[t];
         if (!e) return;
@@ -566,6 +599,14 @@
             if (P.custo(acoes, c.precos) > d.montante + 0.01) return;
             d.acoes = acoes; vibrar(); enviar({ acoes });
             return atualizarCarteira();
+        }
+        if (a === 'etf-ficha') return fichaEtf(el.dataset.c);
+        if (a === 'etf-escolher') {
+            d.etf = el.dataset.c; d.acoes = null;   // muda o preço da unidade: a divisão volta a ser automática
+            vibrar(); enviar({ etf: d.etf, acoes: null });
+            fecharFolha();
+            if (vista === 'CARTEIRA') atualizarCarteira(); else montar();
+            return;
         }
         if (a === 'auto') { d.acoes = null; enviar({ acoes: null }); return atualizarCarteira(); }
         if (a === 'reforco') {
