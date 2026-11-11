@@ -23,7 +23,7 @@ Valores em euros são números (não texto) e arredondados ao cêntimo. Datas em
   "consentimento_texto": "Aceito que a MoneyFlix me envie este plano por email e guarde o meu email para esse fim. Posso pedir para o apagar a qualquer momento.",
   "catalogo": { "ficheiro": "tour-lisboa/dados/picks-catalogo.json", "exemplo": false },
   "cambio": { "EUR": 1, "USD": 0.8957, "CAD": 0.6367, "GBP": 1.15 },   // euros por unidade de cada moeda (do câmbio do catálogo), usado em preco_eur
-  "etf": { "ticker": "ETF", "nome": "ETF de índice (S&P 500)", "preco_eur": 100, "ilustrativo": true },
+  "etf": { "ticker": "VUAA", "nome": "Vanguard S&P 500 UCITS ETF (Acc)", "isin": "IE00BFMXXD54", "preco": 130.18, "moeda": "EUR", "preco_eur": 130.18, "preco_data": "2026-11-10", "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)", "ilustrativo": false },  // o ETF real do catálogo (campo etf); no portfolio e no plano aparece com este ticker
   "jogadores": [
     {
       "id": "lq2k8f0x1m3n",                // identificador do telemóvel (não é dado pessoal)
@@ -72,7 +72,7 @@ Valores em euros são números (não texto) e arredondados ao cêntimo. Datas em
       "etf_percentagem": 0.7,              // a parte que quis no ETF de índice (0 a 1)
 
       "portfolio": [                       // a compra inicial, em ações inteiras; inclui o ETF se tiver unidades
-        { "ticker": "ETF", "nome": "ETF de índice (S&P 500)", "setor": null, "setor_nome": null, "tipo": "indice",
+        { "ticker": "VUAA", "nome": "Vanguard S&P 500 UCITS ETF (Acc)", "setor": null, "setor_nome": null, "tipo": "indice",
           "acoes": 7, "preco": 100, "moeda": "EUR", "preco_eur": 100, "montante": 700 },
         { "ticker": "JPM", "nome": "JPMorgan Chase", "setor": "financeiro", "setor_nome": "Financeiro", "tipo": "defensiva",
           "acoes": 1, "preco": 335.19, "moeda": "USD", "preco_eur": 288.26, "montante": 288.26 }

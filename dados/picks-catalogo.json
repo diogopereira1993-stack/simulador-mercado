@@ -2034,5 +2034,17 @@
       "logo_url": "https://eodhd.com/img/logos/US/ALAR.png",
       "texto_pronto": false
     }
-  ]
+  ],
+  "etf": {
+    "ticker": "VUAA",
+    "nome": "Vanguard S&P 500 UCITS ETF (Acc)",
+    "isin": "IE00BFMXXD54",
+    "bolsa": "Xetra",
+    "descricao": "Um só produto que segue as 500 maiores empresas americanas, como a Apple, a Microsoft ou a Amazon. É de acumulação: os dividendos ficam lá dentro e são reinvestidos, sem teres de fazer nada.",
+    "preco": 130.18,
+    "moeda": "EUR",
+    "preco_data": "2026-11-10",
+    "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)",
+    "ilustrativo": false
+  }
 }

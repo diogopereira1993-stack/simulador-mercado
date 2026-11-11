@@ -26,6 +26,8 @@
     const precoNativo = (v, moeda) => moeda === 'EUR' ? dec(v) + '€' : (SIMB[moeda] || moeda + ' ') + dec(v);
     const pctTxt = v => (v >= 0 ? '+' : '−') + String(Math.round(Math.abs(v) * 100)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '%';
     const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    // «2026-11-10» → «10 nov»
+    function dataCurta(s) { const m = String(s || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); return m ? `${Number(m[3])} ${MESES[Number(m[2]) - 1]}` : String(s || ''); }
     function dataTxt(s) {
         if (!s) return '';
         let m = String(s).match(/^(\d{4})-(\d{1,2})/);
@@ -39,8 +41,10 @@
     const logo = (t, cls = '') => {
         const e = porTicker[t];
         const img = e && e.logo ? `<img src="${esc(e.logo)}" alt="" loading="lazy" onerror="this.remove()">` : '';
-        return `<span class="pf-logo ${cls}${img ? ' has-img' : ''}" ${t === 'ETF' ? 'style="background:var(--accent);color:#fff"' : ''}>${esc(t === 'ETF' ? 'ETF' : t.slice(0, 4))}${img}</span>`;
+        return `<span class="pf-logo ${cls}${img ? ' has-img' : ''}" ${t === 'ETF' ? 'style="background:var(--accent);color:#fff"' : ''}>${esc(t === 'ETF' ? nomeT('ETF').slice(0, 4) : t.slice(0, 4))}${img}</span>`;
     };
+    // O ETF tem a chave interna 'ETF'; no ecrã aparece o ticker verdadeiro (ex.: VUAA)
+    const nomeT = t => t === 'ETF' ? ((cat && cat.etf && cat.etf.codigo) || 'ETF') : t;
     const tipoPill = t => t && TIPOS[t] ? `<span class="pf-tipo ${t}">${TIPOS[t].nome}</span>` : '';
     function toast(msg) { const el = $('pf-toast'); el.innerText = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 2600); }
     const vibrar = () => { if (navigator.vibrate) navigator.vibrate(20); };
@@ -216,6 +220,7 @@
         const sugestao = eu.perfil === 'indice'
             ? `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha tudo no índice. Aqui começa com ${Math.round(eu.etfSugerido * 100)}% para experimentares com uma parte pequena em empresas.`
             : `No jogo, o teu perfil (${esc(eu.perfilNome)}) tinha ${Math.round(eu.perfilIndice * 100)}% no índice. Começa igual e muda se quiseres.`;
+        const jaTens = 'Já tens um ETF? Põe 0% e usa isto só para as ações escolhidas.';
         return `${passo('CARTEIRA')}
             <h1 class="pf-h1">Monta a tua carteira</h1>
             <p class="pf-lead">Quanto pões para começar e como divides, aos preços de hoje. Compras ações inteiras: ficam registadas em teu nome.</p>
@@ -229,6 +234,7 @@
                 <input class="pf-range" id="pf-etf" type="range" min="0" max="100" step="5">
                 <div class="pf-range-legend"><span>Só empresas</span><span>Só ETF</span></div>
                 <p class="pf-note">${sugestao}</p>
+                <p class="pf-note">${jaTens}</p>
             </div>
             <div id="pf-dyn"></div>
             ${aEsperar('O apresentador vai avançar para o plano de todos os meses.')}`;
@@ -251,14 +257,14 @@
             const e = t === 'ETF' ? cat.etf : porTicker[t];
             const n = c.acoes[t] || 0;
             const preco = c.precos[t];
-            const nota = t === 'ETF' && cat.etf.ilustrativo ? 'Preço ilustrativo' : (n === 0 && preco > c.sobra ? 'Ainda não chega: fica para o plano mensal' : '');
+            const nota = t === 'ETF' && cat.etf.ilustrativo ? 'Preço ilustrativo' : t === 'ETF' && cat.etf.preco_data && n ? `Preço de ${esc(dataCurta(cat.etf.preco_data))}` : (n === 0 && preco > c.sobra ? 'Ainda não chega: fica para o plano mensal' : '');
             return `<div class="pf-pos">
-                <div class="r1">${logo(t)}<div class="mid"><b>${esc(t)}</b><small>${n ? `${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')} a ${eur2(preco)}` : `${esc(e.nome)} · ${eur2(preco)}`}</small></div><div class="val">${eur(n * preco)}</div></div>
+                <div class="r1">${logo(t)}<div class="mid"><b>${esc(nomeT(t))}</b><small>${n ? `${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')} a ${eur2(preco)}` : `${esc(e.nome)} · ${eur2(preco)}`}</small></div><div class="val">${eur(n * preco)}</div></div>
                 <div class="r2"><em>${nota}</em><div class="pf-step-ctl"><button data-a="menos" data-t="${esc(t)}" ${n ? '' : 'disabled'} aria-label="Menos uma">−</button><span>${n}</span><button data-a="mais" data-t="${esc(t)}" ${preco <= c.sobra + 1e-9 ? '' : 'disabled'} aria-label="Mais uma">+</button></div></div>
             </div>`;
         }).join('');
         const barras = ativos.filter(t => c.acoes[t]).map(t => `<i style="width:${(c.acoes[t] * c.precos[t] / d.montante * 100).toFixed(2)}%;background:${cor(t)}"></i>`).join('');
-        const legenda = ativos.filter(t => c.acoes[t]).map(t => `<span><i style="background:${cor(t)}"></i>${esc(t)} ${Math.round(c.acoes[t] * c.precos[t] / d.montante * 100)}%</span>`).join('');
+        const legenda = ativos.filter(t => c.acoes[t]).map(t => `<span><i style="background:${cor(t)}"></i>${esc(nomeT(t))} ${Math.round(c.acoes[t] * c.precos[t] / d.montante * 100)}%</span>`).join('');
         $('pf-dyn').innerHTML = `
             <div class="pf-card">
                 <div class="pf-card-t">A tua carteira</div>
@@ -310,8 +316,8 @@
             const progresso = alvo && precos[alvo] ? Math.min(100, m.por_investir / precos[alvo] * 100) : 0;
             return `<div class="pf-mo ${espera ? 'wait' : ''}">
                 <div class="mh"><span>${esc(m.mes_texto)}</span></div>
-                ${m.compras.length ? `<div class="buys">${m.compras.map(x => `<span class="buy" style="background:${cor(x.ticker)}">${esc(x.ticker)}${x.acoes > 1 ? ' ×' + x.acoes : ''}</span>`).join('')}</div>` : ''}
-                ${espera && alvo ? `<div class="save">A juntar para ${esc(alvo)}</div>` : ''}
+                ${m.compras.length ? `<div class="buys">${m.compras.map(x => `<span class="buy" style="background:${cor(x.ticker)}">${esc(nomeT(x.ticker))}${x.acoes > 1 ? ' ×' + x.acoes : ''}</span>`).join('')}</div>` : ''}
+                ${espera && alvo ? `<div class="save">A juntar para ${esc(nomeT(alvo))}</div>` : ''}
                 ${!espera && alvo && m.por_investir >= 1 ? `<div class="save">${eur(m.por_investir)} guardados</div>` : ''}
                 ${espera && !alvo ? '<div class="save">A juntar</div>' : ''}
                 ${alvo ? `<div class="bar"><i style="width:${progresso.toFixed(0)}%"></i></div>` : `<div class="kept">${m.por_investir >= 1 ? eur(m.por_investir) + ' guardados' : ''}</div>`}
@@ -327,7 +333,7 @@
         if (reforcoOutro && document.activeElement !== inp) inp.value = c.reforco;
         const p = P.plano({ w: c.w, precos: c.precos, acoes: c.acoes, caixa: c.sobra, reforco: c.reforco, inicio: eu.inicio });
         const posto = d.montante + c.reforco * p.meses.length;
-        const tenho = Object.keys(c.w).filter(t => p.acoes[t]).map(t => `<span>${esc(t)} ×${p.acoes[t]}</span>`).join('');
+        const tenho = Object.keys(c.w).filter(t => p.acoes[t]).map(t => `<span>${esc(nomeT(t))} ×${p.acoes[t]}</span>`).join('');
         $('pf-dyn').innerHTML = `
             ${licao(c)}
             <div class="pf-card"><div class="pf-card-t">Os próximos 12 meses <span style="text-transform:none;letter-spacing:0;font-weight:500">aos preços de hoje</span></div>
@@ -432,12 +438,12 @@
         const linhas = ['O meu plano MoneyFlix (exercício)', '', `Perfil: ${eu.perfilNome}`, `Para começar: ${eur(d.montante)}`, `Por mês: ${eur(c.reforco)}`, '', 'Compra inicial:'];
         Object.keys(c.w).filter(t => c.acoes[t]).forEach(t => {
             const n = c.acoes[t], nome = t === 'ETF' ? cat.etf.nome : porTicker[t].nome;
-            linhas.push(`- ${t === 'ETF' ? nome : `${t} (${nome})`}: ${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')}`);
+            linhas.push(`- ${nomeT(t)} (${nome}): ${n} ${t === 'ETF' ? (n === 1 ? 'unidade' : 'unidades') : (n === 1 ? 'ação' : 'ações')}`);
         });
         if (c.sobra >= 1) linhas.push(`- Por investir: ${eur(c.sobra)}`);
         const outras = c.empresas.filter(t => !c.acoes[t]);
         if (outras.length) linhas.push('', `A juntar para: ${outras.join(', ')}`);
-        const meses = p.meses.filter(m => m.compras.length).slice(0, 3).map(m => `- ${m.mes_texto}: ${m.compras.map(x => `${x.ticker}${x.acoes > 1 ? ' x' + x.acoes : ''}`).join(', ')}`);
+        const meses = p.meses.filter(m => m.compras.length).slice(0, 3).map(m => `- ${m.mes_texto}: ${m.compras.map(x => `${nomeT(x.ticker)}${x.acoes > 1 ? ' x' + x.acoes : ''}`).join(', ')}`);
         if (meses.length) linhas.push('', 'Próximas compras:', ...meses);
         linhas.push('', 'Ações inteiras: ficam em meu nome.');
         if (cat.f24 && /^https?:\/\//.test(cat.f24.link)) linhas.push('', 'Próximo passo: abrir conta na Freedom24', cat.f24.link);

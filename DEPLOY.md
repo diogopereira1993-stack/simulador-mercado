@@ -18,6 +18,30 @@ E a apresentação da sessão (slides), de `tour-lisboa/apresentacao/` para `apr
 
 Copia só `index.html`, `dados-slides.js`, o logótipo e os logótipos das empresas; o plano B sem internet e os scripts de construção ficam de fora.
 
+### Trocar o ETF do construtor
+
+O ETF que aparece no construtor (hoje o **Vanguard S&P 500 UCITS ETF (Acc), VUAA**) vem do campo `etf` em `dados/picks-catalogo.json`. Para o trocar ou atualizar o preço, edita só esse bloco:
+
+```json
+"etf": {
+  "ticker": "VUAA",
+  "nome": "Vanguard S&P 500 UCITS ETF (Acc)",
+  "isin": "IE00BFMXXD54",
+  "bolsa": "Xetra",
+  "descricao": "Um só produto que segue as 500 maiores empresas americanas…",
+  "preco": 130.18,
+  "moeda": "EUR",
+  "preco_data": "2026-11-10",
+  "preco_fonte": "Vanguard, valor de mercado no fecho (Xetra)",
+  "ilustrativo": false
+}
+```
+
+- `preco` é o preço de **uma** unidade, na `moeda` indicada (`EUR`, `USD`, `CAD` ou `GBP`; o câmbio é o do catálogo).
+- `ticker` e `nome` são o que aparece no telemóvel, no texto «Guarda o teu plano» e no export (o relatório por email usa os mesmos).
+- Depois de editar: no admin, **Recarregar catálogo** (ou reiniciar o servidor). Antes de publicar, o `./atualizar-catalogo.sh` mantém este ETF se o catálogo do Tour ainda não tiver o campo `etf`.
+- Se o campo `etf` desaparecer, o construtor volta a um ETF genérico de 100 € marcado como «preço ilustrativo».
+
 ## 1. Criar o repositório no GitHub
 
 Opção A, pelo site (mais simples):
