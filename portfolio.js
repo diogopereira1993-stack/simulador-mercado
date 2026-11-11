@@ -32,7 +32,7 @@ const F24 = {
         'Oferta de boas-vindas em ações para novos clientes, segundo os patamares e as condições da Freedom24',
         'Planos recorrentes sem comissão de compra (podem aplicar-se outros custos)',
         'Ações inteiras, registadas em teu nome',
-        'A MoneyFlix tem uma relação comercial com a Freedom24 e é remunerada por ela'
+        'A MoneyFlix tem uma relação comercial com a Freedom24'
     ]
 };
 
