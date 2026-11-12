@@ -654,7 +654,7 @@ table.t td { font-size: 32px; } table.t th { font-size: 20px; } table.t td .s { 
 <!-- 10 · PICKS POR SETOR -->
 <section class="slide" data-sec="MF Picks">
   <div class="kicker">As MoneyFlix Picks, setor a setor</div>
-  <h2>Mediana, melhor e pior Pick de cada setor</h2>
+  <h2>Retorno médio, melhor e pior Pick de cada setor</h2>
   <div class="grid g4 mt-s" id="setores" style="gap:24px"></div>
   <div class="rodape" id="rod-setores"></div>
 </section>
@@ -996,11 +996,11 @@ if (D) {
     const [ic, c] = SET[s.id] || ['grelha', '#8E8E93'];
     return `<div class="card" style="padding:28px 30px 20px">
       <div style="display:flex; gap:14px; align-items:center"><div class="tile s" style="background:${c}14; color:${c}">${ICO[ic]}</div><div><div style="font-size:24px; font-weight:700">${s.nome}</div><div style="font-size:17px; color:var(--muted)">${s.n} Picks · ${s.em_ganho} em ganho</div></div></div>
-      <div class="lin" style="margin-top:12px"><span>Mediana</span><b class="${s.mediana >= 0 ? 'verde' : 'vermelho'}">${pct(s.mediana)}</b></div>
+      <div class="lin" style="margin-top:12px"><span>Retorno médio</span><b class="${s.media >= 0 ? 'verde' : 'vermelho'}">${pct(s.media)}</b></div>
       <div class="lin"><span class="emp" style="color:var(--text)">${logo(s.melhor_t)}Melhor · ${s.melhor_t}</span><b class="verde">${pct(s.melhor)}</b></div>
       <div class="lin"><span class="emp" style="color:var(--text)">${logo(s.pior_t)}Pior · ${s.pior_t}</span><b class="${s.pior >= 0 ? 'verde' : 'vermelho'}">${pct(s.pior)}</b></div></div>`;
   }).join('');
-  $('rod-setores').innerHTML = `Picks ativas. Em cada setor, a mediana, a melhor e a pior Pick. Retorno desde a data de cada Pick, só preço, em dólares, como no site. Fonte: ${fonteSite}. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b>`;
+  $('rod-setores').innerHTML = `Picks ativas. Em cada setor, o retorno médio (média simples das Picks ativas), a melhor e a pior Pick. Retorno desde a data de cada Pick, só preço, em dólares, como no site. Fonte: ${fonteSite}. <b>Rentabilidades passadas não garantem rentabilidades futuras.</b>`;
 
   // 12 · média vs mediana
   $('m-mediana').textContent = pct(Pk.site_ativas.mediana); $('m-ex').textContent = pct(Pk.site_ex.media);
