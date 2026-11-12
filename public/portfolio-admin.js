@@ -8,7 +8,7 @@
     const NOTAS = {
         null: 'Quando o jogo acabar, abre esta fase: os telemóveis passam para «A tua carteira de exercício», com o perfil e o reforço do check-in. O jogo fica guardado; «Voltar ao jogo» mostra-o outra vez.',
         SETORES: 'Pede a cada um que escolha no telemóvel os setores de que gosta ou de que gostava de saber mais. O ecrã mostra os mais escolhidos. Quando a maioria tiver escolhido, avança: os setores aparecem do mais escolhido para o menos escolhido.',
-        EMPRESAS: 'Apresenta o setor e 2 ou 3 empresas. Cada um toca nas empresas para ver a ficha e adiciona com o + as que quiser. É um exercício com as MF Picks, não uma recomendação. O botão principal passa ao setor seguinte; também podes tocar num setor da lista.',
+        EMPRESAS: 'Apresenta o setor e 2 ou 3 empresas. Cada um toca nas empresas para ver a ficha e adiciona com o + as que quiser. É um exercício com as MoneyFlix Picks, não uma recomendação. O botão principal passa ao setor seguinte; também podes tocar num setor da lista.',
         CARTEIRA: 'Cada um escolhe quanto põe para começar (1.000 €, 1.500 € ou outro) e a parte no ETF de índice (começa na do perfil do jogo). As ações são inteiras: se uma custa mais do que sobra, fica para o plano mensal.',
         PLANO: 'O reforço é o do check-in (podem mudá-lo). Mostra o calendário: se pões 50 € por mês e a ação custa 100 €, juntas 2 meses e compras. Fecha com: não importa por onde começas, o importante é começar.',
         EMAIL: 'Quem quiser recebe o plano por email: escreve o email e marca a caixa do consentimento. Ninguém é obrigado. No fim, cada um confirma o email («Sim, está certo»). Antes de exportar, vê aqui quantos faltam confirmar e pede à sala; depois exporta o JSON e o CSV antes de reiniciar o jogo.'
@@ -17,7 +17,7 @@
     const card = document.createElement('div');
     card.className = 'card'; card.id = 'pf-card';
     card.innerHTML = `
-        <h2>Fase 2 · Constrói o teu portfólio <span class="pill pill-wait" id="pfa-pill">Fechada</span></h2>
+        <h2>Fase 2 · Monta a tua carteira <span class="pill pill-wait" id="pfa-pill">Fechada</span></h2>
         <div class="pfa-grid">
             <div>
                 <div class="controls" style="margin-top:0">

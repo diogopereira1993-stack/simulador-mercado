@@ -26,7 +26,7 @@
         root.classList.toggle('show', on);
         if (!on) return;
         const s = est.stats, i = est.etapas.indexOf(est.etapa) + 1;
-        const topo = `<div class="top"><img src="logo-moneyflix.png" alt="MoneyFlix"><span class="k">Constrói o teu portfólio · Passo ${i} de 5 · ${NOMES[est.etapa]}</span><span class="n">Entra em ${esc(location.host)}</span></div>`;
+        const topo = `<div class="top"><img src="logo-moneyflix.png" alt="MoneyFlix"><span class="k">Monta a tua carteira · Passo ${i} de 5 · ${NOMES[est.etapa]}</span><span class="n">Entra em ${esc(location.host)}</span></div>`;
         root.innerHTML = topo + ({ SETORES: setores, EMPRESAS: empresas, CARTEIRA: carteira, PLANO: plano, EMAIL: email }[est.etapa])(s)
             + (est.etapa === 'EMAIL' ? f24() : '');
         if (est.etapa === 'EMAIL') desenharQR();

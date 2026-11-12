@@ -7,3 +7,4 @@ node_modules/
 export*.json
 jogo-moneyflix_*
 estado/
+testes/saida/

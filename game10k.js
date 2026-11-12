@@ -78,10 +78,10 @@ const ROUNDS = [
     },
     {
         at: 12, horizon: 6, answer: 'SOBE',
-        news: 'A bolsa subiu 10 % no último ano e toda a gente fala de investir.',
+        news: 'A bolsa subiu 10 % num ano. No café, no trabalho e no grupo da família só se fala disso.',
         context: 'Nas redes sociais só se fala de ganhos. Um amigo diz que ficou rico com uma só ação e pergunta porque é que ainda não puseste tudo nela. Os lucros das empresas continuam a crescer, mas os preços sobem mais depressa.',
         usual: 'Desde 1928, depois de um semestre a subir, o semestre seguinte também subiu em cerca de 7 de cada 10 vezes; depois de um semestre a descer, só em pouco mais de metade.',
-        lesson: 'No curto prazo as tendências tendem a continuar (momentum). Mas na euforia os preços sobem mais depressa do que os lucros.',
+        lesson: 'A curto prazo, o que sobe tende a continuar a subir. Mas na euforia os preços sobem mais depressa do que os lucros.',
         historia: {
             titulo: '1999: a bolha da internet',
             texto: [
@@ -94,7 +94,7 @@ const ROUNDS = [
     },
     {
         at: 18, horizon: 6, answer: 'SOBE',
-        news: 'Comentador famoso garante: "vem aí um crash".',
+        news: 'Comentador garante na televisão: «Vem aí um crash.»',
         context: 'Um comentador conhecido, que diz ter previsto a última crise, anuncia na televisão uma queda de 50 % para breve. Entretanto, a economia continua a crescer e as empresas apresentam bons resultados.',
         usual: 'Desde 1950, a bolsa americana subiu em cerca de 7 de cada 10 períodos de 6 meses.',
         lesson: 'Há previsões de crash todos os anos. Uma acaba por acertar, mas quase nunca no momento; quem sai à espera perde as subidas.',
@@ -114,7 +114,7 @@ const ROUNDS = [
         news: 'A economia entra em recessão e um grande banco entra em falência.',
         context: 'Os bancos emprestaram demasiado a quem não conseguia pagar. Um dos maiores bancos do mundo declara falência, o crédito seca e as empresas começam a despedir. A economia entra oficialmente em recessão.',
         usual: 'Nas recessões com crise financeira, a bolsa costuma cair muito: em média, cerca de metade do valor, numa descida que pode durar mais de um ano.',
-        lesson: 'O mercado desconta lucros futuros mais baixos, e o pânico leva muita gente a vender ao mesmo tempo.',
+        lesson: 'O mercado antecipa lucros mais baixos no futuro, e o pânico leva muita gente a vender ao mesmo tempo.',
         historia: {
             titulo: 'Setembro de 2008: a falência do Lehman Brothers',
             texto: [
@@ -127,10 +127,10 @@ const ROUNDS = [
     },
     {
         at: 33, horizon: 12, answer: 'SOBE', decisao: true,   // antes desta notícia, cada um decide o que faz ao plano
-        news: 'A bolsa já caiu mais de 30 %. O desemprego continua a subir e na televisão dizem que "é o fim".',
+        news: 'A bolsa já caiu mais de 30 %. O desemprego continua a subir e na televisão já se fala no fim do mundo.',
         context: 'As notícias são todas más e muitos investidores já venderam tudo. Os bancos centrais cortaram os juros para perto de zero e os governos anunciam planos de apoio, mas a economia ainda não melhorou.',
         usual: 'Depois de quedas de mais de 30 %, a bolsa costuma recuperar antes de a economia melhorar, muitas vezes com subidas fortes.',
-        lesson: 'A bolsa antecipa: costuma recuperar meses antes de a economia e o desemprego melhorarem. Quando as notícias parecem as piores, o preço já reflete o pior.',
+        lesson: 'A bolsa antecipa: costuma recuperar meses antes de a economia e o desemprego melhorarem. Quando as notícias são as piores, o preço já reflete isso.',
         historia: {
             titulo: 'Março de 2009: o fundo chegou com as piores notícias',
             texto: [
@@ -636,7 +636,9 @@ module.exports = function setupGame10k(io, opts = {}) {
     }
 
     function questionText(r) {
-        return r.horizon === 1 ? 'No próximo mês, o mercado sobe ou desce?' : `Nos próximos ${r.horizon} meses, o mercado sobe ou desce?`;
+        if (r.horizon === 1) return 'No próximo mês, o mercado sobe ou desce?';
+        if (r.horizon === 12) return 'No próximo ano, o mercado sobe ou desce?';
+        return `Nos próximos ${r.horizon} meses, o mercado sobe ou desce?`;
     }
 
     function playerView(p, id) {

@@ -189,7 +189,7 @@
         barra();
         if (topo) main.scrollTop = 0;
     }
-    const passo = v => `<div class="pf-kicker">Passo ${ETAPAS.indexOf(v) + 1} de 5${v === 'EMPRESAS' ? ' · MF Picks' : ''}</div>`;
+    const passo = v => `<div class="pf-kicker">Passo ${ETAPAS.indexOf(v) + 1} de 5${v === 'EMPRESAS' ? ' · MoneyFlix Picks' : ''}</div>`;
     const aEsperar = proxima => ETAPAS.indexOf(est.etapa) === ETAPAS.indexOf(vista) && proxima ? `<div class="pf-hint">${proxima}</div>` : '';
 
     function vSetores() {
@@ -536,7 +536,7 @@
             <div class="pf-kv"><div class="pf-f-sec">Informação</div>
                 <div><span>Setor</span><b>${esc(s.nome || e.setor)}</b></div>
                 ${e.tipo && TIPOS[e.tipo] ? `<div><span>Tipo</span><b>${TIPOS[e.tipo].nome}</b></div>` : ''}
-                ${e.data_pick ? `<div><span>Nas MF Picks desde</span><b>${esc(dataTxt(e.data_pick))}</b></div>` : ''}
+                ${e.data_pick ? `<div><span>Nas MoneyFlix Picks desde</span><b>${esc(dataTxt(e.data_pick))}</b></div>` : ''}
                 <div><span>Compra mínima</span><b>1 ação inteira</b></div></div>
             ${e.descricao ? `<div><div class="pf-f-sec">O que faz</div><div class="pf-f-txt">${esc(e.descricao)}</div></div>` : ''}
             ${e.tipo && TIPOS[e.tipo] ? `<div><div class="pf-f-sec">${TIPOS[e.tipo].nome}</div><div class="pf-f-txt">${TIPOS[e.tipo].txt}</div></div>` : ''}

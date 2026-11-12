@@ -246,7 +246,7 @@
             if (s.status === 'DECIDE') {
                 const sv = s.survey;
                 const recall = sv.answered ? `<b>Lembrar a sala</b>No check-in, ${Math.round(sv.wouldSell / sv.answered * 100)} % disseram que vendiam tudo se a carteira caísse 30 %.` : '';
-                el.innerHTML = `<b>Decisão na crise</b>Diz: "As vossas carteiras caíram. Cada um decide no telemóvel o que faz ao seu plano. Não há resposta certa no ecrã: no fim vamos ver o que aconteceu a cada escolha."${recall}`;
+                el.innerHTML = `<b>Decisão na crise</b>Diz: «As vossas carteiras caíram. Cada um decide no telemóvel o que faz ao seu plano. Não há resposta certa no ecrã: no fim vamos ver o que aconteceu a cada escolha.»${recall}`;
                 return;
             }
             const r = rounds[s.status === 'LOBBY' ? 0 : s.round];
