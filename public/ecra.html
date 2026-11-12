@@ -363,77 +363,134 @@
                         type: 'linear', min: 0, max: MONTHS,
                         grid: { color: ctx => ctx.tick.value % 12 === 0 ? '#E5E5EA' : 'transparent' },
                         // Até 2 anos e meio à vista, marcas de 6 em 6 meses; depois, de ano a ano (nunca «mês 57»)
-                        afterBuildTicks: ax => { const passo = ax.max <= 30 ? 6 : 12; ax.ticks = []; for (let v = 0; v <= ax.max + 0.01; v += passo) ax.ticks.push({ value: v }); },
-                        ticks: { callback: v => v === 0 ? 'Início' : v % 12 === 0 ? 'Ano ' + v / 12 : v === 6 ? '6 meses' : '' }
+                        afterBuildTicks: ax => {
+                            const passo = ax.max <= 1.01 ? 0.25 : ax.max <= 6.01 ? 1 : ax.max <= 12.01 ? 3 : ax.max <= 30 ? 6 : 12;
+                            ax.ticks = []; for (let v = 0; v <= ax.max + 0.01; v += passo) ax.ticks.push({ value: Math.round(v * 100) / 100 });
+                        },
+                        ticks: { callback: v => v === 0 ? 'Início' : v % 12 === 0 ? (v === 12 ? '1 ano' : (v / 12) + ' anos') : v < 1 ? Math.round(v * 4) + (Math.round(v * 4) === 1 ? ' semana' : ' semanas') : v < 12 && Number.isInteger(v) ? v + (v === 1 ? ' mês' : ' meses') : '' }
                     },
-                    y: { min: 0, max: 2000, position: 'right', grid: { color: '#EEEEF0' }, ticks: { maxTicksLimit: 7, includeBounds: false, callback: v => (v / 1000).toLocaleString('pt-PT', { maximumFractionDigits: 1 }) + 'K €' } }
+                    y: { min: 0, max: 2000, position: 'right', grid: { color: '#EEEEF0' }, ticks: { maxTicksLimit: 7, includeBounds: false, callback: function (v) { return v === 0 ? '0 €' : this.max >= 10000 ? (v / 1000).toLocaleString('pt-PT', { maximumFractionDigits: 1 }) + 'K €' : eur(v); } } }
                 }
             },
             plugins: [bandsPlugin]
         });
 
-        // ── ZOOM PROGRESSIVO ─────────────────────────────
-        // O gráfico mostra só o que já aconteceu (mais uma margem) e vai alargando quando a linha chega perto da borda,
-        // para as subidas e quedas se verem desde o início. No fim do jogo mostra os 7 anos inteiros.
-        let ultimoHist = [], completo = false, primeiraVista = true;
-        const INICIO = { xMax: 12, yMin: 0, yMax: 2000 };
-        const vista = { ...INICIO };          // para onde a escala vai
-        const atual = { ...INICIO };          // o que está desenhado agora (desliza até à vista)
-        const redondo = (v, passo, f) => f(v / passo) * passo;
-        function calcularVista(history) {
-            if (!history.length) return;
-            const m = history[history.length - 1].month;
-            const valores = history.flatMap(h => [h.indice, h.misto, h.escolhidas, h.pocket]);
+        // ── ZOOM AMARRADO AO TEMPO E PONTOS DIÁRIOS (só para o desenho) ──
+        // O jogo avança mês a mês. Para se ver a oscilação de perto no início, cada mês é desenhado com ~21 «dias»
+        // gerados por uma ponte browniana que começa e acaba EXATAMENTE nos valores mensais reais (nada no jogo muda).
+        // A semente é fixa por jogo e por mês: o desenho é igual se o ecrã recarregar ou o servidor reiniciar.
+        // O eixo X acompanha a ponta da linha: 1 mês → 3 → 6 → 1 ano → … → 7 anos. No fim, os 7 anos inteiros.
+        const DIAS = 21, SIGMA_DIA = 0.009;               // ~0,9 % por dia no índice
+        const PARAGENS = [1, 3, 6, 12, 24, 36, 48, 60, 72, 84];
+        const PERFIS = { indice: { beta: 1, propria: 0 }, misto: { beta: 0.7 + 0.3 * 1.3, propria: 0.3 }, escolhidas: { beta: 0.35 + 0.65 * 1.3, propria: 0.65 } };
+        let ultimoHist = [], completo = false, jogoId = '', estadoJogo = '';
+        const INICIO = { xMax: 1, yMin: 900, yMax: 1100 };
+        const vista = { ...INICIO }, atual = { ...INICIO };
+        let revelar = { t0: 0, dur: 650 };                 // o último mês desenha-se dia a dia ao longo do seu tempo
+        function semente(str) {
+            let h = 1779033703 ^ str.length;
+            for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+            return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+        }
+        function gauss(r) { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+        function ponte(r) { const w = [0]; for (let i = 1; i <= DIAS; i++) w.push(w[i - 1] + gauss(r)); return w.map((x, i) => x - i / DIAS * w[DIAS]); }
+        const cacheDias = new Map();
+        function diasDoMes(m, a, b) {
+            const k = jogoId + ':' + m;
+            if (cacheDias.has(k)) return cacheDias.get(k);
+            const mercado = ponte(semente(k + ':mercado')), propria = ponte(semente(k + ':propria'));
+            const res = {};
+            for (const [nome, p] of Object.entries(PERFIS)) {
+                res[nome] = mercado.map((c, i) => {
+                    if (i === 0) return a[nome];
+                    if (i === DIAS) return b[nome];
+                    return a[nome] * Math.pow(b[nome] / a[nome], i / DIAS) * Math.exp(SIGMA_DIA * (p.beta * c + p.propria * 0.6 * propria[i]));
+                });
+            }
+            cacheDias.set(k, res);
+            return res;
+        }
+        // Os pontos a desenhar até à fração já revelada do último mês
+        function construir(fracao) {
+            const h = ultimoHist, n = h.length, out = { indice: [], misto: [], escolhidas: [], pocket: [] };
+            if (!n) return { out, ponta: 0 };
+            const passo = atual.xMax <= 24 ? 1 : atual.xMax <= 48 ? 3 : 7;     // menos pontos quando a janela é grande
+            for (let m = 0; m < n - 1; m++) {
+                const ultimo = m === n - 2;
+                const ate = ultimo ? Math.floor(fracao * DIAS) : DIAS;
+                const d = diasDoMes(h[m].month, h[m], h[m + 1]);
+                for (let i = 0; i <= ate; i++) {
+                    if (i % passo && i !== ate && i !== 0) continue;
+                    if (i === 0 && m > 0) continue;      // o dia 0 é o último do mês anterior
+                    for (const k of ['indice', 'misto', 'escolhidas']) out[k].push({ x: h[m].month + i / DIAS, y: d[k][i] });
+                }
+            }
+            if (n === 1) for (const k of ['indice', 'misto', 'escolhidas']) out[k].push({ x: h[0].month, y: h[0][k] });
+            const ponta = n === 1 ? h[0].month : h[n - 2].month + Math.floor(fracao * DIAS) / DIAS;
+            h.forEach((x, i) => { if (x.month <= ponta + 1e-9) out.pocket.push({ x: x.month, y: x.pocket }); });
+            out.pocket.push({ x: ponta, y: out.pocket.length ? out.pocket[out.pocket.length - 1].y : h[0].pocket });
+            return { out, ponta };
+        }
+        const bonito = v => { const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
+        function calcularVista(ponta, out) {
+            const valores = [...out.indice, ...out.misto, ...out.escolhidas, ...out.pocket].map(p => p.y);
+            if (!valores.length) return;
             const lo = Math.min(...valores), hi = Math.max(...valores);
-            if (completo) {
-                // Fim e conclusão: os 7 anos e desde zero, com a linha dos 10K
-                Object.assign(vista, { xMax: MONTHS, yMin: 0, yMax: redondo(Math.max(hi * 1.05, 11000), 1000, Math.ceil) });
-                return;
-            }
-            if (m < 3) Object.assign(vista, INICIO, { yMin: redondo(lo * 0.8, 100, Math.floor) });   // começo (ou jogo reiniciado)
-            else if (primeiraVista) {
-                // Ecrã aberto ou recarregado a meio do jogo: a escala ajusta-se logo ao que já aconteceu
-                const p0 = hi > 6000 ? 1000 : 500, f0 = Math.max(200, (hi - lo) * 0.1);
-                Object.assign(vista, { xMax: Math.min(MONTHS, Math.max(12, redondo(m + Math.max(6, m * 0.25), 6, Math.ceil))),
-                    yMin: Math.max(0, redondo(lo - f0, p0, Math.floor)), yMax: redondo(hi + f0 * 2, p0, Math.ceil) });
-                Object.assign(atual, vista);
-            }
-            primeiraVista = false;
-            // Eixo X: só alarga quando o mês atual chega a menos de 3 meses da borda (sem saltos a cada mês)
-            if (m > vista.xMax - 3) vista.xMax = Math.min(MONTHS, Math.max(12, redondo(m + Math.max(6, m * 0.25), 6, Math.ceil)));
-            // Eixo Y: à volta do que se vê, com ~10 % de margem; só alarga quando a linha chega perto da borda
-            const passo = hi > 6000 ? 1000 : 500, folga = Math.max(200, (hi - lo) * 0.1);
-            if (lo < vista.yMin + (vista.yMax - vista.yMin) * 0.05) vista.yMin = Math.max(0, redondo(lo - folga, passo, Math.floor));
-            if (hi > vista.yMax - (vista.yMax - vista.yMin) * 0.05) vista.yMax = redondo(hi + folga * 2, passo, Math.ceil);
+            if (completo) { Object.assign(vista, { xMax: MONTHS, yMin: 0, yMax: Math.ceil(Math.max(hi * 1.05, 11000) / 1000) * 1000 }); return; }
+            if (ponta < 0.05 || ponta + 1e-9 < vista.xMax / 4 && vista.xMax > 3) Object.assign(vista, INICIO);   // começo ou jogo reiniciado
+            // X: a primeira paragem que deixa uma pequena margem à frente da ponta (só alarga)
+            const alvoX = PARAGENS.find(p => p >= ponta + Math.max(0.2, ponta * 0.15)) || MONTHS;
+            vista.xMax = Math.max(vista.xMax, Math.min(MONTHS, alvoX));
+            // Y: à volta do que se vê, com ~10 % de margem; alarga quando a linha se aproxima da borda
+            const folga = Math.max(10, (hi - lo) * 0.12), passo = bonito(Math.max(20, (hi - lo) / 4));
+            const novoLo = Math.max(0, Math.floor((lo - folga) / passo) * passo), novoHi = Math.ceil((hi + folga) / passo) * passo;
+            const borda = (vista.yMax - vista.yMin) * 0.05;
+            if (lo < vista.yMin + borda) vista.yMin = Math.min(vista.yMin, novoLo);
+            if (hi > vista.yMax - borda) vista.yMax = Math.max(vista.yMax, novoHi);
             if (hi >= 8500) vista.yMax = Math.max(vista.yMax, 11000);     // perto dos 10K, a linha do objetivo entra no ecrã
         }
-        // A escala desliza até à vista em ~0,5 s em vez de saltar
-        let animando = false;
-        function animar() {
-            let falta = false;
+        // Um só ciclo de desenho: revela os dias do mês que chegou e desliza a escala até à vista
+        let animando = false, ultimoQuadro = 0;
+        function quadro(imediato) {
+            ultimoQuadro = performance.now();
+            const fracao = imediato ? 1 : Math.min(1, (performance.now() - revelar.t0) / revelar.dur);
+            const { out, ponta } = construir(fracao);
+            calcularVista(ponta, out);
+            let falta = fracao < 1;
             for (const k of ['xMax', 'yMin', 'yMax']) {
                 const d = vista[k] - atual[k];
-                if (Math.abs(d) > (k === 'xMax' ? 0.05 : 5)) { atual[k] += d * 0.15; falta = true; } else atual[k] = vista[k];
+                if (!imediato && Math.abs(d) > (k === 'xMax' ? 0.01 : 1)) { atual[k] += d * 0.15; falta = true; } else atual[k] = vista[k];
             }
+            chart.data.datasets[0].data = out.indice;
+            chart.data.datasets[1].data = out.misto;
+            chart.data.datasets[2].data = out.escolhidas;
+            chart.data.datasets[3].data = out.pocket;
             chart.options.scales.x.max = atual.xMax;
             chart.options.scales.y.min = atual.yMin;
             chart.options.scales.y.max = atual.yMax;
             chart.update('none');
-            if (falta) requestAnimationFrame(animar); else animando = false;
+            if (falta && !imediato && !document.hidden) requestAnimationFrame(() => quadro()); else animando = false;
         }
-        function aplicarVista() {
-            calcularVista(ultimoHist);
-            if (document.hidden) { Object.assign(atual, vista); chart.options.scales.x.max = atual.xMax; chart.options.scales.y.min = atual.yMin; chart.options.scales.y.max = atual.yMax; return chart.update('none'); }
-            if (!animando) { animando = true; requestAnimationFrame(animar); }
+        function desenhar() {
+            // Separador escondido: o browser não anima, por isso desenha já o estado final (nunca fica preso)
+            if (document.hidden) { animando = false; return quadro(true); }
+            // Salvaguarda: se o ciclo parou a meio (ex.: o separador esteve escondido), recomeça
+            if (animando && performance.now() - ultimoQuadro > 500) animando = false;
+            if (!animando) {
+                animando = true; requestAnimationFrame(() => quadro());
+                // Se o browser não correr a animação (ecrã em segundo plano), desenha o estado final na mesma
+                const pedido = performance.now();
+                setTimeout(() => { if (animando && ultimoQuadro < pedido) { animando = false; quadro(true); } }, 300);
+            }
         }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { animando = false; desenhar(); } });
 
         socket.on('screen', ({ history }) => {
+            const novoMes = history.length === ultimoHist.length + 1 && ['FAST', 'WINDOW'].includes(estadoJogo);
             ultimoHist = history;
-            chart.data.datasets[0].data = history.map(h => ({ x: h.month, y: h.indice }));
-            chart.data.datasets[1].data = history.map(h => ({ x: h.month, y: h.misto }));
-            chart.data.datasets[2].data = history.map(h => ({ x: h.month, y: h.escolhidas }));
-            chart.data.datasets[3].data = history.map(h => ({ x: h.month, y: h.pocket }));
-            aplicarVista();
+            // Um mês novo com o mercado a correr desenha-se dia a dia; um salto (ecrã recarregado) aparece logo inteiro
+            revelar = novoMes ? { t0: performance.now(), dur: estadoJogo === 'WINDOW' ? 1250 : 650 } : { t0: -1e9, dur: 1 };
+            desenhar();
         });
 
         // ── GRÁFICO DA HISTÓRIA (o exemplo real) ────────
@@ -532,7 +589,9 @@
             bands = s.bands || [];
             // No fim e na conclusão, o gráfico mostra os 7 anos inteiros; nas pausas e na história fica como está
             const fim = s.status === 'FINISHED' || s.status === 'CONCLUSION';
-            if (fim !== completo) { completo = fim; aplicarVista(); }
+            if (s.gameId !== jogoId) { jogoId = s.gameId; cacheDias.clear(); desenhar(); }   // a semente dos dias depende do jogo
+            estadoJogo = s.status;
+            if (fim !== completo) { completo = fim; desenhar(); }
 
             // Quem está a jogar e com que perfil (sem pontos nem rankings)
             const sv = s.survey;
