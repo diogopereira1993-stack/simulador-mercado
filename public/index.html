@@ -223,7 +223,7 @@
             <div class="plan-head"><span class="plan-label" id="plan-label">O teu plano</span><span class="date" id="date">Ano 1 · jan</span></div>
             <div class="value-row"><div id="value">1.000 €</div><span class="badge" id="delta"></span><span class="badge neg" id="drawdown"></span></div>
             <svg id="spark" class="spark" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"></svg>
-            <div class="spark-legend"><span><i id="l-plan"></i>O teu plano</span><span><i class="l-pocket"></i>Do teu bolso</span><span>7 anos</span></div>
+            <div class="spark-legend"><span>O que o mercado juntou: <b>+0 €</b></span><span></span><span>1 mês</span></div>
             <div class="progress"><div id="bar"></div></div>
             <div class="progress-row"><span id="pct">10 % dos 10.000 €</span><span id="split">1.000 € do teu bolso</span></div>
         </div>
@@ -460,7 +460,7 @@
             } else deltaEl.innerText = '';
             // Quanto a carteira caiu desde o máximo: é isto que se sente numa crise
             document.getElementById('drawdown').innerText = m.drawdown <= -0.05 ? `${pct(m.drawdown)} desde o máximo` : '';
-            drawSpark(m);
+            drawMercado(m);
             const p = Math.min(m.value / s.goal * 100, 100);
             document.getElementById('bar').style.width = p + '%';
             document.getElementById('pct').innerText = m.hitMonth ? `10.000 € ao fim de ${duracao(m.hitMonth)}` : `${p.toFixed(0)} % dos 10.000 €`;
@@ -538,44 +538,52 @@
         }
 
         // Mini-gráfico do plano: 7 anos no eixo horizontal, a linha cresce mês a mês
-        // Zoom progressivo: mostra só o que já passou (mais uma margem) e alarga quando a linha chega perto da borda;
-        // no fim do jogo, os 7 anos inteiros desde zero, com a linha dos 10K
-        const spView = { x: 12, lo: 0, hi: 0 };
-        function drawSpark(m) {
-            const W = 300, H = 70, TOTAL = 84;
-            const over = state && (state.status === 'FINISHED' || state.status === 'CONCLUSION');
-            const mes = m.spark.length - 1;
-            const vals = m.spark.concat(m.sparkPocket);
-            const lo = Math.min(...vals), hi = Math.max(...vals);
-            if (over) Object.assign(spView, { x: TOTAL, lo: 0, hi: Math.max(11000, hi) * 1.05 });
-            else {
-                if (mes < 3 || spView.hi === 0) Object.assign(spView, { x: 12, lo: Math.floor(lo * 0.8 / 100) * 100, hi: Math.ceil(hi * 1.25 / 100) * 100 });
-                if (mes > spView.x - 3) spView.x = Math.min(TOTAL, Math.ceil((mes + Math.max(6, mes * 0.25)) / 6) * 6);
-                const folga = Math.max(150, (hi - lo) * 0.1);
-                if (lo < spView.lo + (spView.hi - spView.lo) * 0.05) spView.lo = Math.max(0, lo - folga);
-                if (hi > spView.hi - (spView.hi - spView.lo) * 0.05) spView.hi = hi + folga * 2;
-                if (hi >= 8500) spView.hi = Math.max(spView.hi, 10800);
+        // ── O GRÁFICO DO PLANO: «o que o mercado juntou» (valor do plano − o que saiu do bolso) ──
+        // À volta de uma linha do zero: verde acima, vermelho abaixo. Mesmo zoom do ecrã de sala (1 mês → … → 7 anos)
+        // e pontos diários só para o desenho (ponte browniana com semente por jogo e pessoa; os valores mensais são os reais).
+        const DIAS_T = 21, SIG_T = 0.009, PARAGENS_T = [1, 3, 6, 12, 24, 36, 48, 60, 72, 84];
+        const BETA_T = { indice: 1, misto: 0.7 + 0.3 * 1.3, escolhidas: 0.35 + 0.65 * 1.3 };
+        const mkView = { x: 1 };
+        function sementeT(str) {
+            let h = 1779033703 ^ str.length;
+            for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h << 13 | h >>> 19; }
+            return () => { h = Math.imul(h ^ h >>> 16, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); h ^= h >>> 16; return (h >>> 0) / 4294967296; };
+        }
+        function gaussT(r) { let u = 0, v = 0; while (!u) u = r(); while (!v) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+        function ponteT(r) { const w = [0]; for (let i = 1; i <= DIAS_T; i++) w.push(w[i - 1] + gaussT(r)); return w.map((x, i) => x - i / DIAS_T * w[DIAS_T]); }
+        const cacheT = new Map();
+        function drawMercado(m) {
+            const W = 300, H = 70, n = m.spark.length;
+            const ganho = i => m.spark[i] - m.sparkPocket[i];
+            const pts = [{ x: 0, y: ganho(0) }];
+            for (let k = 0; k < n - 1; k++) {
+                const key = (state && state.gameId) + ':' + playerId + ':' + k;
+                if (!cacheT.has(key)) cacheT.set(key, ponteT(sementeT(key)));
+                const b = cacheT.get(key), ga = ganho(k), gb = ganho(k + 1);
+                for (let i = 1; i <= DIAS_T; i++) {
+                    const t = i / DIAS_T;
+                    pts.push({ x: k + t, y: i === DIAS_T ? gb : ga + (gb - ga) * t + m.spark[k] * SIG_T * BETA_T[m.profile] * b[i] });
+                }
             }
-            const leg = document.querySelector('.spark-legend span:last-child');
-            if (leg) leg.innerText = duracao(spView.x);
-            const MONTHS = spView.x, min = spView.lo, max = spView.hi;
-            const X = i => (i / MONTHS) * W;
-            const Y = v => H - ((v - min) / (max - min)) * H;
-            const pts = m.spark.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-            const pocket = m.sparkPocket.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-            const last = m.spark.length - 1;
-            const area = `0,${H} ${pts} ${X(last).toFixed(1)},${H}`;
-            const goalY = Y(10000).toFixed(1);
-            const mostraMeta = 10000 <= max;   // a linha dos 10K só aparece quando está dentro da escala
-            const color = css(COLOR[m.profile]);
-            document.getElementById('l-plan').style.background = color;
+            const over = state && (state.status === 'FINISHED' || state.status === 'CONCLUSION');
+            const ponta = n - 1;
+            if (over) mkView.x = 84;
+            else { if (ponta < 0.5) mkView.x = 1; mkView.x = Math.max(mkView.x, PARAGENS_T.find(p => p >= ponta + Math.max(0.2, ponta * 0.15)) || 84); }
+            const ys = pts.map(p => p.y).concat([0]);
+            let lo = Math.min(...ys), hi = Math.max(...ys);
+            const folga = Math.max(10, (hi - lo) * 0.12); lo -= folga; hi += folga;
+            const X = x => x / mkView.x * W, Y = v => H - (v - lo) / (hi - lo) * H, y0 = Y(0);
+            const linha = pts.map(p => `${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(' ');
+            const area = `${X(0)},${y0.toFixed(1)} ${linha} ${X(pts[pts.length - 1].x).toFixed(1)},${y0.toFixed(1)}`;
+            const verde = css('--green'), vermelho = css('--red');
+            const ult = pts[pts.length - 1].y;
             document.getElementById('spark').innerHTML = `
-                ${mostraMeta ? `<line x1="0" x2="${W}" y1="${goalY}" y2="${goalY}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>
-                <text x="${W}" y="${Number(goalY) - 4}" text-anchor="end" font-size="9" fill="var(--sub)">10K</text>` : ''}
-                <polygon points="${area}" fill="${color}" fill-opacity="0.1"/>
-                <polyline points="${pocket}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>
-                <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-                <circle cx="${X(last).toFixed(1)}" cy="${Y(m.spark[last]).toFixed(1)}" r="3.5" fill="${color}"/>`;
+                <defs><clipPath id="cima"><rect x="0" y="0" width="${W}" height="${y0.toFixed(1)}"/></clipPath><clipPath id="baixo"><rect x="0" y="${y0.toFixed(1)}" width="${W}" height="${(H - y0).toFixed(1)}"/></clipPath></defs>
+                <line x1="0" x2="${W}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
+                <g clip-path="url(#cima)"><polygon points="${area}" fill="${verde}" fill-opacity="0.15"/><polyline points="${linha}" fill="none" stroke="${verde}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g>
+                <g clip-path="url(#baixo)"><polygon points="${area}" fill="${vermelho}" fill-opacity="0.15"/><polyline points="${linha}" fill="none" stroke="${vermelho}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></g>
+                <circle cx="${X(pts[pts.length - 1].x).toFixed(1)}" cy="${Y(ult).toFixed(1)}" r="3.5" fill="${ult >= 0 ? verde : vermelho}"/>`;
+            document.querySelector('.spark-legend').innerHTML = `<span>O que o mercado juntou: <b style="color:${ult >= 0 ? 'var(--green-ink)' : 'var(--red-ink)'}">${ult >= 0 ? '+' : '−'}${eur(Math.abs(ult))}</b></span><span></span><span>${duracao(mkView.x)}</span>`;
         }
 
         // Contagem decrescente da votação ou da decisão, acertada pelo relógio do servidor
