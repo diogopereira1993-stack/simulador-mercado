@@ -538,21 +538,40 @@
         }
 
         // Mini-gráfico do plano: 7 anos no eixo horizontal, a linha cresce mês a mês
+        // Zoom progressivo: mostra só o que já passou (mais uma margem) e alarga quando a linha chega perto da borda;
+        // no fim do jogo, os 7 anos inteiros desde zero, com a linha dos 10K
+        const spView = { x: 12, lo: 0, hi: 0 };
         function drawSpark(m) {
-            const W = 300, H = 70, MONTHS = 84;
-            const max = Math.max(11000, ...m.spark) * 1.05;
+            const W = 300, H = 70, TOTAL = 84;
+            const over = state && (state.status === 'FINISHED' || state.status === 'CONCLUSION');
+            const mes = m.spark.length - 1;
+            const vals = m.spark.concat(m.sparkPocket);
+            const lo = Math.min(...vals), hi = Math.max(...vals);
+            if (over) Object.assign(spView, { x: TOTAL, lo: 0, hi: Math.max(11000, hi) * 1.05 });
+            else {
+                if (mes < 3 || spView.hi === 0) Object.assign(spView, { x: 12, lo: Math.floor(lo * 0.8 / 100) * 100, hi: Math.ceil(hi * 1.25 / 100) * 100 });
+                if (mes > spView.x - 3) spView.x = Math.min(TOTAL, Math.ceil((mes + Math.max(6, mes * 0.25)) / 6) * 6);
+                const folga = Math.max(150, (hi - lo) * 0.1);
+                if (lo < spView.lo + (spView.hi - spView.lo) * 0.05) spView.lo = Math.max(0, lo - folga);
+                if (hi > spView.hi - (spView.hi - spView.lo) * 0.05) spView.hi = hi + folga * 2;
+                if (hi >= 8500) spView.hi = Math.max(spView.hi, 10800);
+            }
+            const leg = document.querySelector('.spark-legend span:last-child');
+            if (leg) leg.innerText = duracao(spView.x);
+            const MONTHS = spView.x, min = spView.lo, max = spView.hi;
             const X = i => (i / MONTHS) * W;
-            const Y = v => H - (v / max) * H;
+            const Y = v => H - ((v - min) / (max - min)) * H;
             const pts = m.spark.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
             const pocket = m.sparkPocket.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
             const last = m.spark.length - 1;
             const area = `0,${H} ${pts} ${X(last).toFixed(1)},${H}`;
             const goalY = Y(10000).toFixed(1);
+            const mostraMeta = 10000 <= max;   // a linha dos 10K só aparece quando está dentro da escala
             const color = css(COLOR[m.profile]);
             document.getElementById('l-plan').style.background = color;
             document.getElementById('spark').innerHTML = `
-                <line x1="0" x2="${W}" y1="${goalY}" y2="${goalY}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>
-                <text x="${W}" y="${Number(goalY) - 4}" text-anchor="end" font-size="9" fill="var(--sub)">10K</text>
+                ${mostraMeta ? `<line x1="0" x2="${W}" y1="${goalY}" y2="${goalY}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4" vector-effect="non-scaling-stroke"/>
+                <text x="${W}" y="${Number(goalY) - 4}" text-anchor="end" font-size="9" fill="var(--sub)">10K</text>` : ''}
                 <polygon points="${area}" fill="${color}" fill-opacity="0.1"/>
                 <polyline points="${pocket}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/>
                 <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
