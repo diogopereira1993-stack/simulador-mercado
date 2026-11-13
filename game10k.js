@@ -70,8 +70,7 @@ const ROUNDS = [
             titulo: 'Quase um século de bolsa',
             texto: [
                 'Desde 1928, contando com os dividendos, o S&P 500 (as 500 maiores empresas americanas) teve ganhos em cerca de 3 de cada 4 anos.',
-                'Com os dividendos, rendeu em média perto de 10 % ao ano, antes da inflação, com anos muito bons e anos muito maus pelo meio.',
-                'Repara na década de 2000: duas crises, e o índice acabou mais baixo do que começou.'
+                'Com os dividendos, rendeu em média perto de 10 % ao ano, antes da inflação, com anos muito bons e anos muito maus pelo meio.'
             ],
             serie: { nome: 'S&P 500 no fim de cada década', pontos: [['1950', 20], ['1960', 58], ['1970', 92], ['1980', 136], ['1990', 330], ['2000', 1320], ['2010', 1258], ['2020', 3756]] }
         }
@@ -80,7 +79,7 @@ const ROUNDS = [
         at: 12, horizon: 6, answer: 'SOBE',
         news: 'A bolsa subiu 10 % num ano. No café, no trabalho e no grupo da família só se fala disso.',
         context: 'Nas redes sociais só se fala de ganhos. Um amigo diz que ficou rico com uma só ação e pergunta porque é que ainda não puseste tudo nela. Os lucros das empresas continuam a crescer, mas os preços sobem mais depressa.',
-        usual: 'Desde 1928, depois de um semestre a subir, o semestre seguinte também subiu em cerca de 7 de cada 10 vezes; depois de um semestre a descer, só em pouco mais de metade.',
+        usual: 'Desde 1928, depois de um semestre a subir, o semestre seguinte também subiu em cerca de 7 de cada 10 vezes.',
         lesson: 'A curto prazo, o que sobe tende a continuar a subir. Mas na euforia os preços sobem mais depressa do que os lucros.',
         historia: {
             titulo: '1999: a bolha da internet',
