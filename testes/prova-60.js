@@ -32,6 +32,37 @@ async function admin(cmds) {
   for (const c of cmds) { c === 'FINISH' ? a.emit('admin', { command: 'FINISH' }) : a.emit('pf-admin', { command: 'ETAPA', etapa: c }); await sleep(200); }
   a.close();
 }
+
+// Ronda 1: vota-se, volta-se da votação para a notícia 3 vezes (com alguns a trocar de voto), fecha-se, e volta-se
+// da história para a resposta 3 vezes. Esperado (resposta da ronda 1 = SOBE): acertos = quem tem SOBE no fim.
+async function rondaComVoltas(jog) {
+  const key = (await (await fetch(URL + '/admin-key', { headers: { authorization: auth } })).json()).key;
+  const a = io(URL, { transports: ['websocket'], forceNew: true }); let st = null; a.on('state', x => st = x);
+  await new Promise(r => a.on('connect', r)); await new Promise(r => a.emit('register-admin', key, r)); await sleep(200);
+  const cmd = async c => { a.emit('admin', { command: c }); await sleep(250); };
+  const ate = async f => { for (let i = 0; i < 400 && !(st && f(st)); i++) await sleep(100); };
+  await cmd('NEXT'); await ate(x => x.status === 'NEWS');
+  const final = {};                                      // o voto final de cada um (null = não votou)
+  for (let volta = 0; volta < 3; volta++) {
+    await cmd('NEXT'); await ate(x => x.status === 'VOTING');
+    jog.forEach((p, i) => {
+      if (i % 5 === 4) return;                           // 1 em cada 5 nunca vota
+      const v = volta === 0 ? (i % 2 ? 'DESCE' : 'SOBE') : (i % 7 === 0 ? (final[p.id] === 'SOBE' ? 'DESCE' : 'SOBE') : null);
+      if (v) { p.s.emit('vote', { choice: v, playerId: p.id }); final[p.id] = v; }
+    });
+    await sleep(400);
+    if (volta < 2) { await cmd('BACK'); await ate(x => x.status === 'NEWS'); }
+  }
+  const votos = st.voted;
+  await cmd('NEXT'); await ate(x => x.status === 'REVEAL');
+  const r1 = JSON.stringify(st.result);
+  for (let volta = 0; volta < 3; volta++) { await cmd('NEXT'); await ate(x => x.status === 'HISTORY'); await cmd('BACK'); await ate(x => x.status === 'REVEAL'); }
+  const r2 = JSON.stringify(st.result);
+  await cmd('NEXT'); await ate(x => x.status === 'HISTORY');
+  a.close();
+  const sobe = Object.values(final).filter(v => v === 'SOBE').length, desce = Object.values(final).filter(v => v === 'DESCE').length;
+  return { final, sobe, desce, votos, r1, r2, result: JSON.parse(r2) };
+}
 (async () => {
   await arrancar();
   const cat = JSON.parse(fs.readFileSync(process.env.PICKS_FILE || path.join(JOGO, 'dados/picks-catalogo.json'), 'utf8'));
@@ -53,6 +84,8 @@ async function admin(cmds) {
     await sleep(15);
   }
   await sleep(1500);
+  // ── Ronda 1 com «◀ Voltar» repetido: os votos e os acertos têm de ficar iguais a um jogo sem voltar atrás ──
+  const voltas = await rondaComVoltas(jog);
   await admin(['FINISH', 'SETORES', 'EMPRESAS', 'CARTEIRA']);
   const emp = ['MU', 'GOOGL', 'JPM', 'CVX', 'APH', 'AMZN', 'BAC', 'EQNR'];
   jog.forEach((p, i) => p.s.emit('pf-save', { playerId: p.id, dados: { setores: ['tecnologia', 'energia'], empresas: [emp[i % 8], emp[(i + 3) % 8]], montante: [1000, 1500, 750][i % 3],
@@ -91,6 +124,11 @@ async function admin(cmds) {
   ok(j.jogadores.filter(x => x.email_confirmado).length === esperadoConf, `${j.jogadores.filter(x => x.email_confirmado).length} confirmados (esperados ${esperadoConf})`);
   ok(j.jogadores.every(x => !x.email || (x.consentimento && x.consentimento_em)), 'todos os emails com consentimento e hora');
   ok(j.jogadores.every(x => x.montante_inicial && x.plano.length === 12), 'todos com carteira e plano de 12 meses');
+  // «◀ Voltar» na ronda 1: um só voto por pessoa e acertos contados uma só vez
+  ok(voltas.votos === voltas.sobe + voltas.desce && voltas.result.votes.SOBE === voltas.sobe && voltas.result.votes.DESCE === voltas.desce,
+    `ronda 1 com 3 voltas à notícia: ${voltas.sobe} Sobe + ${voltas.desce} Desce, um voto por pessoa (contagem no ecrã ${voltas.votos})`);
+  ok(voltas.r1 === voltas.r2 && voltas.result.correct === voltas.sobe, `3 voltas da história à resposta: resultado igual e ${voltas.result.correct} acertos (= quem disse Sobe)`);
+  ok(j.jogadores.every(x => x.resultado_jogo.previsoes_certas === (voltas.final[x.id] === 'SOBE' ? 1 : 0)), 'previsões certas de cada pessoa iguais às de um jogo sem voltar atrás');
   const etfTickers = new Set([j.etf.ticker, ...(j.etfs || []).map(e => e.ticker)]);
   const zero = j.jogadores.filter(x => x.etf_percentagem === 0);
   ok(zero.length === 12 && zero.every(x => x.portfolio.length && x.portfolio.every(p => p.tipo !== 'indice') && x.plano.every(m => m.compras.every(c => !etfTickers.has(c.ticker)))), `${zero.length} pessoas com 0 % no índice: carteira e plano só com empresas`);
