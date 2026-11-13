@@ -14,6 +14,11 @@ const VOTE_SECONDS = 25;            // por omissão; a ronda 1 tem mais tempo (s
 const DECIDE_SECONDS = 30;
 const FAST_MS = 650;                // o mercado até à ronda seguinte (por mês), devagar para a sala acompanhar
 const WINDOW_MS = 1250;             // meses da pergunta, mais devagar ainda (por mês)
+const FAST_MIN_MS = 5000;           // um avanço entre rondas nunca dura menos de 5 s (os curtos ficam mais lentos por mês)
+const WINDOW_MIN_MS = 6000;         // a janela da resposta nunca dura menos de 6 s
+// Ritmo por mês: o normal, ou mais lento quando a passagem tem poucos meses (só a velocidade; os dados não mudam)
+const msFast = meses => meses >= 1 ? Math.max(FAST_MS, FAST_MIN_MS / meses) : FAST_MS;
+const msWindow = meses => meses >= 1 ? Math.max(WINDOW_MS, WINDOW_MIN_MS / meses) : WINDOW_MS;
 const CASH_RATE = 0.01;             // depósito: onde fica o dinheiro de quem para ou vende
 const DECISION_MONTHS = 12;         // quem para ou vende volta ao plano um ano depois
 const PICKS_BETA = 1.3;             // simulação: as ações escolhidas oscilam 1,3 vezes o índice
@@ -367,12 +372,18 @@ module.exports = function setupGame10k(io, opts = {}) {
     function runTo(target, ms, onDone) {
         stop();
         game.target = target;
+        game.msMes = ms;                 // o ritmo deste troço (o ecrã desenha os dias ao mesmo ritmo; um reinício continua igual)
         if (game.month >= target) return onDone();
-        timer = setInterval(() => {
+        // Cada mês chega no INÍCIO do seu tempo (o ecrã desenha-o dia a dia durante esse tempo) e o passo seguinte
+        // (resposta, notícia, decisão) só abre depois de o último mês acabar de se desenhar. Duração total = meses × ms.
+        const passo = () => {
             if (game.paused) return;
+            if (game.month >= target) { stop(); onDone(); return; }
             stepMonth();
-            if (game.month >= target) { stop(); onDone(); } else broadcast();
-        }, ms);
+            broadcast();
+        };
+        passo();
+        timer = setInterval(passo, ms);
     }
 
     // --- Fluxo: um só botão "Seguinte" no admin avança para o passo que vem a seguir ---
@@ -403,14 +414,14 @@ module.exports = function setupGame10k(io, opts = {}) {
             game.round = ROUNDS.length;   // depois da última ronda: só o plano até ao fim dos 7 anos
             game.status = 'FAST';
             game.news = 'Os últimos meses do teu plano.';
-            runTo(TOTAL_MONTHS, FAST_MS, finish);
+            runTo(TOTAL_MONTHS, msFast(TOTAL_MONTHS - game.month), finish);
             return broadcast();
         }
         game.round = i;
         game.status = 'FAST';
         game.news = 'O tempo passa. O teu plano continua: um reforço todos os meses.';
         game.waitNews = false;
-        runTo(ROUNDS[i].at, FAST_MS, () => chegada(i));
+        runTo(ROUNDS[i].at, msFast(ROUNDS[i].at - game.month), () => chegada(i));
         broadcast();
     }
 
@@ -490,7 +501,7 @@ module.exports = function setupGame10k(io, opts = {}) {
         game.voteEndsAt = null;
         game.status = 'WINDOW';
         const r = ROUNDS[game.round];
-        runTo(r.at + r.horizon, WINDOW_MS, reveal);
+        runTo(r.at + r.horizon, msWindow(r.horizon), reveal);
         broadcast();
     }
 
@@ -591,7 +602,8 @@ module.exports = function setupGame10k(io, opts = {}) {
             gameId: game.id,
             status: s,
             paused: game.paused,
-            waitNews: !!game.waitNews,               // mercado parado à chegada da ronda, à espera do admin
+            waitNews: !!game.waitNews,
+            msMes: game.msMes || FAST_MS,            // o ritmo atual do mercado (ms por mês), para o desenho dos dias               // mercado parado à chegada da ronda, à espera do admin
             sound,
             month: game.month,
             year: d.year,
@@ -865,8 +877,8 @@ module.exports = function setupGame10k(io, opts = {}) {
         if (s === 'FAST') {
             const i = game.round;
             if (game.waitNews) { /* parado à espera do admin: não volta a correr */ }
-            else runTo(game.target, FAST_MS, i >= ROUNDS.length ? finish : () => chegada(i));
-        } else if (s === 'WINDOW') runTo(game.target, WINDOW_MS, reveal);
+            else runTo(game.target, game.msMes || msFast(game.target - game.month), i >= ROUNDS.length ? finish : () => chegada(i));
+        } else if (s === 'WINDOW') runTo(game.target, game.msMes || msWindow(game.target - game.month), reveal);
         // Em pausa, os relógios ficam parados (o tempo que faltava está em pausaRestante)
         else if (s === 'VOTING' && !game.paused) timer = setTimeout(closeVote, Math.max(0, (game.voteEndsAt || agora) - agora));
         else if (s === 'DECIDE' && !game.paused) timer = setTimeout(closeDecision, Math.max(0, (game.decideEndsAt || agora) - agora));
