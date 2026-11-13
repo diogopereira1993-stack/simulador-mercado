@@ -568,7 +568,7 @@
             if (de === null || de === s.status) return;
             if (s.status === 'VOTING') tocar('abre');
             if (s.status === 'WINDOW' && de === 'VOTING') tocar('fecha');
-            if (s.status === 'REVEAL' && s.result) tocar(s.result.answer === 'SOBE' ? 'subiu' : 'desceu');
+            if (s.status === 'REVEAL' && s.result && de !== 'HISTORY') tocar(s.result.answer === 'SOBE' ? 'subiu' : 'desceu');
             if (s.status === 'DECIDE') tocar('crise');
             if (s.status === 'HISTORY') tocar('historia');
             if (s.status === 'FINISHED') tocar('final');

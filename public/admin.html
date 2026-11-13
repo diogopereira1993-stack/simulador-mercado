@@ -70,6 +70,7 @@
                 <div class="notes" id="notes">As notas aparecem aqui.</div>
                 <div class="controls">
                     <button class="btn btn-primary" id="btn-next" onclick="cmd('NEXT')">▶ Começar: ronda 1</button>
+                    <button class="btn btn-secondary" id="btn-back" onclick="cmd('BACK')" disabled>◀ Voltar</button>
                     <button class="btn btn-secondary" id="btn-pause" onclick="cmd(state && state.paused ? 'RESUME' : 'PAUSE')">⏸ Pausar mercado</button>
                     <button class="btn btn-secondary" id="btn-sound" onclick="cmd(state && state.sound ? 'SOUND_OFF' : 'SOUND_ON')">🔊 Som ligado</button>
                     <button class="btn btn-secondary" id="btn-concl" onclick="cmd(state && state.nextConclusion ? 'SHOW_CONCLUSION' : 'HIDE_CONCLUSION')" disabled>📊 Mostrar conclusão</button>
@@ -207,6 +208,10 @@
             const concl = document.getElementById('btn-concl');
             concl.disabled = !(s.status === 'FINISHED' || s.status === 'CONCLUSION');
             concl.innerText = s.nextConclusion ? `📊 Conclusão com ${s.nextConclusion} € por mês` : '↩ Voltar ao resultado';
+            // ◀ Voltar só existe da história para a resposta e da votação para a notícia
+            const back = document.getElementById('btn-back');
+            back.disabled = !(s.status === 'HISTORY' || s.status === 'VOTING');
+            back.innerText = s.status === 'HISTORY' ? '◀ Voltar à resposta' : s.status === 'VOTING' ? '◀ Voltar à notícia' : '◀ Voltar';
             const pause = document.getElementById('btn-pause');
             pause.disabled = !['FAST', 'WINDOW', 'VOTING', 'DECIDE'].includes(s.status);
             pause.innerText = s.paused ? '▶ Retomar' : (s.status === 'VOTING' || s.status === 'DECIDE' ? '⏸ Pausar o relógio' : '⏸ Pausar mercado');

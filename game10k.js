@@ -519,6 +519,26 @@ module.exports = function setupGame10k(io, opts = {}) {
         broadcast();
     }
 
+    // ◀ Voltar: só nos passos que não mexem nos dados (o mercado não corre, nenhum plano nem resultado muda)
+    //   HISTORY → REVEAL: volta à resposta da ronda (o resultado já está calculado e fica igual)
+    //   VOTING → NEWS: pára o relógio da votação; os votos já dados ficam (não usa showNews, que os apagaria)
+    function back() {
+        switch (game.status) {
+            case 'HISTORY':
+                if (!game.results[game.round]) return;
+                game.status = 'REVEAL';
+                return true;
+            case 'VOTING':
+                stop();
+                game.voteEndsAt = null;
+                game.pausaRestante = null;
+                game.status = 'NEWS';
+                return true;
+            default:
+                return false;   // FAST, WINDOW, DECIDE, REVEAL e os outros: não volta (desfaria mercado ou decisões)
+        }
+    }
+
     function showHistory() {
         stop();
         game.status = 'HISTORY';
@@ -772,6 +792,7 @@ module.exports = function setupGame10k(io, opts = {}) {
             if (!socket.data.isAdmin) return socket.emit('admin-erro', 'comando recusado: o admin não está registado (recarrega a página)');
             if (command === 'NEXT' || command === 'NEXT_ROUND') next();
             if (command === 'CLOSE_VOTE') closeVote();
+            if (command === 'BACK') back();
             if (command === 'SOUND_ON') sound = true;
             if (command === 'SOUND_OFF') sound = false;
             if (command === 'PAUSE') pausar();
